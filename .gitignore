@@ -1,0 +1,20 @@
+# Pourquoi: Ne pas versionner les fichiers de configuration contenant des secrets
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
+# Jamais committer de secrets — utiliser des variables d'environnement en production
+
+# Pourquoi: Ne pas versionner les fichiers compilés générés par .NET
+bin/
+obj/
+
+# Pourquoi: Ne pas versionner les dossiers de configuration spécifiques à Visual Studio
+.vs/
+
+# Pourquoi: Ne pas versionner la base de données SQLite locale pour éviter de partager des données privées
+*.db
+
+# Pourquoi: Ne pas versionner les préférences utilisateur spécifiques à l'IDE (Visual Studio/VS Code)
+*.user
+*.suo

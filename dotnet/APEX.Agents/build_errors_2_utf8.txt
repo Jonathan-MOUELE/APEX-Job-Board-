@@ -1,0 +1,42 @@
+﻿La g├®n├®ration a d├®marr├® 12/03/2026 15:17:44.
+     1>Projet "C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj" sur le n┼ôud 1 (Restore cible(s)).
+     1>_GetAllRestoreProjectPathItems:
+         Identification des projets ├á restaurer...
+       Restore:
+         La validation de la cha├«ne de certificats X.509 utilisera le magasin de confiance par d├®faut s├®lectionn├® par .NET pour le code de signature.
+         La validation de la cha├«ne de certificats X.509 utilisera le magasin de confiance par d├®faut s├®lectionn├® par .NET pour le timestamp.
+         Le fichier d'actifs n'a pas chang├®. ├ëcriture du fichier d'actifs ignor├®e. Chemin┬á: C:\xampp\htdocs\APEX\dotnet\APEX.Core\obj\project.assets.json
+         Restauration effectu├®e de C:\xampp\htdocs\APEX\dotnet\APEX.Core\APEX.Core.csproj (en 42 ms).
+         Restauration des packages pour C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj...
+           CACHE https://api.nuget.org/v3-flatcontainer/microsoft.extensions.options/index.json
+           CACHE https://api.nuget.org/v3/vulnerabilities/index.json
+           CACHE https://api.nuget.org/v3-vulnerabilities/2026.03.11.17.24.45/vulnerability.base.json
+           CACHE https://api.nuget.org/v3-vulnerabilities/2026.03.11.17.24.45/2026.03.11.17.24.45/vulnerability.update.json
+     1>C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605: Avertissement comme erreur : Passage ├á une version ant├®rieure du package d├®tect├®┬á: Microsoft.Extensions.Options de 10.0.4 ├á 9.0.14. R├®f├®rencez le package directement ├á partir du projet pour s├®lectionner une version diff├®rente. 
+C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605:  APEX.Agents -> Microsoft.Extensions.Logging 10.0.4 -> Microsoft.Extensions.Options (>= 10.0.4) 
+C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605:  APEX.Agents -> Microsoft.Extensions.Options (>= 9.0.0)
+         Le fichier d'actifs n'a pas chang├®. ├ëcriture du fichier d'actifs ignor├®e. Chemin┬á: C:\xampp\htdocs\APEX\dotnet\APEX.Agents\obj\project.assets.json
+         ├ëchec de la restauration de C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj (en 283 ms).
+         
+         Fichiers de configuration NuGet utilis├®s┬á:
+             C:\Users\Jonyx\AppData\Roaming\NuGet\NuGet.Config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+         
+         Flux utilis├®s┬á:
+             https://api.nuget.org/v3/index.json
+             C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+         Sur l'ensemble des projets, 1 sur 2 sont ├á jour pour la restauration.
+     1>G├®n├®ration du projet "C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj" termin├®e (Restore cible(s)) -- ├ëCHEC.
+
+├ëCHEC de la build.
+
+       "C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj" (Restore cible) (1) ->
+       (Restore cible) -> 
+         C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605: Avertissement comme erreur : Passage ├á une version ant├®rieure du package d├®tect├®┬á: Microsoft.Extensions.Options de 10.0.4 ├á 9.0.14. R├®f├®rencez le package directement ├á partir du projet pour s├®lectionner une version diff├®rente. 
+       C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605:  APEX.Agents -> Microsoft.Extensions.Logging 10.0.4 -> Microsoft.Extensions.Options (>= 10.0.4) 
+       C:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj : error NU1605:  APEX.Agents -> Microsoft.Extensions.Options (>= 9.0.0)
+
+    0 Avertissement(s)
+    1 Erreur(s)
+
+Temps ├®coul├® 00:00:00.91

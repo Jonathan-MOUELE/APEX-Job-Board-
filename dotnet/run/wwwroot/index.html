@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>APEX | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #0e0e10; color: #f9f5f8; overflow-x: hidden; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .mesh-gradient-bg { background: radial-gradient(circle at 0% 0%, rgba(255,142,128,0.08) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(254,148,0,0.06) 0%, transparent 50%); }
+  .glass-card { background: rgba(38,37,40,0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+  .kinetic-glow { box-shadow: 0 0 40px rgba(255,142,128,0.04); }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  /* chat overlay */
+  #chat-overlay { transform: translateX(100%); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+  #chat-overlay.open { transform: translateX(0); }
+  /* job detail panel */
+  #job-panel { transform: translateX(100%); transition: transform .35s cubic-bezier(.16,1,.3,1); }
+  #job-panel.open { transform: translateX(0); }
+  /* typing */
+  .typing span { display:inline-block;width:5px;height:5px;border-radius:50%;background:#adaaad;margin:0 2px;animation:blink 1.2s infinite; }
+  .typing span:nth-child(2){animation-delay:.2s} .typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+  /* skeleton */
+  .skeleton { background: linear-gradient(90deg,#1a1a1f 25%,#222227 50%,#1a1a1f 75%); background-size:200% 100%; animation:shimmer 1.6s infinite; border-radius:6px; }
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{ extend:{
+      colors:{
+        "surface-variant":"#262528","surface-tint":"#ff8e80","on-primary-fixed":"#000000",
+        "surface-bright":"#2c2c2f","surface":"#0e0e10","surface-container-low":"#131315",
+        "secondary-container":"#8c5000","error":"#ff6e84","surface-container-highest":"#262528",
+        "outline-variant":"#48474a","secondary-fixed":"#ffc794","tertiary-container":"#ce6ffd",
+        "on-primary":"#650002","on-background":"#f9f5f8","background":"#0e0e10",
+        "tertiary":"#d784ff","on-surface-variant":"#adaaad","secondary":"#fe9400",
+        "primary":"#ff8e80","primary-dim":"#e2241f","surface-container":"#19191c",
+        "surface-container-high":"#1f1f22","on-surface":"#f9f5f8",
+        "primary-container":"#ff7767","primary-fixed-dim":"#ff5b4b","error-dim":"#d73357",
+      },
+      fontFamily:{"headline":["Inter"],"body":["Inter"],"label":["Inter"]},
+      borderRadius:{"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+    }},
+  }
+</script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+
+<!-- ââ¢Âââ¢Â TOP NAV ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<nav class="w-full sticky top-0 z-50 bg-[#0e0e10]/80 backdrop-blur-xl border-b border-white/5">
+  <div class="flex items-center justify-between px-8 h-20 max-w-[1920px] mx-auto">
+    <div class="flex items-center gap-10">
+      <a href="index.html" class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">APEX</a>
+      <div class="hidden lg:flex items-center glass-card px-4 py-2 rounded-full border border-white/5 w-[380px] gap-2">
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+        <input id="input-keywords" class="bg-transparent border-none focus:ring-0 text-sm w-full text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Rechercher un métier, une entreprise..." type="text" onkeypress="if(event.key==='Enter')performSearch()"/>
+        <span class="text-[10px] font-bold text-on-surface-variant border border-outline-variant rounded px-1.5 py-0.5 tracking-widest">⌘K</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-8">
+      <div class="hidden md:flex items-center gap-8">
+        <a class="text-primary border-b-2 border-primary pb-1 font-medium" href="index.html">Jobs</a>
+      </div>
+      <div class="flex items-center gap-4 border-l border-white/10 pl-8">
+        <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+        <button onclick="openChat()" class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">chat_bubble</button>
+        <button onclick="openProfilePanel()" class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-sm text-on-primary-fixed">U</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ââ¢Âââ¢Â MAIN ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<main class="flex min-h-[calc(100vh-80px)] mesh-gradient-bg">
+
+  <!-- Left Sidebar -->
+  <aside class="h-[calc(100vh-80px)] w-64 sticky top-20 hidden md:flex flex-col py-8 border-r border-white/5 bg-[#0e0e10]">
+    <div class="px-6 mb-8">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <span class="material-symbols-outlined fill-icon text-on-primary-fixed text-sm">bolt</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white leading-none">APEX Console</h3>
+          <p class="text-[10px] text-on-surface-variant font-medium tracking-wide">AI-Precision Matching</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 space-y-1" id="sidenav">
+      <button onclick="triggerSearch('développeur')" class="snav-item flex items-center gap-4 text-on-surface-variant hover:text-secondary px-6 py-4 w-full text-left hover:bg-surface-container transition-all hover:translate-x-1 duration-200 font-medium text-[11px] uppercase tracking-wider">
+        <span class="material-symbols-outlined">grid_view</span> Dashboard
+      </button>
+      <button class="snav-item snav-active flex items-center gap-4 bg-surface-bright text-primary rounded-r-full mr-4 px-6 py-4 w-full text-left duration-200 font-medium text-[11px] uppercase tracking-wider">
+        <span class="material-symbols-outlined">description</span> Applications
+      </button>
+    </nav>
+    <div class="px-6 py-4">
+      <!-- TODO: replace with real PayPal/Tipeee link -->
+      <a href="https://paypal.me/APEX_AVERS" target="_blank" rel="noopener" class="block w-full text-center bg-surface-container hover:bg-surface-bright text-primary border border-primary/20 py-3 rounded-xl text-xs font-bold transition-all active:scale-95">Me soutenir</a>
+    </div>
+    <footer class="border-t border-white/5 pt-4">
+      <a href="#" onclick="sessionStorage.clear();window.location.href='register.html';return false;" class="flex items-center gap-4 text-on-surface-variant hover:text-primary px-6 py-3 transition-all text-[11px] uppercase tracking-wider font-medium">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </a>
+    </footer>
+  </aside>
+
+  <!-- Page Content -->
+  <section class="flex-1 px-8 py-10 min-w-0">
+    <!-- Hero -->
+    <header class="mb-10">
+      <h1 class="text-4xl font-extrabold tracking-tight text-white mb-3">
+        Découvrez votre <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Perfect Match</span>
+      </h1>
+      <p class="text-on-surface-variant text-base max-w-2xl leading-relaxed">Notre IA analyse des milliers de données pour trouver les rôles où vous ne faites pas que correspondre — vous excellez.</p>
+    </header>
+
+    <!-- City input (lightweight, below hero) -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="flex items-center glass-card px-4 py-2 rounded-full border border-white/5 gap-2 w-56">
+        <span class="material-symbols-outlined text-on-surface-variant text-[18px]">location_on</span>
+        <input id="input-city" class="bg-transparent border-none focus:ring-0 text-sm w-full text-on-surface placeholder:text-on-surface-variant outline-none" placeholder="Ville (ex: Paris)" type="text" onkeypress="if(event.key==='Enter')performSearch()"/>
+      </div>
+      <button onclick="performSearch()" class="px-6 py-2 bg-primary text-on-primary-fixed rounded-full font-bold text-sm flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[18px]">search</span> Rechercher
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex items-center gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide" id="filter-container">
+      <button data-filter="null" onclick="setFilter(this,null)" class="filter-pill px-6 py-2.5 bg-primary text-on-primary-fixed rounded-full font-bold text-sm whitespace-nowrap shadow-[0_0_20px_rgba(255,142,128,0.2)]">Tous</button>
+      <button data-filter="CDI" onclick="setFilter(this,'CDI')" class="filter-pill px-6 py-2.5 bg-surface-container hover:bg-surface-bright text-on-surface rounded-full font-medium text-sm transition-all whitespace-nowrap">CDI</button>
+      <button data-filter="CDD" onclick="setFilter(this,'CDD')" class="filter-pill px-6 py-2.5 bg-surface-container hover:bg-surface-bright text-on-surface rounded-full font-medium text-sm transition-all whitespace-nowrap">CDD</button>
+      <button data-filter="MIS" onclick="setFilter(this,'MIS')" class="filter-pill px-6 py-2.5 bg-surface-container hover:bg-surface-bright text-on-surface rounded-full font-medium text-sm transition-all whitespace-nowrap">Mission</button>
+      <div class="h-6 w-px bg-white/10 mx-1"></div>
+      <button onclick="triggerSearch('développeur');" class="px-6 py-2.5 glass-card border border-white/5 hover:border-primary/30 text-on-surface rounded-full font-medium text-sm transition-all whitespace-nowrap flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">filter_list</span> Suggestions IA
+      </button>
+    </div>
+
+    <!-- Initial state -->
+    <div id="initial-state" class="flex flex-col items-center justify-center py-24 text-center">
+      <div class="w-20 h-20 rounded-2xl bg-surface-container flex items-center justify-center mb-6 border border-white/5">
+        <span class="material-symbols-outlined text-4xl text-primary">travel_explore</span>
+      </div>
+      <h3 class="text-xl font-bold text-white mb-2">Lancez votre recherche</h3>
+      <p class="text-on-surface-variant text-sm max-w-sm mb-8">Tapez un métier dans la barre de recherche, ou choisissez une suggestion.</p>
+      <div class="flex flex-wrap gap-3 justify-center">
+        <button onclick="triggerSearch('développeur full stack')" class="px-5 py-2 glass-card border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-primary rounded-full text-sm transition-all">Développeur Full Stack</button>
+        <button onclick="triggerSearch('data scientist')" class="px-5 py-2 glass-card border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-primary rounded-full text-sm transition-all">Data Scientist</button>
+        <button onclick="triggerSearch('designer UX')" class="px-5 py-2 glass-card border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-primary rounded-full text-sm transition-all">Designer UX</button>
+        <button onclick="triggerSearch('devops cloud')" class="px-5 py-2 glass-card border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-primary rounded-full text-sm transition-all">DevOps Cloud</button>
+      </div>
+    </div>
+
+    <!-- Results grid -->
+    <div id="search-results" class="hidden grid-cols-1 xl:grid-cols-2 gap-6"></div>
+  </section>
+
+</main>
+
+<!-- ââ¢Âââ¢Â JOB DETAIL PANEL ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<div id="job-panel" class="fixed inset-y-0 right-0 w-full max-w-lg z-[60] bg-[#0e0e10] border-l border-white/5 flex flex-col shadow-2xl">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-white/5">
+    <h3 class="font-bold text-white text-base" id="panel-title">Détail de l'offre</h3>
+    <button onclick="closePanel()" class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">close</button>
+  </div>
+  <div class="flex-1 overflow-y-auto p-6 space-y-6">
+    <div class="flex items-start gap-4">
+      <div id="panel-logo" class="w-14 h-14 rounded-2xl bg-surface-container flex items-center justify-center text-2xl font-black border border-white/5 flex-shrink-0"></div>
+      <div>
+        <h2 id="panel-job-title" class="text-xl font-bold text-white mb-1"></h2>
+        <p id="panel-company" class="text-on-surface-variant text-sm font-medium"></p>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-2" id="panel-tags"></div>
+    <div>
+      <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Description</h4>
+      <p id="panel-desc" class="text-sm text-on-surface-variant leading-relaxed"></p>
+    </div>
+  </div>
+  <div class="p-6 border-t border-white/5 flex gap-3">
+    <button id="panel-apply" class="flex-1 py-3 bg-gradient-to-r from-primary to-primary-dim text-on-primary-fixed rounded-xl font-bold text-sm active:scale-95 transition-all">Postuler →</button>
+    <button id="panel-analyze" class="flex-1 py-3 glass-card border border-white/10 hover:border-primary/30 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-sm">auto_awesome</span> Analyser IA
+    </button>
+  </div>
+</div>
+<div id="backdrop" onclick="closePanel()" class="hidden fixed inset-0 bg-black/50 z-[55] backdrop-blur-sm"></div>
+
+<!-- ââ¢Âââ¢Â CHAT OVERLAY ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<div id="chat-overlay" class="fixed inset-0 z-[80] flex">
+  <!-- mirror sidebar -->
+  <div class="w-64 hidden md:flex flex-col py-8 border-r border-white/5 bg-[#0c0c0e]">
+    <div class="px-6 mb-8">
+      <span class="text-xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">APEX</span>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <button onclick="closeChat()" class="flex items-center gap-4 text-on-surface-variant hover:text-secondary px-6 py-4 w-full text-left hover:bg-surface-container transition-all text-[11px] uppercase tracking-wider font-medium">
+        <span class="material-symbols-outlined">arrow_back</span> Retour Jobs
+      </button>
+      <button class="flex items-center gap-4 bg-surface-bright text-primary rounded-r-full mr-4 px-6 py-4 w-full text-left text-[11px] uppercase tracking-wider font-medium">
+        <span class="material-symbols-outlined">smart_toy</span> APEX Agent
+      </button>
+    </nav>
+    <div class="px-6 pb-6 mt-auto">
+      <!-- TODO: replace with real PayPal/Tipeee link -->
+      <a href="https://paypal.me/APEX_AVERS" target="_blank" rel="noopener" class="block w-full text-center bg-surface-container hover:bg-surface-bright text-primary border border-primary/20 py-3 rounded-xl text-xs font-bold transition-all">Me soutenir</a>
+    </div>
+  </div>
+  <!-- Chat main -->
+  <div class="flex-1 flex flex-col bg-[#0e0e10]">
+    <div class="flex items-center gap-3 px-6 py-4 border-b border-white/5">
+      <div class="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+        <span class="material-symbols-outlined fill-icon text-primary text-[18px]">bolt</span>
+      </div>
+      <div>
+        <div class="text-sm font-bold text-white">APEX Agent</div>
+        <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant"><span class="w-1.5 h-1.5 rounded-full bg-[#00d4aa]"></span> ACTIVE ENGINE V4.2</div>
+      </div>
+      <button onclick="closeChat()" class="ml-auto material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">close</button>
+    </div>
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-5">
+      <div class="flex gap-3 max-w-[80%]">
+        <div class="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined fill-icon text-primary text-[14px]">bolt</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">APEX AGENT</p>
+          <div class="bg-surface-container border border-white/5 rounded-xl rounded-tl-sm px-4 py-3 text-sm text-on-surface leading-relaxed">Bonjour ! Posez-moi des questions sur le marché tech ou demandez d'analyser une offre.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Quick actions -->
+    <div class="px-6 py-3 border-t border-white/5 flex gap-2 flex-wrap">
+      <button onclick="sendQuick('Optimise mon profil pour le marché tech français')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-on-surface text-xs font-medium transition-all">
+        <span class="material-symbols-outlined text-[14px]">edit_document</span> Optimiser profil
+      </button>
+      <button onclick="sendQuick('Rédige un email d\'introduction percutant pour ma candidature')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-on-surface text-xs font-medium transition-all">
+        <span class="material-symbols-outlined text-[14px]">mail</span> Email intro
+      </button>
+      <button onclick="sendQuick('Quelles sont les tendances du marché tech en France en 2025 ?')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-white/5 hover:border-primary/30 text-on-surface-variant hover:text-on-surface text-xs font-medium transition-all">
+        <span class="material-symbols-outlined text-[14px]">trending_up</span> Tendances marché
+      </button>
+    </div>
+    <div class="px-6 pb-6 pt-3 flex items-center gap-3">
+      <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-[22px]">attach_file</button>
+      <input id="chat-input" type="text" class="flex-1 bg-surface-container border border-white/5 focus:border-primary/40 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant outline-none transition-all" placeholder="Demandez Ã  APEX Agent..."/>
+      <button id="chat-send" onclick="handleChat()" class="w-10 h-10 rounded-xl bg-gradient-to-r from-primary to-primary-dim flex items-center justify-center text-on-primary-fixed shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[18px]">send</span>
+      </button>
+    </div>
+    <p class="text-center text-[10px] text-on-surface-variant/30 uppercase tracking-wider pb-4">Powered by APEX Intelligence · High Fidelity Matching</p>
+  </div>
+</div>
+
+<!-- ââ¢Âââ¢Â FAB ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<button id="fab" onclick="openChat()" class="fixed bottom-10 right-10 w-14 h-14 bg-gradient-to-tr from-primary to-secondary text-on-primary-fixed rounded-full shadow-[0_10px_40px_rgba(255,142,128,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[70]">
+  <span class="material-symbols-outlined text-[26px]">add</span>
+</button>
+
+<!-- ââ¢Âââ¢Â PROFILE PANEL (placeholder) ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<div id="profile-panel" class="fixed inset-y-0 right-0 w-full max-w-sm z-[60] bg-[#0e0e10] border-l border-white/5 flex flex-col shadow-2xl translate-x-full transition-transform duration-300">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-white/5">
+    <h3 class="font-bold text-white">Mon Profil</h3>
+    <button onclick="closeProfilePanel()" class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">close</button>
+  </div>
+  <div class="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-2xl font-black text-on-primary-fixed">U</div>
+    <p class="text-on-surface-variant text-sm">Connectez-vous pour voir votre profil complet.</p>
+    <a href="register.html" class="px-8 py-3 bg-gradient-to-r from-primary to-primary-dim text-on-primary-fixed rounded-xl font-bold text-sm hover:opacity-90 transition-all">Créer un compte</a>
+  </div>
+</div>
+
+<!-- ââ¢Âââ¢Â SCRIPTS ââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Âââ¢Â -->
+<script>
+  const API = 'http://localhost:5188';
+  let activeFilter = null;
+  let _jobs = [];
+
+  const kwInput   = document.getElementById('input-keywords');
+  const cityInput = document.getElementById('input-city');
+  const results   = document.getElementById('search-results');
+  const initial   = document.getElementById('initial-state');
+
+  /* â”â¬â”â¬ Filters â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function setFilter(btn, val) {
+    document.querySelectorAll('.filter-pill').forEach(b => {
+      b.className = b.className.replace(/bg-primary text-on-primary-fixed shadow-\[[\S]+\]/g,'')
+                               .replace('bg-primary','').replace('text-on-primary-fixed','')
+                               .trim();
+      if (!b.className.includes('bg-surface-container')) b.className += ' bg-surface-container text-on-surface';
+    });
+    btn.className = btn.className.replace('bg-surface-container','').replace('text-on-surface','').trim()
+                  + ' bg-primary text-on-primary-fixed shadow-[0_0_20px_rgba(255,142,128,0.2)]';
+    activeFilter = val;
+    if (kwInput.value.trim()) performSearch();
+  }
+
+  /* â”â¬â”â¬ Search â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function triggerSearch(kw) { kwInput.value = kw; performSearch(); }
+
+  async function performSearch() {
+    const kw   = kwInput.value.trim() || 'développeur';
+    const city = cityInput.value.trim();
+    initial.style.display = 'none';
+    results.style.display = 'grid';
+
+    // Skeletons
+    results.innerHTML = Array(4).fill(`
+      <div class="glass-card border border-white/5 p-8 rounded-lg animate-pulse">
+        <div class="flex items-start gap-5 mb-6">
+          <div class="skeleton w-16 h-16 rounded-2xl flex-shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="skeleton h-3 w-24 rounded"></div>
+            <div class="skeleton h-5 w-3/5 rounded"></div>
+            <div class="skeleton h-3 w-2/5 rounded"></div>
+          </div>
+        </div>
+        <div class="flex gap-2 mb-6"><div class="skeleton h-6 w-20 rounded-full"></div><div class="skeleton h-6 w-16 rounded-full"></div></div>
+        <div class="skeleton h-10 w-full rounded-xl mt-auto"></div>
+      </div>`).join('');
+
+    try {
+      let url = `${API}/api/jobs/search?keywords=${encodeURIComponent(kw)}`;
+      if (city) url += `&location=${encodeURIComponent(city)}`;
+      if (activeFilter) url += `&contract=${encodeURIComponent(activeFilter)}`;
+      const res  = await fetch(url);
+      const data = await res.json();
+      renderResults(data.results || [], kw);
+      updateInsights(kw, data.results || []);
+    } catch(e) {
+      results.innerHTML = `<div class="col-span-2 flex flex-col items-center justify-center py-20 text-center gap-4">
+        <span class="material-symbols-outlined text-5xl text-error">cloud_off</span>
+        <h3 class="font-bold text-white">API indisponible</h3>
+        <p class="text-on-surface-variant text-sm">Vérifiez que le serveur tourne sur le port 5188.</p>
+      </div>`;
+    }
+  }
+
+  /* â”â¬â”â¬ Render Results â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  const BADGES = [
+    {cls:'bg-tertiary/10 border-tertiary/20 text-tertiary', dot:'bg-tertiary', label:'98% Match'},
+    {cls:'bg-primary/10 border-primary/20 text-primary',   dot:'bg-primary',   label:'High Potential'},
+    {cls:'bg-[#fe9400]/10 border-[#fe9400]/20 text-[#fe9400]', dot:'bg-[#fe9400]', label:'85% Match'},
+    {cls:'bg-tertiary/10 border-tertiary/20 text-tertiary', dot:'bg-tertiary', label:'91% Match'},
+  ];
+
+  function renderResults(jobs, kw) {
+    _jobs = jobs;
+    if (!jobs.length) {
+      results.innerHTML = `<div class="col-span-2 flex flex-col items-center justify-center py-20 text-center gap-3">
+        <span class="material-symbols-outlined text-5xl text-on-surface-variant">search_off</span>
+        <h3 class="font-bold text-white">Aucune offre trouvée</h3>
+        <p class="text-on-surface-variant text-sm">Essayez un autre mot-clé ou une autre ville.</p></div>`;
+      return;
+    }
+
+    results.innerHTML = jobs.map((job, i) => {
+      const isFeatured = i === 2;
+      const badge = BADGES[i % BADGES.length];
+      const co    = esc(job.companyName || job.company || '?');
+      const title = esc(job.title || '');
+      const city  = esc(job.city || job.location || '');
+      const type  = esc(job.contractType || 'CDI');
+      const sal   = job.salaryLabel ? `<span class="px-3 py-1 bg-[#8c5000]/30 text-[#ffc794] text-[10px] font-bold uppercase tracking-wider rounded-full border border-[#8c5000]/50">${esc(job.salaryLabel)}</span>` : '';
+
+      if (isFeatured) return `
+        <article class="group xl:col-span-2 glass-card border border-white/5 p-10 rounded-lg kinetic-glow relative overflow-hidden flex flex-col md:flex-row gap-8 transition-all hover:border-primary/20 cursor-pointer" onclick="openJob(${i})">
+          <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 blur-[100px] rounded-full group-hover:bg-primary/10 transition-colors"></div>
+          <div class="w-full md:w-1/3 flex flex-col justify-center border-r border-white/5 pr-8">
+            <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center text-2xl font-black mb-6 border border-white/5 text-primary">${co.charAt(0)}</div>
+            <h3 class="text-3xl font-black text-white mb-2 leading-tight group-hover:text-primary transition-colors">${title}</h3>
+            <p class="text-primary font-bold tracking-widest text-[10px] uppercase mb-4">Featured Opportunity</p>
+            ${sal}
+          </div>
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="mb-6">
+              <p class="text-on-surface-variant leading-relaxed mb-5 text-sm">${esc((job.description||'').substring(0,200))}${(job.description||'').length>200?'…':''}</p>
+              <div class="flex flex-wrap gap-2">
+                ${city?`<span class="px-4 py-1.5 bg-surface-container-high text-on-surface-variant text-[11px] font-bold uppercase tracking-wider rounded-full">${city}</span>`:''}
+                <span class="px-4 py-1.5 bg-surface-container-high text-on-surface-variant text-[11px] font-bold uppercase tracking-wider rounded-full">${type}</span>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button onclick="event.stopPropagation();applyJob(${i})" class="sm:w-auto px-8 py-3 bg-gradient-to-r from-primary to-primary-dim text-on-primary-fixed rounded-xl font-black text-sm transition-all hover:shadow-[0_0_30px_rgba(255,142,128,0.3)] active:scale-95">Quick Apply</button>
+              <button onclick="event.stopPropagation();analyzeJob(${i})" class="sm:w-auto px-6 py-3 glass-card border border-white/10 hover:border-primary/30 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-sm">auto_awesome</span> Analyser IA
+              </button>
+            </div>
+          </div>
+        </article>`;
+
+      return `
+        <article class="group glass-card border border-white/5 p-8 rounded-lg kinetic-glow relative overflow-hidden flex flex-col justify-between transition-all hover:translate-y-[-4px] hover:border-primary/20 cursor-pointer" onclick="openJob(${i})">
+          <div class="absolute top-6 right-8 flex items-center gap-2 px-3 py-1 ${badge.cls} rounded-full border">
+            <span class="w-2 h-2 rounded-full ${badge.dot} animate-pulse"></span>
+            <span class="text-[10px] font-bold tracking-widest uppercase">${badge.label}</span>
+          </div>
+          <div class="flex items-start gap-5 mb-7">
+            <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center text-2xl font-black border border-white/5 group-hover:border-primary/20 transition-colors text-primary flex-shrink-0">${co.charAt(0)}</div>
+            <div class="min-w-0">
+              <h3 class="text-xl font-bold text-white mb-1 group-hover:text-primary transition-colors leading-tight pr-20">${title}</h3>
+              <p class="text-on-surface-variant font-medium text-sm">${co}${city?' · '+city:''}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-7">
+            ${sal}
+            ${city?`<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase tracking-wider rounded-full">${city}</span>`:''}
+            <span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase tracking-wider rounded-full">${type}</span>
+          </div>
+          <div class="flex items-center justify-between border-t border-white/5 pt-5 mt-auto">
+            <p class="text-[11px] text-on-surface-variant">Match sur <span class="text-tertiary font-medium">votre profil</span></p>
+            <button onclick="event.stopPropagation();analyzeJob(${i})" class="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-surface-bright hover:bg-primary transition-all duration-300 text-xs font-bold text-on-surface hover:text-on-primary-fixed">
+              <span class="material-symbols-outlined text-[16px]">auto_awesome</span> Analyser IA
+            </button>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  /* â”â¬â”â¬ Insights sidebar â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function updateInsights(kw, jobs) { /* right aside removed */ }
+
+  /* â”â¬â”â¬ Job Panel â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function openJob(i) {
+    const job = _jobs[i]; if (!job) return;
+    document.getElementById('panel-title').textContent     = 'Détail de l\'offre';
+    document.getElementById('panel-logo').textContent      = (job.companyName||job.company||'?').charAt(0);
+    document.getElementById('panel-job-title').textContent = job.title || '';
+    document.getElementById('panel-company').textContent   = `${job.companyName||job.company||''} · ${job.city||job.location||''}`;
+    document.getElementById('panel-desc').textContent      = job.description || 'Pas de description disponible.';
+    const tagsEl = document.getElementById('panel-tags');
+    tagsEl.innerHTML = [job.contractType, job.salaryLabel].filter(Boolean).map(t =>
+      `<span class="px-3 py-1 bg-surface-container-high text-on-surface-variant text-[10px] font-bold uppercase tracking-wider rounded-full">${esc(t)}</span>`
+    ).join('');
+    const applyUrl = job.applyUrl || job.originUrl || '';
+    document.getElementById('panel-apply').onclick   = () => applyUrl ? window.open(applyUrl,'_blank','noopener') : alert('Lien indisponible.');
+    document.getElementById('panel-analyze').onclick = () => analyzeJob(i);
+    document.getElementById('job-panel').classList.add('open');
+    document.getElementById('backdrop').classList.remove('hidden');
+  }
+
+  function closePanel() {
+    document.getElementById('job-panel').classList.remove('open');
+    document.getElementById('profile-panel').classList.remove('open');
+    document.getElementById('backdrop').classList.add('hidden');
+  }
+
+  function applyJob(i) {
+    const job = _jobs[i]; if (!job) return;
+    const url = job.applyUrl || job.originUrl;
+    if (url) window.open(url,'_blank','noopener'); else alert('Lien de candidature indisponible.');
+  }
+
+  function analyzeJob(i) {
+    const job = _jobs[i]; if (!job) return;
+    openChat();
+    const q = `Analyse cette offre pour moi : "${job.title}" chez "${job.companyName||job.company}" (${job.contractType||''}). Est-ce un bon match ? Que dois-je mettre en avant ?`;
+    setTimeout(() => { document.getElementById('chat-input').value = q; handleChat(); }, 300);
+  }
+
+  /* â”â¬â”â¬ Profile Panel â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function openProfilePanel() {
+    document.getElementById('profile-panel').classList.add('open','translate-x-0');
+    document.getElementById('profile-panel').classList.remove('translate-x-full');
+    document.getElementById('backdrop').classList.remove('hidden');
+  }
+  function closeProfilePanel() {
+    document.getElementById('profile-panel').classList.remove('open','translate-x-0');
+    document.getElementById('profile-panel').classList.add('translate-x-full');
+    document.getElementById('backdrop').classList.add('hidden');
+  }
+
+  /* â”â¬â”â¬ Chat â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function openChat() {
+    document.getElementById('chat-overlay').classList.add('open');
+    document.getElementById('fab').style.display = 'none';
+    setTimeout(() => document.getElementById('chat-input').focus(), 350);
+  }
+  function closeChat() {
+    document.getElementById('chat-overlay').classList.remove('open');
+    document.getElementById('fab').style.display = 'flex';
+  }
+
+  const msgs = document.getElementById('chat-messages');
+
+  function appendUser(text) {
+    const t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    msgs.innerHTML += `
+      <div class="flex gap-3 flex-row-reverse max-w-[80%] ml-auto">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center flex-shrink-0 text-on-primary-fixed font-bold text-xs">U</div>
+        <div class="text-right">
+          <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">VOUS</p>
+          <div class="bg-gradient-to-br from-primary to-primary-dim text-on-primary-fixed rounded-xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed">${esc(text)}</div>
+          <p class="text-[10px] text-on-surface-variant/30 mt-1">${t}</p>
+        </div>
+      </div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function appendAgent(html, isHtml) {
+    const t = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    msgs.innerHTML += `
+      <div class="flex gap-3 max-w-[85%]">
+        <div class="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined fill-icon text-primary text-[14px]">bolt</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">APEX AGENT</p>
+          <div class="bg-surface-container border border-white/5 rounded-xl rounded-tl-sm px-4 py-3 text-sm text-on-surface leading-relaxed">${isHtml ? html : esc(html)}</div>
+          <p class="text-[10px] text-on-surface-variant/30 mt-1">${t}</p>
+        </div>
+      </div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function appendTyping() {
+    const id = 'ty' + Date.now();
+    msgs.innerHTML += `
+      <div id="${id}" class="flex gap-3 max-w-[85%]">
+        <div class="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined fill-icon text-primary text-[14px]">bolt</span>
+        </div>
+        <div class="bg-surface-container border border-white/5 rounded-xl rounded-tl-sm px-4 py-3">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+      </div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+    return id;
+  }
+
+  async function handleChat() {
+    const inp = document.getElementById('chat-input');
+    const text = inp.value.trim(); if (!text) return;
+    inp.value = '';
+    appendUser(text);
+    const tid = appendTyping();
+    try {
+      const res  = await fetch(`${API}/api/jobs/chat`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({message: text})
+      });
+      const data = await res.json();
+      document.getElementById(tid)?.remove();
+      appendAgent(data.reply || 'Pas de réponse.');
+    } catch {
+      document.getElementById(tid)?.remove();
+      appendAgent('Erreur réseau. Vérifiez que l\'API est démarrée sur le port 5188.');
+    }
+  }
+
+  function sendQuick(text) { document.getElementById('chat-input').value = text; handleChat(); }
+
+  document.getElementById('chat-input').addEventListener('keypress', e => { if(e.key==='Enter') handleChat(); });
+
+  /* â”â¬â”â¬ CV Upload â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  async function uploadCv(file) {
+    if (!file) return;
+    const status = document.getElementById('cv-status');
+    status.textContent = 'Envoi en cours…';
+    try {
+      const fd = new FormData(); fd.append('file', file);
+      const token = sessionStorage.getItem('apex_token');
+      const headers = token ? {Authorization:'Bearer '+token} : {};
+      const res = await fetch(`${API}/api/profile/upload-cv`, {method:'POST', headers, body:fd});
+      status.textContent = res.ok ? 'âœ“ CV chargé — analyse en cours.' : `Erreur ${res.status}`;
+    } catch { status.textContent = 'Erreur réseau.'; }
+  }
+
+  /* â”â¬â”â¬ Utils â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬â”â¬ */
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

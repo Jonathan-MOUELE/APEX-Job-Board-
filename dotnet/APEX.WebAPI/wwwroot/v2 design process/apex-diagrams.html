@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX — Diagrammes & Architecture</title>
+<style>
+:root { --bg:#fafafa; --s:#fff; --b:#e4e4e7; --t:#111; --m:#71717a; --o:#f97316; --bl:#0ea5e9; --g:#10b981; --r:#ef4444; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--t);padding:32px;line-height:1.5;}
+h1{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px;}
+.subtitle{color:var(--m);font-size:15px;margin-bottom:40px;}
+h2{font-size:20px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--b);color:var(--t);}
+.section{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:28px;margin-bottom:32px;}
+.label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--o);margin-bottom:8px;}
+
+/* MCD */
+.mcd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:16px;}
+.entity{background:var(--bg);border:2px solid var(--b);border-radius:12px;overflow:hidden;}
+.entity-head{background:var(--o);color:#fff;padding:10px 16px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.entity-head.blue{background:var(--bl);}
+.entity-head.green{background:var(--g);}
+.entity-head.gray{background:#52525b;}
+.entity-attr{padding:8px 16px;font-size:12px;color:var(--t);border-bottom:1px solid var(--b);display:flex;gap:8px;align-items:center;}
+.entity-attr:last-child{border-bottom:none;}
+.pk{color:var(--o);font-weight:700;font-size:10px;}
+.fk{color:var(--bl);font-weight:700;font-size:10px;}
+
+/* Relations */
+.rels{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.rel{display:flex;align-items:center;gap:10px;font-size:13px;padding:8px 12px;background:var(--bg);border:1px solid var(--b);border-radius:8px;}
+.rel-from{font-weight:700;color:var(--o);}
+.rel-card{font-size:11px;font-weight:700;background:var(--o);color:#fff;padding:2px 7px;border-radius:4px;}
+.rel-card.n{background:var(--bl);}
+.rel-to{font-weight:700;color:var(--bl);}
+.rel-desc{font-size:11px;color:var(--m);margin-left:auto;}
+
+/* Use cases */
+.uc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}
+.uc-actor{background:var(--bg);border:1px solid var(--b);border-radius:12px;padding:16px;}
+.uc-actor-name{font-size:14px;font-weight:700;color:var(--t);display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.actor-dot{width:10px;height:10px;border-radius:50%;background:var(--o);}
+.actor-dot.blue{background:var(--bl);}
+.uc-list{display:flex;flex-direction:column;gap:6px;}
+.uc-item{font-size:13px;padding:6px 10px;background:var(--s);border:1px solid var(--b);border-radius:7px;color:var(--t);}
+.uc-item.premium{border-color:var(--o);color:var(--o);}
+.uc-item.ultra{border-color:var(--bl);color:var(--bl);}
+
+/* Limites */
+.limits-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;}
+.limit-card{background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:16px;}
+.limit-sev{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;padding:2px 7px;border-radius:4px;display:inline-block;}
+.sev-h{background:#fee2e2;color:var(--r);}
+.sev-m{background:#fef3c7;color:#d97706;}
+.sev-l{background:#d1fae5;color:var(--g);}
+.limit-title{font-size:13px;font-weight:700;color:var(--t);margin-bottom:6px;}
+.limit-desc{font-size:12px;color:var(--m);line-height:1.6;}
+.limit-fix{font-size:12px;color:var(--g);margin-top:8px;font-weight:600;}
+
+/* MLD */
+.mld-wrap{overflow-x:auto;margin-top:16px;}
+.mld-table{border-collapse:collapse;width:100%;font-size:12px;}
+.mld-table th{background:var(--o);color:#fff;padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;}
+.mld-table td{padding:7px 12px;border-bottom:1px solid var(--b);color:var(--t);}
+.mld-table tr:last-child td{border-bottom:none;}
+.col-pk{color:var(--o);font-weight:700;}
+.col-fk{color:var(--bl);}
+.col-type{color:var(--m);font-family:monospace;}
+
+/* Flow diagramme déploiement */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.flow-box{background:var(--bg);border:1px solid var(--b);border-radius:9px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--t);text-align:center;}
+.flow-box.o{border-color:var(--o);color:var(--o);}
+.flow-box.b{border-color:var(--bl);color:var(--bl);}
+.flow-box.g{border-color:var(--g);color:var(--g);}
+.flow-arrow{color:var(--m);font-size:18px;}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h1>APEX — Architecture & Diagrammes</h1>
+<p class="subtitle">MCD · MLD · Cas d'utilisation · Limites · Déploiement — Confidentiel AVERS 2026</p>
+
+<!-- MCD -->
+<div class="section">
+  <div class="label">Modèle Conceptuel de Données (MCD)</div>
+  <h2>Entités & Attributs</h2>
+  <div class="mcd-grid">
+    <div class="entity">
+      <div class="entity-head">Utilisateur</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr">email (unique)</div>
+      <div class="entity-attr">nom, prenom</div>
+      <div class="entity-attr">role (candidat/recruteur/admin)</div>
+      <div class="entity-attr">plan (free/essentiel/pro/ultra)</div>
+      <div class="entity-attr">date_inscription</div>
+      <div class="entity-attr">derniere_connexion</div>
+      <div class="entity-attr">is_active</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head blue">Offre</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> entreprise_id</div>
+      <div class="entity-attr">titre</div>
+      <div class="entity-attr">ville, departement</div>
+      <div class="entity-attr">type_contrat (CDI/CDD/stage/alt/interim)</div>
+      <div class="entity-attr">salaire_min, salaire_max</div>
+      <div class="entity-attr">teletravail (bool)</div>
+      <div class="entity-attr">description</div>
+      <div class="entity-attr">source_id_ft (France Travail)</div>
+      <div class="entity-attr">url_ft</div>
+      <div class="entity-attr">date_publication, is_active</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head green">Candidature</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id</div>
+      <div class="entity-attr"><span class="fk">FK</span> offre_id</div>
+      <div class="entity-attr"><span class="fk">FK</span> cv_id</div>
+      <div class="entity-attr">statut (envoyee/attente/entretien/reponse/archivee)</div>
+      <div class="entity-attr">date_postulation</div>
+      <div class="entity-attr">lettre_motivation (text)</div>
+      <div class="entity-attr">notes_candidat</div>
+      <div class="entity-attr">date_relance</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head gray">CV</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id</div>
+      <div class="entity-attr">nom_fichier</div>
+      <div class="entity-attr">chemin_stockage</div>
+      <div class="entity-attr">taille_octets</div>
+      <div class="entity-attr">date_upload</div>
+      <div class="entity-attr">est_principal (bool)</div>
+      <div class="entity-attr">est_public (bool)</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head blue">Entreprise</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr">nom (unique)</div>
+      <div class="entity-attr">domaine_web (pour Clearbit)</div>
+      <div class="entity-attr">secteur</div>
+      <div class="entity-attr">description</div>
+      <div class="entity-attr">linkedin_url</div>
+      <div class="entity-attr">nb_offres_actives</div>
+      <div class="entity-attr">date_mise_a_jour</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head">Abonnement</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id (unique)</div>
+      <div class="entity-attr">plan</div>
+      <div class="entity-attr">stripe_subscription_id</div>
+      <div class="entity-attr">stripe_customer_id</div>
+      <div class="entity-attr">date_debut, date_fin</div>
+      <div class="entity-attr">est_actif (bool)</div>
+      <div class="entity-attr">date_prochain_paiement</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head green">AnalyseIA</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id</div>
+      <div class="entity-attr"><span class="fk">FK</span> offre_id</div>
+      <div class="entity-attr"><span class="fk">FK</span> cv_id (nullable)</div>
+      <div class="entity-attr">score (0–100)</div>
+      <div class="entity-attr">verdict (GO/REVIEW/NO_GO)</div>
+      <div class="entity-attr">competences_ok (JSON array)</div>
+      <div class="entity-attr">competences_manquantes (JSON array)</div>
+      <div class="entity-attr">justification (text)</div>
+      <div class="entity-attr">date_analyse</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head gray">MessageBot</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id (nullable)</div>
+      <div class="entity-attr">session_id</div>
+      <div class="entity-attr">role (user/assistant)</div>
+      <div class="entity-attr">contenu (text)</div>
+      <div class="entity-attr">date_message</div>
+    </div>
+    <div class="entity">
+      <div class="entity-head blue">Alerte</div>
+      <div class="entity-attr"><span class="pk">PK</span> id (GUID)</div>
+      <div class="entity-attr"><span class="fk">FK</span> utilisateur_id</div>
+      <div class="entity-attr">mots_cles</div>
+      <div class="entity-attr">localisation</div>
+      <div class="entity-attr">type_contrat</div>
+      <div class="entity-attr">frequence (quotidien/hebdo)</div>
+      <div class="entity-attr">derniere_execution</div>
+      <div class="entity-attr">est_active (bool)</div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:28px;">Relations</h2>
+  <div class="rels">
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">Candidature</span><span class="rel-desc">Un utilisateur dépose plusieurs candidatures</span></div>
+    <div class="rel"><span class="rel-from">Offre</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">Candidature</span><span class="rel-desc">Une offre reçoit plusieurs candidatures</span></div>
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">CV</span><span class="rel-desc">Un utilisateur dépose plusieurs versions de CV</span></div>
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card">1</span><span class="rel-to">Abonnement</span><span class="rel-desc">Un utilisateur a un abonnement actif</span></div>
+    <div class="rel"><span class="rel-from">Entreprise</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">Offre</span><span class="rel-desc">Une entreprise publie plusieurs offres</span></div>
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">AnalyseIA</span><span class="rel-desc">Un utilisateur lance plusieurs analyses</span></div>
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">MessageBot</span><span class="rel-desc">Un utilisateur génère des messages de session</span></div>
+    <div class="rel"><span class="rel-from">Utilisateur</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">Alerte</span><span class="rel-desc">Un utilisateur configure plusieurs alertes</span></div>
+    <div class="rel"><span class="rel-from">CV</span><span class="rel-card">1</span>→<span class="rel-card n">N</span><span class="rel-to">Candidature</span><span class="rel-desc">Un CV est utilisé dans plusieurs candidatures</span></div>
+  </div>
+</div>
+
+<!-- MLD -->
+<div class="section">
+  <div class="label">Modèle Logique de Données (MLD) — Table Candidature</div>
+  <h2>Exemple — Table Candidature (SQL Server)</h2>
+  <div class="mld-wrap">
+    <table class="mld-table">
+      <tr><th>Colonne</th><th>Type SQL</th><th>Contrainte</th><th>Description</th></tr>
+      <tr><td class="col-pk">Id</td><td class="col-type">UNIQUEIDENTIFIER</td><td>PK, NOT NULL, DEFAULT NEWID()</td><td>Identifiant unique</td></tr>
+      <tr><td class="col-fk">UtilisateurId</td><td class="col-type">UNIQUEIDENTIFIER</td><td>FK → Utilisateur(Id), NOT NULL</td><td>Candidat</td></tr>
+      <tr><td class="col-fk">OffreId</td><td class="col-type">UNIQUEIDENTIFIER</td><td>FK → Offre(Id), NOT NULL</td><td>Offre concernée</td></tr>
+      <tr><td class="col-fk">CvId</td><td class="col-type">UNIQUEIDENTIFIER</td><td>FK → CV(Id), NULL</td><td>CV joint (optionnel)</td></tr>
+      <tr><td>Statut</td><td class="col-type">NVARCHAR(20)</td><td>NOT NULL, DEFAULT 'envoyee'</td><td>Statut Kanban</td></tr>
+      <tr><td>DatePostulation</td><td class="col-type">DATETIME2</td><td>NOT NULL, DEFAULT GETUTCDATE()</td><td>Date d'envoi</td></tr>
+      <tr><td>LettreMotivation</td><td class="col-type">NVARCHAR(MAX)</td><td>NULL</td><td>Texte lettre</td></tr>
+      <tr><td>Notes</td><td class="col-type">NVARCHAR(500)</td><td>NULL</td><td>Notes privées candidat</td></tr>
+      <tr><td>DateRelance</td><td class="col-type">DATETIME2</td><td>NULL</td><td>Date de relance planifiée</td></tr>
+      <tr><td>CreatedAt</td><td class="col-type">DATETIME2</td><td>NOT NULL, DEFAULT GETUTCDATE()</td><td>Audit</td></tr>
+      <tr><td>UpdatedAt</td><td class="col-type">DATETIME2</td><td>NOT NULL</td><td>Audit mise à jour</td></tr>
+    </table>
+  </div>
+  <p style="font-size:12px;color:var(--m);margin-top:12px;">Index : (UtilisateurId, Statut) — (OffreId) — (DatePostulation DESC)</p>
+</div>
+
+<!-- CAS D'UTILISATION -->
+<div class="section">
+  <div class="label">Diagramme de Cas d'Utilisation</div>
+  <h2>Acteurs & Fonctionnalités</h2>
+  <div class="uc-grid">
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot"></span> Visiteur (non connecté)</div>
+      <div class="uc-list">
+        <div class="uc-item">Rechercher des offres d'emploi</div>
+        <div class="uc-item">Filtrer par secteur / ville / contrat</div>
+        <div class="uc-item">Voir le détail d'une offre</div>
+        <div class="uc-item">Voir la page d'une entreprise</div>
+        <div class="uc-item">Accéder aux articles & conseils</div>
+        <div class="uc-item">Créer un compte / Se connecter</div>
+        <div class="uc-item">Utiliser les outils gratuits (calculateur)</div>
+        <div class="uc-item">Discuter avec APEX (bot — limité)</div>
+      </div>
+    </div>
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot"></span> Candidat — Plan Essentiel</div>
+      <div class="uc-list">
+        <div class="uc-item">Tout du visiteur</div>
+        <div class="uc-item premium">Déposer son CV</div>
+        <div class="uc-item premium">Postuler directement via APEX</div>
+        <div class="uc-item premium">Suivre ses candidatures (Kanban)</div>
+        <div class="uc-item premium">Recevoir des alertes enrichies</div>
+        <div class="uc-item premium">Analyse IA basique (3/jour)</div>
+        <div class="uc-item premium">Ajouter des notes de candidature</div>
+      </div>
+    </div>
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot"></span> Candidat — Plan Pro</div>
+      <div class="uc-list">
+        <div class="uc-item">Tout du plan Essentiel</div>
+        <div class="uc-item premium">Analyse IA avancée (illimitée)</div>
+        <div class="uc-item premium">Coach entretien IA (simulation)</div>
+        <div class="uc-item premium">Créer son CV (builder)</div>
+        <div class="uc-item premium">Générer une lettre de motivation</div>
+        <div class="uc-item premium">Accéder aux panoramas salaires</div>
+        <div class="uc-item premium">Modèles de relance personnalisés</div>
+        <div class="uc-item premium">Corriger ses documents avec APEX</div>
+      </div>
+    </div>
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot blue"></span> Candidat — Plan Ultra</div>
+      <div class="uc-list">
+        <div class="uc-item">Tout du plan Pro</div>
+        <div class="uc-item ultra">Agent IA autonome (avec validation)</div>
+        <div class="uc-item ultra">Tableau de bord analytique</div>
+        <div class="uc-item ultra">Accès bêta anticipé</div>
+        <div class="uc-item ultra">Support prioritaire &lt; 24h</div>
+        <div class="uc-item ultra">Session accompagnement mensuelle</div>
+      </div>
+    </div>
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot blue"></span> Recruteur (Phase 2)</div>
+      <div class="uc-list">
+        <div class="uc-item ultra">Publier une offre</div>
+        <div class="uc-item ultra">Consulter les CV publics</div>
+        <div class="uc-item ultra">Contacter un candidat</div>
+        <div class="uc-item ultra">Accéder aux analyses IA des candidats</div>
+        <div class="uc-item ultra">Tableau de bord recrutement</div>
+      </div>
+    </div>
+    <div class="uc-actor">
+      <div class="uc-actor-name"><span class="actor-dot" style="background:#52525b"></span> Administrateur (AVERS)</div>
+      <div class="uc-list">
+        <div class="uc-item">Tout accès complet</div>
+        <div class="uc-item">Gérer les utilisateurs & plans</div>
+        <div class="uc-item">Modérer les offres</div>
+        <div class="uc-item">Consulter les métriques</div>
+        <div class="uc-item">Configurer les alertes système</div>
+        <div class="uc-item">Tester avec compte dédié (Jonathanmouele42)</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--m);margin-top:16px;"><span style="font-weight:700;color:var(--o)">Orange</span> = fonctionnalités payantes Essentiel/Pro · <span style="font-weight:700;color:var(--bl)">Bleu</span> = Ultra ou Phase 2</p>
+</div>
+
+<!-- LIMITES -->
+<div class="section">
+  <div class="label">Analyse des Limites du SaaS</div>
+  <h2>Points de vigilance — Agent IA & Architecture</h2>
+  <div class="limits-grid">
+    <div class="limit-card">
+      <span class="limit-sev sev-h">Élevée</span>
+      <div class="limit-title">Quota Gemini gratuit</div>
+      <div class="limit-desc">60 req/min pour Flash, 2 req/min pour Pro. En cas de pic de charge ou de croissance rapide, le service IA devient indisponible.</div>
+      <div class="limit-fix">✓ Cache des analyses 24h · Limite par plan · Fallback texte générique</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-h">Élevée</span>
+      <div class="limit-title">Dépendance France Travail API</div>
+      <div class="limit-desc">Si l'API France Travail change, est en maintenance ou révoque l'accès, l'ensemble des offres disparaît.</div>
+      <div class="limit-fix">✓ Cache BDD (offres copiées 24h) · Abstraction service · Multi-sources Phase 2 (Arbeitnow, The Muse)</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-m">Moyenne</span>
+      <div class="limit-title">Hallucinations IA</div>
+      <div class="limit-desc">Gemini peut générer des scores ou compétences incorrectes, en particulier pour des métiers peu représentés dans les données d'entraînement.</div>
+      <div class="limit-fix">✓ Disclaimer visible · Température basse (0.1) · Relecture humaine obligatoire</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-m">Moyenne</span>
+      <div class="limit-title">Logos Clearbit</div>
+      <div class="limit-desc">L'API Clearbit peut retourner des logos incorrects, obsolètes ou indisponibles pour certaines entreprises françaises peu connues.</div>
+      <div class="limit-fix">✓ Fallback initiales · Cache 7j côté serveur · Pas de dépôt des logos en BDD</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-m">Moyenne</span>
+      <div class="limit-title">Agent autonome — risques RGPD</div>
+      <div class="limit-desc">La candidature automatique sans validation peut entraîner l'envoi de données personnelles à des tiers sans consentement explicite à chaque action.</div>
+      <div class="limit-fix">✓ Validation obligatoire avant envoi · Log de chaque action · Droit de retrait immédiat</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-m">Moyenne</span>
+      <div class="limit-title">SQL Server Express — 10 Go</div>
+      <div class="limit-desc">La limite de 10 Go peut être atteinte avec des millions d'offres et de CV. La stratégie de rétention RGPD (2 ans) aide naturellement.</div>
+      <div class="limit-fix">✓ Purge automatique · Compression texte · Migration vers SQL Server Standard si dépassement</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-l">Faible</span>
+      <div class="limit-title">Pas de partenariat LinkedIn</div>
+      <div class="limit-desc">Les liens LinkedIn sont des recherches publiques, pas des intégrations officielles. L'API officielle LinkedIn nécessite un partenariat coûteux.</div>
+      <div class="limit-fix">✓ Lien de recherche public suffisant · Mention "Voir sur LinkedIn" sans implication de partenariat</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-l">Faible</span>
+      <div class="limit-title">Micro-entreprise — plafond CA</div>
+      <div class="limit-desc">Au-delà de 93 600€ de CA (prestations de services), le statut micro-entreprise est perdu automatiquement.</div>
+      <div class="limit-fix">✓ Anticiper la création d'une EURL/SASU dès 60 000€ de CA · Suivi mensuel du CA</div>
+    </div>
+    <div class="limit-card">
+      <span class="limit-sev sev-l">Faible</span>
+      <div class="limit-title">Valeurs Gemini — config critique</div>
+      <div class="limit-desc">Les outils Antigravity et Copilot écrasent régulièrement FlashModel/ProModel avec des versions dépréciées.</div>
+      <div class="limit-fix">✓ Valeurs fixées dans appsettings.json · Ne jamais modifier sans validation manuelle · Commentaires d'avertissement</div>
+    </div>
+  </div>
+</div>
+
+<!-- DÉPLOIEMENT -->
+<div class="section">
+  <div class="label">Pipeline de Déploiement</div>
+  <h2>CI/CD — GitHub Actions → Railway</h2>
+  <div class="flow">
+    <div class="flow-box o">Code push<br>GitHub</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">GitHub Actions<br>Build + Tests</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box b">Docker image<br>ASP.NET 9</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">Railway Deploy<br>Auto</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box g">Prod<br>apex-domain.fr</div>
+  </div>
+  <div class="flow" style="margin-top:12px;">
+    <div class="flow-box">SQL Server Express<br>Railway Volume</div>
+    <div class="flow-arrow">↔</div>
+    <div class="flow-box b">EF Core 9<br>Migrations auto</div>
+    <div class="flow-arrow">↔</div>
+    <div class="flow-box">Backup quotidien<br>Railway</div>
+  </div>
+  <p style="font-size:12px;color:var(--m);margin-top:16px;">Coût estimé : 3–5€/mois Railway · 0€ GitHub Actions (plan gratuit) · Certificat SSL Let's Encrypt automatique</p>
+</div>
+
+<p style="font-size:12px;color:var(--m);margin-top:32px;text-align:center;">© 2026 APEX — AVERS · Document confidentiel · aversreply@gmail.com</p>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+@APEX.WebAPI_HostAddress = http://localhost:5188
+
+GET {{APEX.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

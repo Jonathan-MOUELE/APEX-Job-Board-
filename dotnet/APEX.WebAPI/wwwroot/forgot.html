@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="APEX — Réinitialisez votre mot de passe en 3 étapes.">
+  <title>APEX — Mot de passe oublié</title>
+  <script>
+    try { const t = localStorage.getItem('apex-theme'); if (t === 'dark') document.documentElement.classList.add('dark'); } catch (_) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+  <style>
+:root {
+  --bg: #fafafa; --surface: #ffffff; --surface2: #f4f4f5; --border: #e4e4e7;
+  --text: #0c0c0d; --muted: #71717a; --orange: #f97316; --blue: #0ea5e9; --green: #10b981;
+  --error: #ef4444; --success: #22c55e;
+}
+html.dark {
+  --bg: #09090b; --surface: #18181b; --surface2: #27272a; --border: #3f3f46;
+  --text: #fafafa; --muted: #a1a1aa;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+}
+a { color: var(--orange); text-decoration: none; } a:hover { text-decoration: underline; }
+
+.forgot-card {
+  width: 100%; max-width: 460px; padding: 2.5rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 1.5rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,.06); margin: 2rem 1rem;
+}
+html.dark .forgot-card { box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+
+.hdr-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.75rem; }
+.logo-link { display: flex; align-items: center; gap: .5rem; text-decoration: none; }
+.logo-icon { width: 1.75rem; height: 1.75rem; border-radius: .5rem; background: var(--orange); display: flex; align-items: center; justify-content: center; }
+.logo-icon i { width: .875rem; height: .875rem; color: #09090b; }
+.logo-text { font-weight: 800; font-size: 1rem; color: var(--text); letter-spacing: -.02em; }
+.close-btn { display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--surface2); color: var(--muted); border: none; cursor: pointer; transition: color .2s, background .2s; text-decoration: none; }
+.close-btn:hover { color: var(--text); background: var(--border); text-decoration: none; }
+
+.step-dots { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 2rem; }
+.sdot { width: .625rem; height: .625rem; border-radius: 9999px; background: var(--surface2); transition: background .3s, width .3s; flex-shrink: 0; }
+.sdot.active { background: var(--orange); width: 1.75rem; }
+.sdot.done { background: var(--success); }
+.sdot-line { flex: 1; max-width: 3rem; height: 1px; background: var(--border); }
+
+.step-pane { display: none; flex-direction: column; gap: 1.25rem; animation: fadeSlideIn .3s ease; }
+.step-pane.active { display: flex; }
+@keyframes fadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.form-field { display: flex; flex-direction: column; gap: .375rem; }
+.form-field label { font-size: .8125rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.form-input {
+  width: 100%; padding: .75rem 1rem; border-radius: .75rem; border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 1rem; font-family: inherit;
+  transition: border-color .2s, box-shadow .2s; outline: none;
+}
+.form-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,.12); }
+.form-input::placeholder { color: var(--muted); }
+.input-wrap { position: relative; }
+.input-wrap .toggle-pwd {
+  position: absolute; right: .875rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--muted); padding: 0; display: flex; align-items: center;
+}
+.strength-bar { height: 4px; border-radius: 9999px; background: var(--surface2); overflow: hidden; margin-top: .25rem; }
+.strength-bar-fill { height: 100%; border-radius: 9999px; transition: width .4s cubic-bezier(.4,0,.2,1), background .3s; width: 0%; }
+.strength-label { font-size: .75rem; transition: color .3s; color: var(--muted); }
+
+.success-icon-wrap { display: flex; align-items: center; justify-content: center; width: 4rem; height: 4rem; border-radius: 50%; margin: 0 auto .75rem; }
+
+.btn-main {
+  display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%;
+  padding: .8125rem 1.5rem; border-radius: .875rem; border: none; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 1rem;
+  background: var(--orange); color: #fff; transition: opacity .2s, transform .1s; margin-top: 1.25rem; text-decoration: none;
+}
+.btn-main:hover { opacity: .9; text-decoration: none; } .btn-main:active { transform: scale(.98); }
+.btn-main:disabled { opacity: .5; cursor: default; }
+
+.btn-ghost {
+  display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%;
+  padding: .625rem 1.25rem; border-radius: .75rem; border: 1.5px solid var(--border);
+  background: none; color: var(--muted); font-family: inherit; font-weight: 500; font-size: .9rem;
+  cursor: pointer; text-decoration: none; transition: border-color .2s, color .2s;
+}
+.btn-ghost:hover { border-color: var(--orange); color: var(--text); text-decoration: none; }
+
+.alert { padding: .75rem 1rem; border-radius: .75rem; font-size: .875rem; font-weight: 500; display: none; }
+.alert-error { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); color: var(--error); }
+.alert.visible { display: block; }
+
+.info-row { display: flex; align-items: center; gap: .5rem; font-size: .875rem; color: var(--muted); }
+.info-row i { width: 1rem; height: 1rem; flex-shrink: 0; }
+h1, h2 { font-weight: 800; font-size: 1.25rem; line-height: 1.2; }
+.sub { font-size: .875rem; color: var(--muted); }
+.text-center { text-align: center; }
+.fields-col { display: flex; flex-direction: column; gap: 1rem; }
+.gap-sm { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <div class="forgot-card">
+    <div class="hdr-row">
+      <a href="index.html" class="logo-link">
+        <div class="logo-icon"><i data-lucide="briefcase"></i></div>
+        <span class="logo-text">APEX</span>
+      </a>
+      <a href="index.html" class="close-btn" aria-label="Fermer"><i data-lucide="x" style="width:1.1rem;height:1.1rem"></i></a>
+    </div>
+
+    <div class="step-dots" role="progressbar" aria-label="Étape de réinitialisation">
+      <div id="sdot-0" class="sdot active"></div><div class="sdot-line"></div>
+      <div id="sdot-1" class="sdot"></div><div class="sdot-line"></div>
+      <div id="sdot-2" class="sdot"></div>
+    </div>
+
+    <!-- STEP 0: Email -->
+    <div id="fp-step-0" class="step-pane active">
+      <div>
+        <h1>Mot de passe oublié ?</h1>
+        <p class="sub">Entrez votre email pour recevoir le lien de réinitialisation.</p>
+      </div>
+      <div id="fp-error-0" class="alert alert-error"></div>
+      <form id="fp-form-0" novalidate onsubmit="handleForgotStep0(event)">
+        <div class="form-field">
+          <label for="fp-email">Adresse email</label>
+          <input id="fp-email" type="email" class="form-input" placeholder="jean@exemple.fr" autocomplete="email" required maxlength="254">
+        </div>
+        <button id="fp-btn-0" type="submit" class="btn-main">
+          <i data-lucide="send" style="width:1rem;height:1rem"></i> Envoyer le lien
+        </button>
+      </form>
+      <p class="text-center sub" style="margin-top:.75rem">
+        <a href="index.html" onclick="event.preventDefault();sessionStorage.setItem('open_login','1');window.location.href='index.html'" style="font-weight:600">Retour à la connexion</a>
+      </p>
+    </div>
+
+    <!-- STEP 1: Email sent -->
+    <div id="fp-step-1" class="step-pane">
+      <div class="text-center">
+        <div class="success-icon-wrap" style="background:rgba(34,197,94,.1)">
+          <i data-lucide="mail-check" style="width:2rem;height:2rem;color:var(--success)"></i>
+        </div>
+        <h2>Email envoyé !</h2>
+        <p class="sub" style="margin-top:.5rem;line-height:1.5">
+          Si l'adresse <strong id="fp-email-confirm" style="color:var(--text)"></strong> est associée à un compte, vous recevrez un lien de réinitialisation dans quelques minutes.
+        </p>
+      </div>
+      <div class="gap-sm">
+        <div class="info-row"><i data-lucide="info"></i><span>Vérifiez également vos spams.</span></div>
+        <div class="info-row"><i data-lucide="clock"></i><span>Le lien expire dans 15 minutes.</span></div>
+      </div>
+      <div class="gap-sm">
+        <button onclick="handleResend()" class="btn-ghost">
+          <i data-lucide="refresh-cw" style="width:.9rem;height:.9rem"></i> Renvoyer l'email
+        </button>
+        <a href="index.html" class="btn-ghost" onclick="event.preventDefault();sessionStorage.setItem('open_login','1');window.location.href='index.html'">Retour à la connexion</a>
+      </div>
+    </div>
+
+    <!-- STEP 2: New password -->
+    <div id="fp-step-2" class="step-pane">
+      <div>
+        <h2>Nouveau mot de passe</h2>
+        <p class="sub">Choisissez un mot de passe sécurisé.</p>
+      </div>
+      <div id="fp-error-2" class="alert alert-error"></div>
+      <form id="fp-form-2" novalidate onsubmit="handleForgotStep2(event)">
+        <div class="fields-col">
+          <div class="form-field">
+            <label for="fp-new-pwd">Nouveau mot de passe</label>
+            <div class="input-wrap">
+              <input id="fp-new-pwd" type="password" class="form-input" placeholder="8 caractères minimum" autocomplete="new-password" required minlength="8" maxlength="128" oninput="fpUpdateStrength(this.value)" style="padding-right:2.75rem">
+              <button type="button" class="toggle-pwd" onclick="fpTogglePwd('fp-new-pwd','fp-eye-1')" aria-label="Afficher/masquer le mot de passe">
+                <i id="fp-eye-1" data-lucide="eye" style="width:1.1rem;height:1.1rem"></i>
+              </button>
+            </div>
+            <div class="strength-bar"><div id="fp-strength-fill" class="strength-bar-fill"></div></div>
+            <p id="fp-strength-label" class="strength-label"></p>
+          </div>
+          <div class="form-field">
+            <label for="fp-confirm-pwd">Confirmer le mot de passe</label>
+            <div class="input-wrap">
+              <input id="fp-confirm-pwd" type="password" class="form-input" placeholder="Même mot de passe" autocomplete="new-password" required maxlength="128" style="padding-right:2.75rem">
+              <button type="button" class="toggle-pwd" onclick="fpTogglePwd('fp-confirm-pwd','fp-eye-2')" aria-label="Afficher/masquer la confirmation">
+                <i id="fp-eye-2" data-lucide="eye" style="width:1.1rem;height:1.1rem"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button id="fp-btn-2" type="submit" class="btn-main">
+          <i data-lucide="key-round" style="width:1rem;height:1rem"></i> Réinitialiser le mot de passe
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 3: Success -->
+    <div id="fp-step-3" class="step-pane">
+      <div class="text-center">
+        <div class="success-icon-wrap" style="background:rgba(249,115,22,.1)">
+          <i data-lucide="check-circle-2" style="width:2rem;height:2rem;color:var(--orange)"></i>
+        </div>
+        <h2>Mot de passe modifié !</h2>
+        <p class="sub" style="margin-top:.5rem;line-height:1.5">Votre mot de passe a été réinitialisé avec succès.<br>Vous pouvez maintenant vous connecter.</p>
+      </div>
+      <a href="index.html" onclick="event.preventDefault();sessionStorage.setItem('open_login','1');window.location.href='index.html'" class="btn-main" style="margin-top:.5rem">
+        <i data-lucide="log-in" style="width:1rem;height:1rem"></i> Se connecter
+      </a>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+    const API = 'http://localhost:5191';
+    let _fpStep = 0, _fpEmail = '';
+    const STEP_IDS = ['fp-step-0','fp-step-1','fp-step-2','fp-step-3'];
+    const DOT_IDS = ['sdot-0','sdot-1','sdot-2'];
+
+    function setStep(n) {
+      _fpStep = n;
+      STEP_IDS.forEach((id, i) => { const el = document.getElementById(id); if (el) el.classList.toggle('active', i === n); });
+      DOT_IDS.forEach((id, i) => { const el = document.getElementById(id); if (!el) return; el.classList.toggle('active', i === n); el.classList.toggle('done', i < n); });
+    }
+
+    async function handleForgotStep0(e) {
+      e.preventDefault();
+      const email = document.getElementById('fp-email')?.value?.trim();
+      const errEl = document.getElementById('fp-error-0');
+      const btn = document.getElementById('fp-btn-0');
+      if (errEl) errEl.classList.remove('visible');
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        if (errEl) { errEl.textContent = 'Adresse email invalide.'; errEl.classList.add('visible'); } return;
+      }
+      _fpEmail = email;
+      if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+      try {
+        await fetch(API + '/api/auth/forgot-password', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      } catch (_) {}
+      finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="send" style="width:1rem;height:1rem"></i> Envoyer le lien'; if (window.lucide) lucide.createIcons({ nodes: [btn] }); }
+      }
+      const confirmEl = document.getElementById('fp-email-confirm');
+      if (confirmEl) confirmEl.textContent = email;
+      setStep(1);
+    }
+
+    async function handleResend() {
+      if (!_fpEmail) return;
+      try { await fetch(API + '/api/auth/forgot-password', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: _fpEmail }) }); } catch (_) {}
+    }
+
+    async function handleForgotStep2(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('fp-new-pwd')?.value;
+      const confirm = document.getElementById('fp-confirm-pwd')?.value;
+      const errEl = document.getElementById('fp-error-2');
+      const btn = document.getElementById('fp-btn-2');
+      if (errEl) errEl.classList.remove('visible');
+      if (!pwd || pwd.length < 8) { if (errEl) { errEl.textContent = 'Le mot de passe doit contenir au moins 8 caractères.'; errEl.classList.add('visible'); } return; }
+      if (pwd !== confirm) { if (errEl) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; errEl.classList.add('visible'); } return; }
+      const params = new URLSearchParams(location.search);
+      const resetToken = params.get('reset_token') || params.get('token') || '';
+      if (!resetToken) { if (errEl) { errEl.textContent = 'Lien de réinitialisation invalide ou expiré. Recommencez.'; errEl.classList.add('visible'); } return; }
+      if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement…'; }
+      try {
+        const res = await fetch(API + '/api/auth/reset-password', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: resetToken, newPassword: pwd }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { if (errEl) { errEl.textContent = data?.message || data?.error || 'Lien expiré ou invalide.'; errEl.classList.add('visible'); } return; }
+        setStep(3);
+        const clean = location.pathname + location.search.replace(/[?&]reset_token=[^&]*/g, '').replace(/[?&]token=[^&]*/g, '').replace(/^&/, '?');
+        history.replaceState(null, '', clean || location.pathname);
+      } catch (_) {
+        if (errEl) { errEl.textContent = 'Erreur réseau. Réessayez.'; errEl.classList.add('visible'); }
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="key-round" style="width:1rem;height:1rem"></i> Réinitialiser le mot de passe'; if (window.lucide) lucide.createIcons({ nodes: [btn] }); }
+      }
+    }
+
+    function fpTogglePwd(inputId, iconId) {
+      const input = document.getElementById(inputId); const icon = document.getElementById(iconId);
+      if (!input) return; const show = input.type === 'password'; input.type = show ? 'text' : 'password';
+      if (icon) { icon.setAttribute('data-lucide', show ? 'eye-off' : 'eye'); if (window.lucide) lucide.createIcons({ nodes: [icon] }); }
+    }
+
+    function fpUpdateStrength(pwd) {
+      const fill = document.getElementById('fp-strength-fill'); const label = document.getElementById('fp-strength-label');
+      if (!fill || !label) return;
+      let score = 0;
+      if (pwd.length >= 8) score++; if (pwd.length >= 12) score++;
+      if (/[A-Z]/.test(pwd)) score++; if (/[0-9]/.test(pwd)) score++; if (/[^A-Za-z0-9]/.test(pwd)) score++;
+      const levels = [
+        { label: '', color: '', pct: '0%' }, { label: 'Faible', color: 'var(--error)', pct: '20%' },
+        { label: 'Moyen', color: '#f59e0b', pct: '50%' }, { label: 'Bon', color: '#22c55e', pct: '75%' },
+        { label: 'Fort', color: 'var(--success)', pct: '90%' }, { label: 'Très fort', color: 'var(--orange)', pct: '100%' },
+      ];
+      const lvl = levels[Math.min(score, 5)];
+      fill.style.width = lvl.pct; fill.style.background = lvl.color;
+      label.textContent = lvl.label; label.style.color = lvl.color;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+      const confirmEl = document.getElementById('fp-confirm-pwd');
+      const pwdEl = document.getElementById('fp-new-pwd');
+      if (confirmEl && pwdEl) {
+        confirmEl.addEventListener('input', () => { confirmEl.style.borderColor = (confirmEl.value && confirmEl.value !== pwdEl.value) ? 'var(--error)' : ''; });
+      }
+      const params = new URLSearchParams(location.search);
+      if (params.has('reset_token') || params.has('token')) setStep(2);
+    });
+  </script>
+</body>
+</html>

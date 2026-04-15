@@ -1,0 +1,30 @@
+{
+    "name": "Jonathan",
+    "title": "Étudiant BTS SIO — Développeur & Architecte Systèmes",
+    "technologies": {
+        "Python":     { "level": "avancé",       "years": 2, "tags": ["backend", "scripting", "IA", "agents"] },
+        "C#":         { "level": "avancé",       "years": 2, "tags": ["desktop", ".NET", "WinForms", "Unity"] },
+        "HTML/CSS":   { "level": "intermédiaire","years": 2, "tags": ["frontend", "web"] },
+        "JavaScript": { "level": "intermédiaire","years": 2, "tags": ["frontend", "web", "vanilla"] },
+        "Godot":      { "level": "intermédiaire","years": 1, "tags": ["gamedev", "GDScript", "2D"] },
+        "SQL":        { "level": "intermédiaire","years": 1, "tags": ["database", "MySQL", "PostgreSQL"] },
+        "PHP":        { "level": "débutant",     "years": 1, "tags": ["backend", "Symfony"] },
+        "Git":        { "level": "intermédiaire","years": 2, "tags": ["versionning", "GitHub"] }
+    },
+    "soft_skills": [
+        "mentalité compétitive",
+        "sérieux et fiabilité",
+        "apprentissage rapide",
+        "curiosité technique",
+        "focus rentabilité",
+        "esprit d'indépendance",
+        "résistance au stress",
+        "expérience terrain (restauration)"
+    ],
+    "formation": "BTS SIO (Services Informatiques aux Organisations)",
+    "objectifs": [
+        "Alternance développement / infrastructure",
+        "Montée en compétences IA & agents autonomes",
+        "Indépendance financière via compétences tech"
+    ]
+}

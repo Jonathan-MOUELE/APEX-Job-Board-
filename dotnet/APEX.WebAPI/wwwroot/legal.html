@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mentions légales & CGU — APEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --orange: #f97316;
+      --text: #0f172a;
+      --muted: #64748b;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --font: 'DM Sans', system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --text:#f1f5f9; --muted:#94a3b8; --surface:#1e293b; --bg:#0f172a; --border:#334155; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo-apex { font-size: 20px; font-weight: 800; text-decoration: none; color: var(--text); letter-spacing: -0.5px; }
+    .logo-apex span { color: var(--orange); }
+    header a.back { font-size: 14px; color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+    header a.back:hover { color: var(--orange); }
+
+    .page-wrap { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .updated { font-size: 13px; color: var(--muted); margin-bottom: 48px; }
+
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 48px; }
+    .toc h2 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .toc ol { padding-left: 18px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--orange); text-decoration: none; font-size: 14px; }
+    .toc a:hover { text-decoration: underline; }
+
+    section.legal { margin-bottom: 48px; scroll-margin-top: 80px; }
+    section.legal h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--orange); display: inline-block; }
+    section.legal h3 { font-size: 16px; font-weight: 600; margin: 20px 0 8px; }
+    section.legal p { font-size: 15px; color: var(--text); margin-bottom: 12px; }
+    section.legal ul, section.legal ol { padding-left: 20px; margin-bottom: 12px; }
+    section.legal li { font-size: 15px; margin-bottom: 6px; }
+    section.legal a { color: var(--orange); }
+    section.legal strong { font-weight: 600; }
+
+    .badge-etalab { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 14px; font-size: 13px; color: #15803d; margin-top: 8px; }
+
+    footer { border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; font-size: 12px; color: var(--muted); }
+    footer a { color: var(--orange); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo-apex" href="index.html">APE<span>X</span></a>
+  <a class="back" href="index.html">← Retour à l'accueil</a>
+</header>
+
+<div class="page-wrap">
+  <h1>Informations légales</h1>
+  <p class="updated">Dernière mise à jour : 9 avril 2026</p>
+
+  <div class="toc">
+    <h2>Sommaire</h2>
+    <ol>
+      <li><a href="#mentions">Mentions légales</a></li>
+      <li><a href="#cnil">Protection des données (CNIL)</a></li>
+      <li><a href="#rgpd">Politique de confidentialité</a></li>
+      <li><a href="#cgu">Conditions Générales d'Utilisation</a></li>
+      <li><a href="#etalab">Licence Etalab — données France Travail</a></li>
+    </ol>
+  </div>
+
+  <!-- MENTIONS LÉGALES -->
+  <section class="legal" id="mentions">
+    <h2>1. Mentions légales</h2>
+    <h3>Éditeur du site</h3>
+    <p>
+      <strong>AVERS</strong> — Entrepreneur Individuel (EI)<br>
+      Contact : <a href="mailto:aversreply@gmail.com">aversreply@gmail.com</a><br>
+      Le site APEX est exploité à titre personnel, sans activité commerciale enregistrée à ce jour.
+    </p>
+    <h3>Hébergement</h3>
+    <p>
+      LWS (Ligne Web Services)<br>
+      10 rue de Penthièvre, 75008 Paris, France<br>
+      <a href="https://www.lws.fr" target="_blank" rel="noopener">www.lws.fr</a>
+    </p>
+    <h3>Directeur de la publication</h3>
+    <p>Le directeur de la publication est le responsable de l'entité AVERS.</p>
+    <h3>Propriété intellectuelle</h3>
+    <p>
+      Le nom "APEX", son logo, sa charte graphique et son code source sont la propriété exclusive d'AVERS.
+      Toute reproduction partielle ou totale sans autorisation écrite est interdite.
+    </p>
+    <p>
+      Les offres d'emploi affichées sur APEX proviennent de l'<strong>API Offres d'emploi France Travail (v2)</strong>,
+      sous licence ouverte Etalab-2.0. APEX n'est pas affilié à France Travail / Pôle emploi.
+    </p>
+    <p>
+      Les logos des entreprises citées sur le site sont la propriété de leurs titulaires respectifs.
+      Leur affichage s'inscrit dans un cadre purement indicatif. APEX n'est partenaire officiel d'aucune de ces entreprises.
+    </p>
+  </section>
+
+  <!-- CNIL -->
+  <section class="legal" id="cnil">
+    <h2>2. Protection des données (CNIL)</h2>
+    <p>
+      Conformément à la loi n° 78-17 du 6 janvier 1978 relative à l'informatique, aux fichiers et aux libertés
+      (dite "Loi Informatique et Libertés"), modifiée par la loi du 6 août 2004, vous disposez des droits suivants
+      concernant vos données personnelles :
+    </p>
+    <ul>
+      <li><strong>Droit d'accès</strong> — vous pouvez obtenir une copie des données vous concernant.</li>
+      <li><strong>Droit de rectification</strong> — vous pouvez demander la correction de données inexactes.</li>
+      <li><strong>Droit à l'effacement</strong> — vous pouvez demander la suppression de vos données ("droit à l'oubli").</li>
+      <li><strong>Droit à la portabilité</strong> — vous pouvez recevoir vos données dans un format structuré.</li>
+      <li><strong>Droit d'opposition</strong> — vous pouvez vous opposer au traitement de vos données à des fins de prospection.</li>
+    </ul>
+    <p>
+      Pour exercer ces droits, contactez-nous à : <a href="mailto:aversreply@gmail.com">aversreply@gmail.com</a>.<br>
+      Toute demande sera traitée dans un délai d'un mois à compter de la réception.
+    </p>
+    <p>
+      En cas de réponse insatisfaisante, vous pouvez introduire une réclamation auprès de la
+      <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>
+      (Commission Nationale de l'Informatique et des Libertés), 3 place de Fontenoy, 75007 Paris.
+    </p>
+  </section>
+
+  <!-- RGPD -->
+  <section class="legal" id="rgpd">
+    <h2>3. Politique de confidentialité</h2>
+    <h3>Données collectées</h3>
+    <p>APEX peut collecter les données suivantes lors de votre utilisation du service :</p>
+    <ul>
+      <li>Données de navigation (pages visitées, durée, navigateur) via des journaux serveur anonymisés.</li>
+      <li>Adresse e-mail et mot de passe (si vous créez un compte), stockés de façon chiffrée.</li>
+      <li>Messages envoyés à l'assistant APEX (traités en mémoire, non conservés de manière permanente).</li>
+      <li>Préférences de recherche enregistrées localement dans votre navigateur (<code>localStorage</code>).</li>
+    </ul>
+    <h3>Finalités du traitement</h3>
+    <ul>
+      <li>Fournir le service de recherche d'emploi et les recommendations IA.</li>
+      <li>Améliorer les performances et la pertinence des résultats.</li>
+      <li>Assurer la sécurité du site et prévenir les abus.</li>
+    </ul>
+    <h3>Partage des données</h3>
+    <p>
+      Aucune donnée personnelle n'est vendue ni cédée à des tiers à des fins commerciales.
+      Les messages de l'assistant IA sont transmis à l'API <strong>OpenRouter</strong> (Californie, USA)
+      pour la génération de réponses. Consultez leur
+      <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener">politique de confidentialité</a>.
+    </p>
+    <h3>Cookies</h3>
+    <p>
+      APEX utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du site
+      (session, préférences). Aucun cookie publicitaire ou de tracking tiers n'est déposé.
+    </p>
+    <h3>Durée de conservation</h3>
+    <p>Les données de compte sont conservées le temps de l'activité du compte, puis 3 ans après la dernière connexion.
+    Les journaux serveur sont conservés 12 mois maximum.</p>
+    <h3>Base légale</h3>
+    <p>
+      Le traitement repose sur votre <strong>consentement</strong> (article 6.1.a RGPD) et sur
+      l'<strong>intérêt légitime</strong> (article 6.1.f RGPD) pour la sécurité et l'amélioration du service.
+    </p>
+    <h3>Transferts hors UE</h3>
+    <p>
+      Les requêtes IA peuvent transiter vers des serveurs aux États-Unis (OpenRouter). Ces transferts sont encadrés
+      par les clauses contractuelles types de la Commission européenne (CCT).
+    </p>
+  </section>
+
+  <!-- CGU -->
+  <section class="legal" id="cgu">
+    <h2>4. Conditions Générales d'Utilisation</h2>
+    <h3>Accès au service</h3>
+    <p>
+      APEX est un service en ligne gratuit d'aide à la recherche d'emploi.
+      L'accès est ouvert à tout utilisateur disposant d'une connexion Internet.
+      Certaines fonctionnalités (suivi des candidatures, sauvegarde) nécessitent la création d'un compte.
+    </p>
+    <h3>Obligations de l'utilisateur</h3>
+    <ul>
+      <li>Utiliser le service dans un cadre légal et ne pas tenter d'en contourner les mécanismes de sécurité.</li>
+      <li>Ne pas soumettre à l'assistant IA de contenus illégaux, haineux ou contraires aux bonnes mœurs.</li>
+      <li>Ne pas utiliser le service à des fins de scraping automatisé ou de sollicitation massive.</li>
+      <li>Renseigner des informations exactes lors de la création d'un compte.</li>
+    </ul>
+    <h3>Limitation de responsabilité</h3>
+    <p>
+      APEX agrège des offres provenant de l'API France Travail. Nous ne garantissons pas l'exhaustivité,
+      l'exactitude ou la disponibilité de ces offres. Les analyses générées par l'IA sont des aides à la décision —
+      relisez et vérifiez avant d'envoyer tout document.
+    </p>
+    <p>
+      APEX ne saurait être tenu responsable des décisions de recrutement des employeurs, ni des conséquences
+      directes ou indirectes liées à l'utilisation des informations affichées.
+    </p>
+    <h3>Disponibilité</h3>
+    <p>
+      Le service est fourni "tel quel". Des interruptions peuvent survenir pour maintenance ou en cas de
+      défaillance de l'API France Travail. APEX s'efforce d'assurer une disponibilité maximale sans
+      pouvoir la garantir contractuellement.
+    </p>
+    <h3>Modification des CGU</h3>
+    <p>
+      Ces CGU peuvent être modifiées à tout moment. Les utilisateurs sont informés par la date de mise à jour
+      visible en haut de cette page. L'utilisation continue du service vaut acceptation des nouvelles conditions.
+    </p>
+    <h3>Droit applicable</h3>
+    <p>
+      Les présentes CGU sont soumises au droit français. En cas de litige, les tribunaux français sont compétents.
+    </p>
+  </section>
+
+  <!-- ETALAB -->
+  <section class="legal" id="etalab">
+    <h2>5. Licence Etalab — données France Travail</h2>
+    <p>
+      Les offres d'emploi affichées sur APEX sont fournies par l'
+      <strong>API Offres d'emploi France Travail (Pôle emploi) v2</strong>
+      et sont mises à disposition sous
+      <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/" target="_blank" rel="noopener">Licence Ouverte / Open Licence Etalab v2.0</a>.
+    </p>
+    <div class="badge-etalab">
+      ✅ Données ouvertes — Licence Etalab-2.0 — Source : France Travail (Pôle emploi)
+    </div>
+    <h3>Ce que permet la Licence Ouverte Etalab</h3>
+    <ul>
+      <li>Reproduire, copier, publier et transmettre les données.</li>
+      <li>Diffuser et redistribuer les données.</li>
+      <li>Adapter, transformer, extraire et réutiliser les données, y compris à des fins commerciales.</li>
+    </ul>
+    <h3>Conditions</h3>
+    <p>
+      La réutilisation est autorisée sous réserve de mentionner la paternité des données :
+      <strong>« Source : France Travail (Pôle emploi) — API Offres d'emploi v2 »</strong>
+      et d'indiquer la date de leur dernière mise à jour.
+    </p>
+    <p>
+      Pour toute question relative aux données source, consultez
+      <a href="https://francetravail.io" target="_blank" rel="noopener">francetravail.io</a>.
+    </p>
+  </section>
+</div>
+
+<footer>
+  © 2026 APEX — AVERS · <a href="index.html">Retour à l'accueil</a> ·
+  <a href="mailto:aversreply@gmail.com">Contact</a>
+</footer>
+
+</body>
+</html>

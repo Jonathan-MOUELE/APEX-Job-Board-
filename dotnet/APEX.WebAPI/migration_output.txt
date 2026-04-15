@@ -1,0 +1,46 @@
+﻿dotnet : C:\xampp\htdoc
+s\APEX\dotnet\APEX.Infr
+astructure\APEX.Infrast
+ructure.csproj : 
+warning NU1902: Le 
+package 'MimeKit' 
+4.9.0 pr├®sente une 
+vuln├®rabilit├® de 
+gravit├® moyenne 
+connue, https://github.
+com/advisories/GHSA-g7h
+c-96xr-gvvx.
+Au caractère Ligne:1 : 
+98
++ ... lyContinue; 
+dotnet ef migrations 
+add 
+V1_ProductionSchema 
+--project .. ...
++                 ~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (C:\xampp\htdo   
+ cs...g7hc-96xr-gvv    
+x.:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+C:\xampp\htdocs\APEX\do
+tnet\APEX.WebAPI\APEX.W
+ebAPI.csproj : warning 
+NU1902: Le package 
+'MimeKit' 4.9.0 
+pr├®sente une 
+vuln├®rabilit├® de 
+gravit├® moyenne 
+connue, https://github.
+com/advisories/GHSA-g7h
+c-96xr-gvvx.
+Build started...
+Build failed. Use dotnet build to see the errors.

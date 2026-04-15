@@ -1,0 +1,12 @@
+﻿  Identification des projets ├á restaurer...
+  Tous les projets sont ├á jour pour la restauration.
+  APEX.Core -> c:\xampp\htdocs\APEX\dotnet\APEX.Core\bin\Debug\net9.0\APEX.Core.dll
+c:\xampp\htdocs\APEX\dotnet\APEX.Agents\AnalystAgent.cs(24,5): error CS0246: Le nom de type ou d'espace de noms 'IHttpClientFactory' est introuvable (vous manque-t-il une directive using ou une r├®f├®rence d'assembly┬á?) [c:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj]
+
+├ëCHEC de la build.
+
+c:\xampp\htdocs\APEX\dotnet\APEX.Agents\AnalystAgent.cs(24,5): error CS0246: Le nom de type ou d'espace de noms 'IHttpClientFactory' est introuvable (vous manque-t-il une directive using ou une r├®f├®rence d'assembly┬á?) [c:\xampp\htdocs\APEX\dotnet\APEX.Agents\APEX.Agents.csproj]
+    0 Avertissement(s)
+    1 Erreur(s)
+
+Temps ├®coul├® 00:00:03.29

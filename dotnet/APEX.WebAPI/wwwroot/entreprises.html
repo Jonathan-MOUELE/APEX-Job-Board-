@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entreprises qui recrutent — APEX by AVERS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap"
+    rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+  <style>
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+
+    :root {
+      --bg: #fafafa;
+      --surface: #fff;
+      --surface2: #f4f4f5;
+      --border: #e4e4e7;
+      --text: #0c0c0d;
+      --muted: #71717a;
+      --orange: #f97316;
+      --orange-dark: #ea6c10;
+      --orange-light: #fff7ed;
+      --blue: #0ea5e9;
+      --blue-light: #e0f2fe;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --font: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html.dark {
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface2: #1f1f22;
+      --border: #27272a;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --orange-light: #1c1208;
+      --blue-light: #0a1929;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      gap: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    header.scrolled {
+      box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+      background: var(--surface);
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-apex {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .logo-apex span {
+      color: var(--orange);
+    }
+
+    .logo-by {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    nav {
+      display: flex;
+      gap: 2px;
+      margin-left: 28px;
+      flex: 1;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 11px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--text);
+      background: var(--surface2);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .btn-ghost {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface2);
+    }
+
+    .btn-solid {
+      height: 34px;
+      padding: 0 16px;
+      border-radius: 7px;
+      border: none;
+      background: var(--orange);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+    }
+
+    .btn-solid:hover {
+      opacity: 0.88;
+    }
+
+    .btn-icon-sm {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon-sm:hover {
+      color: var(--text);
+    }
+
+    .btn-icon-sm svg,
+    .btn-ghost svg,
+    .btn-solid svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .vr {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 90px 32px 80px;
+    }
+
+    .page-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 8px;
+    }
+
+    .page-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar input {
+      flex: 1;
+      min-width: 200px;
+      height: 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0 14px;
+      font-family: var(--font);
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-bar input:focus {
+      border-color: var(--orange);
+    }
+
+    .search-bar select {
+      height: 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-family: var(--font);
+      font-size: 14px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .search-bar button {
+      height: 42px;
+      padding: 0 20px;
+      background: var(--orange);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .company-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .company-card:hover {
+      border-color: var(--orange);
+      box-shadow: var(--shadow-md);
+    }
+
+    .company-logo-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .company-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .company-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .company-sector {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+
+    .company-jobs {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange);
+      margin-top: 4px;
+    }
+
+    .sector-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 24px;
+    }
+
+    .sfchip {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sfchip:hover,
+    .sfchip.active {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-light);
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <header role="banner" id="site-header">
+    <a href="index.html" class="logo-wrap" aria-label="APEX — Accueil">
+      <span class="logo-apex">APE<span>X</span></span>
+      <span class="logo-by">by AVERS</span>
+    </a>
+    <nav aria-label="Navigation principale">
+      <a href="index.html#offres" class="nav-link">Offres</a>
+      <a href="entreprises.html" class="nav-link active">Entreprises</a>
+      <a href="#" class="nav-link" onclick="openSwipeJob(); return false;"
+        style="color:var(--orange);font-weight:700">Swipe n' Job</a>
+      <a href="index.html#outils" class="nav-link">Outils</a>
+      <a href="index.html#conseils" class="nav-link">Conseils</a>
+    </nav>
+    <div class="header-right">
+      <!-- SÉLECTEUR DE PAYS PRO — GLOBE (ZÉRO ÉMOJI) -->
+      <label>France</label>
+
+    </div>
+
+    <button class="btn-icon-sm" onclick="toggleTheme()" id="theme-btn" title="Thème" aria-label="Basculer mode sombre">
+      <i data-lucide="moon"></i>
+    </button>
+    <div class="vr"></div>
+    <a href="index.html" class="btn-ghost"><i data-lucide="arrow-left"></i> Retour</a>
+    <a href="register.html" class="btn-solid"><i data-lucide="user-plus"></i> Créer un compte</a>
+    </div>
+  </header>
+
+  <main class="page-wrap" id="main">
+    <div class="sec-eye"
+      style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--orange);margin-bottom:8px">
+      Annuaire</div>
+    <h1 class="page-title">Entreprises qui recrutent</h1>
+    <p class="page-sub">Toutes les entreprises actives sur France Travail + les grands noms qui embauchent en ce moment.
+    </p>
+
+    <div class="search-bar">
+      <input type="text" id="co-search" placeholder="Nom d'entreprise, secteur…" aria-label="Rechercher une entreprise"
+        oninput="filterCompanies()">
+      <select id="co-sector" aria-label="Secteur" onchange="filterCompanies()">
+        <option value="">Tous les secteurs</option>
+        <option value="tech">Tech & IT</option>
+        <option value="sante">Santé</option>
+        <option value="btp">BTP / Construction</option>
+        <option value="commerce">Commerce / Retail</option>
+        <option value="finance">Finance / Banque</option>
+        <option value="industrie">Industrie</option>
+        <option value="logistique">Logistique</option>
+        <option value="restauration">Restauration / Hôtellerie</option>
+        <option value="media">Médias / Communication</option>
+        <option value="public">Secteur public</option>
+      </select>
+      <button onclick="loadFromFT()"><i data-lucide="refresh-cw"
+          style="width:14px;height:14px;vertical-align:middle"></i> Actualiser</button>
+    </div>
+
+    <div class="sector-filter" id="sector-filter">
+      <span class="sfchip active" onclick="setSector('')">Tous</span>
+      <span class="sfchip" onclick="setSector('tech')"><i data-lucide="monitor"
+          style="width:12px;height:12px;vertical-align:middle"></i> Tech</span>
+      <span class="sfchip" onclick="setSector('sante')"><i data-lucide="heart"
+          style="width:12px;height:12px;vertical-align:middle"></i> Santé</span>
+      <span class="sfchip" onclick="setSector('finance')"><i data-lucide="landmark"
+          style="width:12px;height:12px;vertical-align:middle"></i> Finance</span>
+      <span class="sfchip" onclick="setSector('industrie')"><i data-lucide="factory"
+          style="width:12px;height:12px;vertical-align:middle"></i> Industrie</span>
+      <span class="sfchip" onclick="setSector('commerce')"><i data-lucide="shopping-bag"
+          style="width:12px;height:12px;vertical-align:middle"></i> Commerce</span>
+      <span class="sfchip" onclick="setSector('logistique')"><i data-lucide="truck"
+          style="width:12px;height:12px;vertical-align:middle"></i> Logistique</span>
+      <span class="sfchip" onclick="setSector('btp')"><i data-lucide="hard-hat"
+          style="width:12px;height:12px;vertical-align:middle"></i> BTP</span>
+      <span class="sfchip" onclick="setSector('restauration')"><i data-lucide="utensils"
+          style="width:12px;height:12px;vertical-align:middle"></i> Restauration</span>
+    </div>
+
+    <div class="results-count" id="results-count"></div>
+    <div class="companies-grid" id="companies-grid">
+      <div class="loading-state">
+        <i data-lucide="loader-2" class="spin" style="width:32px;height:32px"></i>
+        <p style="margin-top:12px">Chargement des entreprises…</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = 'http://localhost:5191';
+
+    // ── Theme ──────────────────────────────────────────────────────
+    function safeIcons() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      else setTimeout(safeIcons, 80);
+    }
+    document.addEventListener('DOMContentLoaded', safeIcons);
+
+    function initTheme() {
+      const dark = localStorage.getItem('apex-theme') === 'dark';
+      document.documentElement.classList.toggle('dark', dark);
+      updateThemeBtn(dark);
+    }
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('apex-theme', isDark ? 'dark' : 'light');
+      updateThemeBtn(isDark);
+      safeIcons();
+    }
+    function updateThemeBtn(isDark) {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+    }
+    initTheme();
+
+    window.addEventListener('scroll', () => {
+      document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 8);
+    }, { passive: true });
+
+    // ── Static known companies (seeded catalog) ────────────────────
+    const KNOWN_COMPANIES = [
+      { name: 'SFR', domain: 'sfr.fr', sector: 'tech', desc: 'Télécommunications & services numériques' },
+      { name: 'Orange', domain: 'orange.com', sector: 'tech', desc: 'Opérateur télécoms & services cloud' },
+      { name: 'BNP Paribas', domain: 'bnpparibas.com', sector: 'finance', desc: 'Banque & services financiers' },
+      { name: 'AXA', domain: 'axa.fr', sector: 'finance', desc: 'Assurance & gestion de patrimoine' },
+      { name: 'Société Générale', domain: 'societegenerale.com', sector: 'finance', desc: 'Banque & marchés financiers' },
+      { name: 'Capgemini', domain: 'capgemini.com', sector: 'tech', desc: 'Conseil IT & transformation digitale' },
+      { name: 'Atos', domain: 'atos.net', sector: 'tech', desc: 'Services numériques & cybersécurité' },
+      { name: 'Thales', domain: 'thalesgroup.com', sector: 'tech', desc: 'Défense, aérospatial & technologie' },
+      { name: 'Airbus', domain: 'airbus.com', sector: 'industrie', desc: 'Aéronautique & espace' },
+      { name: 'Renault', domain: 'renault.com', sector: 'industrie', desc: 'Constructeur automobile' },
+      { name: 'Peugeot', domain: 'peugeot.com', sector: 'industrie', desc: 'Automobiles et mobilité' },
+      { name: 'TotalEnergies', domain: 'totalenergies.com', sector: 'industrie', desc: 'Énergie & pétrochimie' },
+      { name: 'EDF', domain: 'edf.fr', sector: 'industrie', desc: 'Énergie électrique & nucléaire' },
+      { name: 'Engie', domain: 'engie.com', sector: 'industrie', desc: 'Transition énergétique & gaz' },
+      { name: 'SNCF', domain: 'sncf.com', sector: 'public', desc: 'Transport ferroviaire national' },
+      { name: 'La Poste', domain: 'laposte.fr', sector: 'public', desc: 'Services postaux & numériques' },
+      { name: 'Decathlon', domain: 'decathlon.fr', sector: 'commerce', desc: 'Articles de sport & outdoor' },
+      { name: 'Carrefour', domain: 'carrefour.fr', sector: 'commerce', desc: 'Grande distribution alimentaire' },
+      { name: 'Leroy Merlin', domain: 'leroymerlin.fr', sector: 'commerce', desc: 'Bricolage & aménagement maison' },
+      { name: 'Fnac-Darty', domain: 'fnac.com', sector: 'commerce', desc: 'Électronique & produits culturels' },
+      { name: 'Vinci', domain: 'vinci.com', sector: 'btp', desc: 'Construction & concessions' },
+      { name: 'Bouygues', domain: 'bouygues.com', sector: 'btp', desc: 'Construction & immobilier' },
+      { name: 'Eiffage', domain: 'eiffage.com', sector: 'btp', desc: 'Travaux publics & énergie' },
+      { name: 'Michelin', domain: 'michelin.com', sector: 'industrie', desc: 'Pneumatiques & mobilité' },
+      { name: 'L\'Oréal', domain: 'loreal.com', sector: 'industrie', desc: 'Cosmétiques & beauté mondiale' },
+      { name: 'Danone', domain: 'danone.com', sector: 'industrie', desc: 'Alimentation santé & nutrition' },
+      { name: 'Accenture', domain: 'accenture.com', sector: 'tech', desc: 'Consulting & services numériques' },
+      { name: 'Deloitte', domain: 'deloitte.fr', sector: 'finance', desc: 'Audit, conseil & expertise comptable' },
+      { name: 'KPMG', domain: 'kpmg.fr', sector: 'finance', desc: 'Audit, fiscalité & conseil' },
+      { name: 'Sodexo', domain: 'sodexo.com', sector: 'restauration', desc: 'Restauration collective & services' },
+      { name: 'Compass Group', domain: 'compass-group.fr', sector: 'restauration', desc: 'Restauration collective internationale' },
+      { name: 'AccorHotels', domain: 'accor.com', sector: 'restauration', desc: 'Hôtellerie & tourisme mondial' },
+      { name: 'DHL', domain: 'dhl.com', sector: 'logistique', desc: 'Logistique & express international' },
+      { name: 'Amazon', domain: 'amazon.fr', sector: 'logistique', desc: 'E-commerce & logistique mondiale' },
+      { name: 'DB Schenker', domain: 'dbschenker.com', sector: 'logistique', desc: 'Transport & supply chain' },
+      { name: 'Publicis', domain: 'publicis.com', sector: 'media', desc: 'Communication & publicité mondiale' },
+      { name: 'Havas', domain: 'havas.com', sector: 'media', desc: 'Agence de communication & médias' },
+      { name: 'Fnac Darty', domain: 'fnac.com', sector: 'commerce', desc: 'Distribution spécialisée' },
+      { name: 'Sanofi', domain: 'sanofi.com', sector: 'sante', desc: 'Pharmacie & biotechnologies' },
+      { name: 'Ipsen', domain: 'ipsen.com', sector: 'sante', desc: 'Biopharmaceutique spécialisé' },
+      { name: 'Korian', domain: 'korian.fr', sector: 'sante', desc: 'Etablissements de santé & EHPAD' },
+    ];
+
+    const BRAND_COLORS = ['#e11d48', '#7c3aed', '#0284c7', '#059669', '#d97706', '#dc2626', '#2563eb', '#16a34a'];
+    function brandColor(name) {
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+      return BRAND_COLORS[Math.abs(h) % BRAND_COLORS.length];
+    }
+
+    const _gTried = new WeakSet();
+    function logoErr(img, domain, name) {
+      if (_gTried.has(img)) {
+        img.style.display = 'none';
+        const fb = img.nextElementSibling;
+        if (fb) { fb.style.display = 'flex'; fb.style.background = brandColor(name); }
+        return;
+      }
+      _gTried.add(img);
+      img.src = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`;
+    }
+
+    let _activeSector = '';
+    let _allCompanies = [...KNOWN_COMPANIES];
+    let _ftCompanies = [];
+
+    function setSector(s) {
+      _activeSector = s;
+      document.querySelectorAll('.sfchip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('onclick') === `setSector('${s}')`);
+      });
+      document.getElementById('co-sector').value = s;
+      renderCompanies();
+    }
+
+    function filterCompanies() {
+      _activeSector = document.getElementById('co-sector').value;
+      document.querySelectorAll('.sfchip').forEach(c => {
+        const match = c.getAttribute('onclick') === `setSector('${_activeSector}')` || (_activeSector === '' && c.getAttribute('onclick') === "setSector('')");
+        c.classList.toggle('active', match);
+      });
+      renderCompanies();
+    }
+
+    function renderCompanies() {
+      const q = document.getElementById('co-search').value.toLowerCase().trim();
+      const merged = [..._allCompanies, ..._ftCompanies.filter(f => !_allCompanies.some(k => k.name.toLowerCase() === f.name.toLowerCase()))];
+
+      const filtered = merged.filter(c => {
+        const matchQ = !q || c.name.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
+        const matchS = !_activeSector || c.sector === _activeSector;
+        return matchQ && matchS;
+      });
+
+      document.getElementById('results-count').textContent = `${filtered.length} entreprise${filtered.length > 1 ? 's' : ''} trouvée${filtered.length > 1 ? 's' : ''}`;
+
+      const grid = document.getElementById('companies-grid');
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="loading-state"><i data-lucide="search-x" style="width:32px;height:32px"></i><p style="margin-top:12px">Aucune entreprise trouvée.</p></div>`;
+        safeIcons();
+        return;
+      }
+
+      grid.innerHTML = filtered.map(c => {
+        const initials = c.name.substring(0, 2).toUpperCase();
+        const color = brandColor(c.name);
+        return `<div class="company-card" onclick="searchCompany('${c.name.replace(/'/g, "\\'")}')">
+      <div class="company-logo-box" style="background:${color}">
+        <img src="https://logo.clearbit.com/${c.domain}" alt="${escH(c.name)}"
+          onerror="logoErr(this,'${c.domain}','${c.name.replace(/'/g, "\\'")}')">
+        <span style="display:none;color:#fff;font-size:16px;font-weight:800;width:100%;height:100%;align-items:center;justify-content:center">${initials}</span>
+      </div>
+      <div class="company-name">${escH(c.name)}</div>
+      <div class="company-sector">${escH(c.desc || '')}</div>
+      <div class="company-jobs"><i data-lucide="briefcase" style="width:11px;height:11px;vertical-align:middle"></i> Voir les offres</div>
+    </div>`;
+      }).join('');
+      safeIcons();
+    }
+
+    function escH(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function searchCompany(name) {
+      window.location.href = `index.html?keyword=${encodeURIComponent(name)}#offres`;
+    }
+
+    // Domain resolver for FT company names — word-boundary matching, longer keys first
+    function gftDomain(name) {
+      const n = name.toLowerCase().trim();
+      const MAP = {
+        'burger king': 'burgerking.fr', 'mc donalds': 'mcdonalds.fr', 'bnp paribas': 'bnpparibas.com',
+        'societe generale': 'societegenerale.com', 'credit agricole': 'credit-agricole.com',
+        'leroy merlin': 'leroymerlin.fr', 'la poste': 'laposte.fr', 'saint gobain': 'saint-gobain.com',
+        'sfr': 'sfr.fr', 'bnp': 'bnpparibas.com', 'axa': 'axa.fr', 'capgemini': 'capgemini.com',
+        'orange': 'orange.fr', 'total': 'totalenergies.com', 'sncf': 'sncf.com', 'edf': 'edf.fr',
+        'airbus': 'airbus.com', 'thales': 'thalesgroup.com', 'carrefour': 'carrefour.fr',
+        'decathlon': 'decathlon.fr', 'michelin': 'michelin.com', 'renault': 'renault.com',
+        'peugeot': 'peugeot.com', 'bouygues': 'bouygues.com', 'engie': 'engie.com',
+        'loreal': 'loreal.com', 'danone': 'danone.com', 'sopra': 'soprasteria.com',
+        'atos': 'atos.net', 'accenture': 'accenture.com', 'deloitte': 'deloitte.com',
+        'kpmg': 'kpmg.fr', 'amazon': 'amazon.fr', 'google': 'google.fr', 'microsoft': 'microsoft.com',
+        'fnac': 'fnac.com', 'veolia': 'veolia.com', 'vinci': 'vinci.com', 'maif': 'maif.fr',
+        'allianz': 'allianz.fr', 'groupama': 'groupama.fr', 'adecco': 'adecco.fr',
+        'manpower': 'manpower.fr', 'randstad': 'randstad.fr', 'korian': 'korian.fr',
+        'sodexo': 'sodexo.com', 'sanofi': 'sanofi.com', 'lidl': 'lidl.fr', 'ikea': 'ikea.com',
+        'eiffage': 'eiffage.com', 'dhl': 'dhl.com', 'havas': 'havas.com', 'publicis': 'publicis.com'
+      };
+      const entries = Object.entries(MAP).sort((a, b) => b[0].length - a[0].length);
+      for (const [k, v] of entries) {
+        const esc = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp('(?:^|[\\s,&\\-/])' + esc + '(?:[\\s,&\\-/]|$)').test(n)) return v;
+      }
+      const clean = n.replace(/[^a-z0-9\-]/g, '').replace(/^(les|la|le|l|groupe|agence|cabinet|sas|sarl|sa|sasu|eurl)/, '').replace(/^\-+/, '');
+      return (clean || n.replace(/[^a-z0-9]/g, '')) + '.fr';
+    }
+
+    // Pull unique companies from FT API results
+    async function loadFromFT() {
+      const grid = document.getElementById('companies-grid');
+      grid.innerHTML = `<div class="loading-state"><i data-lucide="loader-2" class="spin" style="width:32px;height:32px"></i><p style="margin-top:12px">Chargement depuis France Travail…</p></div>`;
+      safeIcons();
+
+      const keywords = ['développeur', 'infirmier', 'commercial', 'bâtiment', 'comptable', 'logistique', 'marketing', 'juridique'];
+      const seen = new Set();
+      const ftComp = [];
+
+      await Promise.all(keywords.map(async kw => {
+        try {
+          const res = await fetch(`${API}/api/jobs/search?keyword=${encodeURIComponent(kw)}&range=0-49`);
+          if (!res.ok) return;
+          const data = await res.json();
+          const jobs = data.results || data.items || [];
+          jobs.forEach(j => {
+            const name = (j.company || '').trim();
+            if (name && name.length > 2 && !seen.has(name.toLowerCase())) {
+              seen.add(name.toLowerCase());
+              ftComp.push({
+                name,
+                domain: gftDomain(name),
+                sector: '',
+                desc: `Recrute en ce moment · ${kw}`
+              });
+            }
+          });
+        } catch (_) { }
+      }));
+
+      _ftCompanies = ftComp;
+      renderCompanies();
+    }
+
+    // ── Auto-load on page start ────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show static catalog immediately
+      renderCompanies();
+      // Enrich with FT data in background
+      loadFromFT();
+    });
+
+    // Handle ?keyword= from redirect
+    const urlKw = new URLSearchParams(window.location.search).get('keyword');
+    if (urlKw) {
+      document.getElementById('co-search').value = urlKw;
+    }
+  </script>
+</body>
+
+</html>

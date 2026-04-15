@@ -1,0 +1,197 @@
+.cv-blk-lbl {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .cv-rm-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 2px 4px;
+      border-radius: 4px;
+      line-height: 1;
+    }
+
+    .cv-rm-btn:hover {
+      color: #f87171;
+    }
+
+    /* Paper preview */
+    .cv-preview-paper {
+      width: 210mm;
+      min-height: 297mm;
+      background: #fff;
+      color: #111;
+      padding: 2rem 2.25rem;
+      box-shadow: 0 4px 40px rgba(0, 0, 0, .3);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 10pt;
+      line-height: 1.5;
+    }
+
+    .cv-preview-paper h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      margin: 0 0 .2rem;
+      color: #1e1b4b;
+    }
+
+    .cv-p-jobtitle {
+      font-size: 11pt;
+      color: #6366f1;
+      font-weight: 600;
+      margin-bottom: .6rem;
+    }
+
+    .cv-p-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem .75rem;
+      font-size: 9pt;
+      color: #555;
+      border-bottom: 2px solid #6366f1;
+      padding-bottom: .6rem;
+      margin-bottom: .9rem;
+    }
+
+    .cv-p-sh {
+      font-size: 9.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: #6366f1;
+      border-bottom: 1px solid #ede9fe;
+      margin: .9rem 0 .4rem;
+      padding-bottom: .2rem;
+    }
+
+    .cv-p-ititle {
+      font-weight: 700;
+      font-size: 10pt;
+    }
+
+    .cv-p-isub {
+      font-size: 9pt;
+      color: #555;
+    }
+
+    .cv-p-desc {
+      font-size: 9pt;
+      color: #333;
+      margin-top: .2rem;
+      white-space: pre-wrap;
+    }
+
+    .cv-p-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem;
+      margin-top: .3rem;
+    }
+
+    .cv-p-chip {
+      background: #ede9fe;
+      color: #5b21b6;
+      padding: .15rem .55rem;
+      border-radius: 99px;
+      font-size: 8.5pt;
+      font-weight: 500;
+    }
+
+    .badge-ai {
+      display: inline-flex;
+      align-items: center;
+      padding: .15rem .5rem;
+      border-radius: 99px;
+      background: color-mix(in srgb, var(--accent, #6366f1) 15%, transparent);
+      color: var(--accent, #6366f1);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    @media (max-width: 900px) {
+      .cv-canvas-body {
+        grid-template-columns: 1fr;
+      }
+
+      .cv-canvas-preview {
+        display: none;
+      }
+    }
+
+    @media print {
+      body>*:not(#cv-canvas) {
+        display: none !important;
+      }
+
+      .cv-canvas-overlay {
+        position: static !important;
+        opacity: 1 !important;
+        pointer-events: all !important;
+        background: none !important;
+        backdrop-filter: none !important;
+      }
+
+      .cv-canvas-hd,
+      .cv-canvas-form {
+        display: none !important;
+      }
+
+      .cv-canvas-body {
+        display: block !important;
+      }
+
+      .cv-canvas-preview {
+        background: none !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+
+      .cv-canvas-preview {
+        display: block !important;
+      }
+
+      .cv-preview-paper {
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ACCESSIBILITÉ : Skip link -->
+  <a href="#main" id="skip-link">Passer au contenu principal</a>
+
+  <!-- ================================
+     HEADER
+================================ -->
+  <header class="fixed top-0 w-full z-50 bg-surface border-b border-border h-16 flex items-center px-4 justify-between">
+    <div class="flex items-center gap-4">
+      <button class="lg:hidden text-text p-2" onclick="APEX.toggleMobileMenu()" aria-label="Menu">
+        <i data-lucide="menu"></i>
+      </button>
+      <a href="#" class="logo-wrap">
+        <span class="logo-apex text-xl font-extrabold">APE<span>X</span></span>
+      </a>
+    </div>
+    
+    <nav class="hidden lg:flex items-center gap-2">
+      <a href="#offres" class="nav-link"><i data-lucide="briefcase" class="w-4 h-4"></i> Offres</a>
+      <a href="#entreprises" class="nav-link"><i data-lucide="building-2" class="w-4 h-4"></i> Entreprises</a>
+      <a href="#" class="nav-link" onclick="APEX.toggleSwipeMode(); return false;" style="color:var(--orange);font-weight:700">
+        <i data-lucide="layers" class="w-4 h-4"></i> Swipe n' Job
+      </a>
+      <a href="#outils" class="nav-link"><i data-lucide="box" class="w-4 h-4"></i> Outils</a>
+    </nav>
+  
+    <div class="flex items-center gap-2">
+      <button id="theme-btn" class="p-2 text-muted" onclick="APEX.toggleTheme()">
+        <i data-lucide="moon"></i>
+      </button>
+      <a href="#" class="btn-solid px-4 py-2 text-sm" onclick="APEX.openLoginModal();return false;">Se connecter</a>
+    </div>
+  </header>
