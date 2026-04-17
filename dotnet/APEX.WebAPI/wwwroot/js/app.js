@@ -55,6 +55,23 @@ const APEX = (() => {
       .slice(0, max) + (raw.length > max ? '…' : '');
   }
 
+  function decodeUtf8Safe(str) {
+    if (!str || typeof str !== 'string') return str || '';
+    try { return decodeURIComponent(escape(str)); } catch(e) {}
+    return str
+      .replace(/Ã©/g,'é').replace(/Ã¨/g,'è').replace(/Ã¦/g,'æ')
+      .replace(/Ã /g,'à').replace(/Ã¢/g,'â').replace(/Ã®/g,'î')
+      .replace(/Ã´/g,'ô').replace(/Ã¹/g,'ù').replace(/Ã»/g,'û')
+      .replace(/Ã§/g,'ç').replace(/Ã‰/g,'É').replace(/Ãª/g,'ê')
+      .replace(/Ã¼/g,'ü').replace(/Ã«/g,'ë').replace(/Ã¯/g,'ï')
+      .replace(/Ã¶/g,'ö').replace(/Ã±/g,'ñ')
+      .replace(/â€™/g,"'").replace(/â€"/g,'–').replace(/â€"/g,'—')
+      .replace(/â€œ/g,'"').replace(/â€/g,'"')
+      .replace(/Ã¢â€šÂ¬/g,'€').replace(/â‚¬/g,'€')
+      .replace(/Â°/g,'°').replace(/Â«/g,'«').replace(/Â»/g,'»')
+      .replace(/Ã‚Â /g,' ').replace(/\u00A0/g,' ');
+  }
+
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -576,6 +593,13 @@ const APEX = (() => {
     performSearch();
   }
 
+  function triggerSearchCity(city) {
+    const locEl = document.getElementById('sq-city') || document.getElementById('loc-input');
+    if (locEl) locEl.value = city;
+    performSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   function setFilter(btn, val) {
     _activeFilter = val;
     _currentPage = 1;
@@ -585,9 +609,13 @@ const APEX = (() => {
   }
 
   async function performSearch() {
-    hideSuggest();
-    const kwEl = document.getElementById('sq-job') || document.getElementById('kw-input');
-    const locEl = document.getElementById('sq-city') || document.getElementById('loc-input');
+    const kwEl = document.getElementById('input-keywords-inline')
+              || document.getElementById('sq-job')
+              || document.getElementById('kw-input')
+              || document.getElementById('input-keywords');
+    const locEl = document.getElementById('input-city')
+               || document.getElementById('sq-city')
+               || document.getElementById('loc-input');
     const kw = (kwEl?.value || '').trim();
     const loc = (locEl?.value || '').trim();
 
@@ -612,7 +640,15 @@ const APEX = (() => {
       const res = await apiFetch(`/api/jobs/search?${params}`);
       const data = await res.json().catch(() => []);
 
-      _allJobs = Array.isArray(data) ? data : (data.items || data.offres || []);
+      const raw = Array.isArray(data) ? data : (data.resultats || data.results || data.items || data.offres || []);
+      _allJobs = raw.map(j => ({
+        ...j,
+        intitule:    decodeUtf8Safe(j.intitule    || j.title    || ''),
+        description: decodeUtf8Safe(j.description || j.desc     || ''),
+        entreprise:  { ...(j.entreprise || {}), nom: decodeUtf8Safe(j.entreprise?.nom || j.company || '') },
+        salaire:     { ...(j.salaire || {}), libelle: decodeUtf8Safe(j.salaire?.libelle || j.salary || '') },
+        lieuTravail: { ...(j.lieuTravail || {}), libelle: decodeUtf8Safe(j.lieuTravail?.libelle || j.location || '') },
+      }));
       _currentPage = 1;
 
       if (subtitleEl) {
@@ -737,25 +773,37 @@ const APEX = (() => {
     card.style.cursor = 'pointer';
     card.addEventListener('click', () => openJob(idx));
 
-    // Header: initials + title
+    // Header: logo + title
     const header = document.createElement('div');
     header.className = 'flex items-start gap-3';
 
-    const initialsEl = document.createElement('div');
-    initialsEl.className = 'job-initials';
-    initialsEl.style.background = initialsColor(company || title);
-    initialsEl.textContent = _makeInitials(company || title);
+    const logoWrap = document.createElement('div');
+    logoWrap.className = 'job-logo-wrap'; // Uses style.css class
+    
+    const domain = (company || '').toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+    const logoImg = document.createElement('img');
+    logoImg.src = job.companyLogoUrl || `https://logo.clearbit.com/${domain}`;
+    logoImg.alt = company;
+    logoImg.onerror = () => {
+        logoImg.style.display = 'none';
+        const initials = document.createElement('div');
+        initials.className = 'initials';
+        initials.style.background = initialsColor(company || title);
+        initials.textContent = _makeInitials(company || title);
+        logoWrap.appendChild(initials);
+    };
+    logoWrap.appendChild(logoImg);
 
     const titleWrap = document.createElement('div');
     titleWrap.className = 'flex-1 min-w-0';
     const titleH = document.createElement('h3');
-    titleH.className = 'font-display font-bold text-base leading-tight truncate-2';
+    titleH.className = 'job-title'; // Uses style.css class
     titleH.textContent = title;
     const companyP = document.createElement('p');
-    companyP.className = 'text-sm text-[var(--text-2)] mt-0.5';
+    companyP.className = 'job-company'; // Uses style.css class
     companyP.textContent = [company, city].filter(Boolean).join(' · ');
     titleWrap.append(titleH, companyP);
-    header.append(initialsEl, titleWrap);
+    header.append(logoWrap, titleWrap);
 
     // Score ring (if available)
     if (score !== null && isLoggedIn()) {
@@ -1555,7 +1603,7 @@ const APEX = (() => {
   // ─────────────────────────────────────────────
   //  PANEL / BACKDROP HELPERS
   // ─────────────────────────────────────────────
-  const PANEL_IDS = ['job-panel', 'chat-overlay', 'profile-panel', 'suivi-panel'];
+  const PANEL_IDS = ['job-panel', 'chat-overlay', 'profile-panel', 'suivi-panel', 'swipe-modal'];
 
   function openPanel(id) {
     const el = document.getElementById(id);
@@ -1727,10 +1775,11 @@ const APEX = (() => {
     // Recherche
     syncKw, syncNavKw, syncNavCity,
     onSuggest, hideSuggest,
-    triggerSearch, performSearch,
+    triggerSearch, triggerSearchCity, performSearch,
     setFilter, gotoPage,
     showJobs,
     loadAiSuggestions,
+    decodeUtf8Safe,
     // Panneaux
     openPanel, closePanel, closeAll,
     // Offre
@@ -2086,16 +2135,24 @@ const APEX = (() => {
   }
 
   // ─────────────────────────────────────────────
-  //  EXPOSITION GLOBALE
+  //  EXPOSITION GLOBALE — toutes les fonctions
+  //  exposées sur window pour les onclick= du HTML
   // ─────────────────────────────────────────────
-  Object.assign(window, APEX);
+  Object.assign(window, publicApi);
 
-  // Aliases sémantiques demandés par l'HTML
-  window.openDrawer = APEX.openChat;
-  window.closeDrawer = APEX.closeChat;
-  window.closeModal = () => APEX.closePanel('apply-modal');
-  window.openSalaryModal = APEX.openSalaryModal; // To be added or referenced
-  window.sendQuickMessage = (msg) => APEX.sendQuick(msg);
+  // Aliases supplémentaires demandés par le HTML
+  window.openDrawer        = openChat;
+  window.closeDrawer       = closeChat;
+  window.closeModal        = () => closePanel('apply-modal');
+  window.openSalaryModal   = () => showToast("L'analyse comparative des salaires arrive bientôt.", "info");
+  window.sendQuickMessage  = (msg) => sendQuick(msg);
+  window.triggerSearchCity  = triggerSearchCity;
+  window.decodeUtf8Safe     = decodeUtf8Safe;
+  window.initRecruiters     = typeof initRecruiters === 'function' ? initRecruiters : () => {};
+  window.closeAllPanels     = closeAll;
+  window.openSwipe          = openSwipeJob;
+  window.closeSwipe         = closeSwipeModal;
+  window.initSwipe          = openSwipeJob;
 
-  return APEX;
+  return publicApi;
 })();

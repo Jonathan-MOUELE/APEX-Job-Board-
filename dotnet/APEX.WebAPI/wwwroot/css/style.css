@@ -1850,37 +1850,244 @@ html:not(.dark) .bento-mask {
   }
 }
 
-.cities-grid {
+/* --- VILLES GALLERY (PREMIUM VISUAL) --- */
+.cities-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 24px;
 }
 
-.city-card {
-  height: 200px;
-  border-radius: 12px;
+.city-card-gallery {
+  position: relative;
+  height: 240px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #111;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.city-card-gallery:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.city-gallery-img {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.city-card-gallery:hover .city-gallery-img {
+  transform: scale(1.15);
+}
+
+.city-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+  z-index: 1;
+}
+
+.city-gallery-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  z-index: 2;
+  color: #fff;
+}
+
+.city-gallery-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.city-gallery-view {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orange);
+  opacity: 0.9;
+  transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.city-card-gallery:hover .city-gallery-view {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* --- SWIPE N JOB (TIKTOK STYLE) --- */
+#swipe-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+  z-index: 9999;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#swipe-modal .modal {
+  width: 100% !important;
+  max-width: 500px !important; /* Format smartphone sur PC */
+  height: min(90vh, 850px) !important;
+  border-radius: 24px !important;
+  background: #09090b;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 1rem;
-  color: white !important;
-  text-decoration: none;
-  transition: transform 0.2s;
 }
 
-.city-card:hover {
-  transform: translateY(-5px);
+@media (max-width: 768px) {
+  #swipe-modal .modal {
+    max-width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+  }
 }
 
-.city-name {
+.swipe-card-container {
+  flex: 1;
+  position: relative;
+  background: #111;
+}
+
+.swipe-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.swipe-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 24px;
+  background: linear-gradient(to top, #000 0%, transparent 100%);
+  color: #fff;
+}
+
+.swipe-card-title {
+  font-size: 28px;
   font-weight: 800;
-  font-size: 1.2rem;
+  line-height: 1.1;
+  margin-bottom: 8px;
 }
 
-.city-action {
-  font-size: 0.8rem;
+.swipe-card-company {
+  font-size: 16px;
   font-weight: 600;
   color: var(--orange);
+  margin-bottom: 12px;
 }
+
+.swipe-actions {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  background: #000;
+}
+
+.btn-swipe-action {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1c1c1e;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.btn-swipe-action:hover {
+  transform: scale(1.15);
+}
+
+.btn-swipe-action.dislike i { color: #fff; }
+.btn-swipe-action.like i { color: var(--orange); fill: var(--orange); }
+
+.btn-swipe-action.dislike:hover { background: #333; }
+.btn-swipe-action.like:hover { background: rgba(255, 142, 128, 0.1); }
+
+/* ── Swipe Card Animations ─────────────────────────── */
+.swipe-card.swipe-out-left  { transform: translateX(-150%) rotate(-20deg); opacity: 0; }
+.swipe-card.swipe-out-right { transform: translateX(150%)  rotate(20deg);  opacity: 0; }
+
+/* ── Recruiter Strip ───────────────────────────────── */
+.recruiters-track {
+  display: flex;
+  gap: .75rem;
+  overflow-x: auto;
+  padding: .75rem 0;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.recruiters-track::-webkit-scrollbar { display: none; }
+.recruiter-chip {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .5rem .875rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9999px; cursor: pointer; flex-shrink: 0;
+  scroll-snap-align: start;
+  transition: border-color .15s;
+}
+.recruiter-chip:hover { border-color: var(--border-strong); }
+
+/* ── Mobile Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-section { padding: 2.5rem 1.25rem; }
+  .hero-inner {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+    gap: 2rem;
+  }
+  .hero-text { display: flex; flex-direction: column; align-items: center; }
+  .hero-photo-wrap { display: none; }
+  .search-bar { max-width: 100% !important; }
+  .trend-pills { justify-content: center; }
+  .section-inner { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .sectors-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: 160px !important;
+  }
+  .sectors-grid .bento-card.featured {
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+  }
+  .tools-grid { grid-template-columns: 1fr !important; }
+  .plans-grid { grid-template-columns: 1fr !important; }
+  .cities-grid { grid-template-columns: 1fr 1fr !important; }
+  #jobs-grid { grid-template-columns: 1fr !important; }
+  .job-card { padding: 1rem; }
+  .footer-grid { grid-template-columns: 1fr !important; gap: 2rem; }
+  .drawer { max-width: 100vw !important; }
+  .chat-sidebar { display: none !important; }
+  #fab { bottom: 80px !important; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: clamp(1.8rem, 8vw, 2.5rem) !important; }
+  .sectors-grid { grid-template-columns: 1fr !important; }
+  .cities-grid  { grid-template-columns: 1fr !important; }
+}

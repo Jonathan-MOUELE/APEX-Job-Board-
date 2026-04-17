@@ -666,41 +666,76 @@ Réponds UNIQUEMENT en JSON strict:
         catch { return null; }
     }
 
+    private static string CleanText(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+        // Fix common UTF-8 double-encoding artifacts
+        return text
+            .Replace("Ã©", "é").Replace("Ã¨", "è").Replace("Ã ", "à")
+            .Replace("Ã¢", "â").Replace("Ã®", "î").Replace("Ã´", "ô")
+            .Replace("Ã¹", "ù").Replace("Ã»", "û").Replace("Ã§", "ç")
+            .Replace("Ã‰", "É").Replace("Ãª", "ê")
+            .Replace("Ã¢â€šÂ¬", "€").Replace("â‚¬", "€")
+            .Replace("Â°", "°")
+            .Trim();
+    }
+
     private async Task PersistJobsAsync(IReadOnlyList<JobOffer> jobs)
     {
         try
         {
+            if (jobs == null || jobs.Count == 0) return;
+
             using var scope = HttpContext.RequestServices.CreateScope();
             var scopedDb = scope.ServiceProvider.GetRequiredService<ApexDbContext>();
-            foreach (var job in jobs)
+
+            // 1. Déduplication locale (dans la liste entrante)
+            var uniqueJobs = jobs.GroupBy(j => j.Id).Select(g => g.First()).ToList();
+            var ids = uniqueJobs.Select(j => j.Id).ToList();
+
+            // 2. Récupérer les IDs déjà en base pour filtrer
+            var existingIds = await scopedDb.JobOffers
+                .Where(j => ids.Contains(j.Id))
+                .Select(j => j.Id)
+                .ToListAsync();
+
+            var toAdd = uniqueJobs.Where(j => !existingIds.Contains(j.Id)).ToList();
+
+            foreach (var job in toAdd)
             {
-                if (!await scopedDb.JobOffers.AnyAsync(j => j.Id == job.Id))
+                // Vérifier si déjà tracké par ChangeTracker pour éviter conflits batch
+                if (scopedDb.ChangeTracker.Entries<JobOfferEntity>().Any(e => e.Entity.Id == job.Id))
+                    continue;
+
+                scopedDb.JobOffers.Add(new JobOfferEntity
                 {
-                    scopedDb.JobOffers.Add(new JobOfferEntity
-                    {
-                        Id = job.Id,
-                        Title = job.Title,
-                        Description = job.Description,
-                        CompanyName = job.Company,
-                        CompanyLogoUrl = job.CompanyLogoUrl,
-                        City = job.Location,
-                        PostalCode = job.PostalCode,
-                        ContractType = job.ContractType,
-                        ExperienceRequired = job.ExperienceRequired,
-                        SalaryLabel = job.SalaryLabel,
-                        SalaryMin = job.SalaryMin,
-                        SalaryMax = job.SalaryMax,
-                        TechSkillsJson = JsonSerializer.Serialize(job.RequiredTechs),
-                        SoftSkillsJson = JsonSerializer.Serialize(job.RequiredSoftSkills),
-                        TrainingsJson = JsonSerializer.Serialize(job.Trainings),
-                        ApplyUrl = job.OriginUrl,
-                        FetchedAt = DateTime.UtcNow
-                    });
-                }
+                    Id = job.Id,
+                    Title = CleanText(job.Title) ?? "Sans titre",
+                    Description = CleanText(job.Description) ?? "",
+                    CompanyName = CleanText(job.Company),
+                    CompanyLogoUrl = job.CompanyLogoUrl,
+                    City = CleanText(job.Location),
+                    PostalCode = job.PostalCode,
+                    ContractType = job.ContractType,
+                    ExperienceRequired = job.ExperienceRequired,
+                    SalaryLabel = CleanText(job.SalaryLabel),
+                    SalaryMin = job.SalaryMin,
+                    SalaryMax = job.SalaryMax,
+                    TechSkillsJson = JsonSerializer.Serialize(job.RequiredTechs ?? new List<string>()),
+                    SoftSkillsJson = JsonSerializer.Serialize(job.RequiredSoftSkills ?? new List<string>()),
+                    TrainingsJson = JsonSerializer.Serialize(job.Trainings ?? new List<string>()),
+                    ApplyUrl = job.OriginUrl,
+                    FetchedAt = DateTime.UtcNow
+                });
             }
-            await scopedDb.SaveChangesAsync();
+
+            if (toAdd.Count > 0)
+                await scopedDb.SaveChangesAsync();
         }
-        catch (Exception ex) { logger.LogError(ex, "[JOBS] PersistJobsAsync failed for {Count} jobs", jobs.Count); }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "[JOBS] PersistJobsAsync failed for {Count} jobs", jobs.Count);
+        }
     }
 
     private int? TryGetUserId()

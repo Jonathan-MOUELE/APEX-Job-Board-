@@ -3,7 +3,6 @@
 // ╚══════════════════════════════════════════════════════════════╝
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using APEX.Core;
@@ -18,9 +17,9 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration config)
     {
-        var connStr = config.GetConnectionString("ApexDb") ?? "Data Source=apex.db";
+        var connStr = config.GetConnectionString("ApexDb");
         services.AddDbContext<ApexDbContext>(opts =>
-            opts.UseSqlite(connStr));
+            opts.UseSqlServer(connStr));
         return services;
     }
 

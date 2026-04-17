@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -10,7 +10,7 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap"
     rel="stylesheet">
   <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
   <style>
     /* ================================
    DESIGN SYSTEM — APEX v2
@@ -3362,7 +3362,7 @@
               alt="IA et CV" onerror="this.style.display='none'">
             <div class="article-body">
               <div class="article-cat">IA & Emploi</div>
-              <div class="article-title">LÃ¢â‚¬â„¢IA lit-elle vraiment votre CV avant les RH ? Mythes et réalités</div>
+              <div class="article-title">L'IA lit-elle vraiment votre CV avant les RH ? Mythes et réalités</div>
               <div class="article-date"><i data-lucide="external-link"
                   style="width:12px;height:12px;display:inline;vertical-align:middle"></i> Welcome to the Jungle</div>
             </div>
@@ -4139,6 +4139,16 @@
     </div>
   </div>
 
+  <script>
+    // Lucide retry — ensure icons render even if CDN loads slowly
+    (function initLucide(n) {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      } else if (n < 50) {
+        setTimeout(function() { initLucide(n + 1); }, 100);
+      }
+    })(0);
+  </script>
   <script src="js/app.js" defer></script>
 </body>
 
