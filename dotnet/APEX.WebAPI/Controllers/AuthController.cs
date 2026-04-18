@@ -21,19 +21,36 @@ namespace APEX.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(
-    ApexDbContext db,
-    ITokenService tokens,
-    IEmailService email,
-    IBackgroundTaskQueue queue,
-    IWebHostEnvironment env,
-    ILogger<AuthController> logger) : ControllerBase
+public class AuthController : ControllerBase
 {
+    private readonly ApexDbContext _db;
+    private readonly ITokenService _tokens;
+    private readonly IEmailService _email;
+    private readonly IBackgroundTaskQueue _queue;
+    private readonly IWebHostEnvironment _env;
+    private readonly ILogger<AuthController> _logger;
+
+    public AuthController(
+        ApexDbContext db,
+        ITokenService tokens,
+        IEmailService email,
+        IBackgroundTaskQueue queue,
+        IWebHostEnvironment env,
+        ILogger<AuthController> logger)
+    {
+        _db = db;
+        _tokens = tokens;
+        _email = email;
+        _queue = queue;
+        _env = env;
+        _logger = logger;
+    }
+
     // ── Cookie Config ───────────────────────────────────────────
     private CookieOptions RefreshCookieOptions() => new()
     {
         HttpOnly = true,
-        Secure = env.IsProduction(), // false en dev (HTTP localhost)
+        Secure = _env.IsProduction(), // false en dev (HTTP localhost)
         SameSite = SameSiteMode.Strict,
         Expires = DateTime.UtcNow.AddDays(7),
         Path = "/api/auth"         // scope limité
@@ -63,10 +80,10 @@ public class AuthController(
             });
 
         // Vérification unicité email (IsDeleted=false)
-        if (await db.Users.AnyAsync(u => u.Email == req.Email.ToLower() && !u.IsDeleted))
+        if (await _db.Users.AnyAsync(u => u.Email == req.Email.ToLower() && !u.IsDeleted))
             return BadRequest(new { errors = new[] { "Cet email est déjà utilisé." } });
 
-        var isDev = env.IsDevelopment();
+        var isDev = _env.IsDevelopment();
         var confirmToken = GenerateSecureToken();
         var user = new AppUser
         {
@@ -80,19 +97,19 @@ public class AuthController(
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-        db.Users.Add(user);
+        _db.Users.Add(user);
 
         // Profil vide
-        db.UserProfiles.Add(new Core.Entities.UserProfile { User = user });
+        _db.UserProfiles.Add(new Core.Entities.UserProfile { User = user });
 
-        await db.SaveChangesAsync();
-        logger.LogInformation("[AUTH] Inscription: {Email}", user.Email);
+        await _db.SaveChangesAsync();
+        _logger.LogInformation("[AUTH] Inscription: {Email}", user.Email);
 
         if (isDev)
         {
-            logger.LogInformation("[AUTH] Dev Mode: Auto-confirming email for {Email} and issuing JWT", user.Email);
+            _logger.LogInformation("[AUTH] Dev Mode: Auto-confirming email for {Email} and issuing JWT", user.Email);
             var (accessToken, refreshToken) = await IssueTokenPairAsync(user);
-            await db.SaveChangesAsync(); // Save the new refresh token
+            await _db.SaveChangesAsync(); // Save the new refresh token
 
             Response.Cookies.Append("refreshToken", refreshToken, RefreshCookieOptions());
             return Ok(new
@@ -104,10 +121,10 @@ public class AuthController(
         }
 
         // Email confirmation — fire-and-forget
-        queue.EnqueueTask(async ct =>
+        _queue.EnqueueTask(async ct =>
         {
-            try { await email.SendEmailConfirmationAsync(user.Email, user.FullName, confirmToken, user.Email, ct); }
-            catch (Exception ex) { logger.LogError(ex, "[AUTH] Email confirm send failed for {Email}", user.Email); }
+            try { await _email.SendEmailConfirmationAsync(user.Email, user.FullName, confirmToken, user.Email, ct); }
+            catch (Exception ex) { _logger.LogError(ex, "[AUTH] Email confirm send failed for {Email}", user.Email); }
         });
 
         return StatusCode(201, new { message = "Vérifiez votre email pour confirmer votre compte." });
@@ -125,7 +142,7 @@ public class AuthController(
         if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(emailAddress))
             return BadRequest(new { error = "Paramètres manquants." });
 
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == emailAddress.ToLower() &&
             u.EmailConfirmToken == token &&
             !u.IsDeleted);
@@ -143,13 +160,13 @@ public class AuthController(
 
         // Auto-login
         var (accessToken, refreshToken) = await IssueTokenPairAsync(user);
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         // Welcome email fire-and-forget
-        queue.EnqueueTask(async ct =>
+        _queue.EnqueueTask(async ct =>
         {
-            try { await email.SendWelcomeAsync(user.Email, user.FullName, ct); }
-            catch (Exception ex) { logger.LogError(ex, "[AUTH] Welcome email failed for {Email}", user.Email); }
+            try { await _email.SendWelcomeAsync(user.Email, user.FullName, ct); }
+            catch (Exception ex) { _logger.LogError(ex, "[AUTH] Welcome email failed for {Email}", user.Email); }
         });
 
         Response.Cookies.Append("refreshToken", refreshToken, RefreshCookieOptions());
@@ -179,14 +196,14 @@ public class AuthController(
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var userAgent = Request.Headers.UserAgent.ToString();
 
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == req.Email.ToLower() && !u.IsDeleted);
 
         // Lockout check
         if (user is not null && user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
         {
             var remaining = (int)Math.Ceiling((user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes);
-            logger.LogWarning("[AUTH] Login bloqué (lockout): {Email} | IP:{IP}", req.Email, ip);
+            _logger.LogWarning("[AUTH] Login bloqué (lockout): {Email} | IP:{IP}", req.Email, ip);
             return StatusCode(429, new { error = $"Compte temporairement bloqué. Réessayez dans {remaining} min." });
         }
 
@@ -199,12 +216,12 @@ public class AuthController(
                 {
                     user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
                     user.FailedLoginCount = 0;
-                    logger.LogWarning("[SECURITY] Compte verrouillé 15 min: {Email} | IP:{IP}", req.Email, ip);
+                    _logger.LogWarning("[SECURITY] Compte verrouillé 15 min: {Email} | IP:{IP}", req.Email, ip);
                 }
                 user.UpdatedAt = DateTime.UtcNow;
-                await db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
             }
-            logger.LogWarning("[AUTH] Échec login: {Email} | IP:{IP}", req.Email, ip);
+            _logger.LogWarning("[AUTH] Échec login: {Email} | IP:{IP}", req.Email, ip);
             return Unauthorized(new { error = "Email ou mot de passe incorrect." });
         }
 
@@ -219,9 +236,9 @@ public class AuthController(
             return StatusCode(403, new { error = "Confirmez votre email avant de vous connecter." });
 
         var (accessToken, refreshToken) = await IssueTokenPairAsync(user, ip, userAgent);
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
-        logger.LogInformation("[AUTH] Login: {Email} | IP:{IP}", user.Email, ip);
+        _logger.LogInformation("[AUTH] Login: {Email} | IP:{IP}", user.Email, ip);
         Response.Cookies.Append("refreshToken", refreshToken, RefreshCookieOptions());
 
         // Login alert désactivé — trop verbeux à chaque connexion.
@@ -253,7 +270,7 @@ public class AuthController(
             return Unauthorized(new { error = "Session expirée, reconnectez-vous." });
 
         // Chercher le token en DB par son hash SHA-256
-        var storedToken = await db.RefreshTokens
+        var storedToken = await _db.RefreshTokens
             .Include(rt => rt.User)
             .FirstOrDefaultAsync(rt => rt.Token == HashRefreshToken(rawRefreshToken));
 
@@ -264,11 +281,11 @@ public class AuthController(
         // Theft detection : token déjà révoqué présenté à nouveau
         if (storedToken.IsRevoked)
         {
-            logger.LogWarning(
+            _logger.LogWarning(
                 "[SECURITY] Token reuse attack detected user={UserId} | tokenHash={Hash}",
                 storedToken.UserId, HashRefreshToken(rawRefreshToken)[..12] + "...");
             await RevokeAllUserTokensAsync(storedToken.UserId);
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             Response.Cookies.Delete("refreshToken");
             return Unauthorized(new { error = "Session compromise, reconnectez-vous." });
         }
@@ -277,14 +294,14 @@ public class AuthController(
         if (storedToken.ExpiryDate < DateTime.UtcNow)
         {
             storedToken.IsRevoked = true;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
             return Unauthorized(new { error = "Session expirée, reconnectez-vous." });
         }
 
         // Valider que l'access token correspond bien à cet user
         if (!string.IsNullOrEmpty(req.AccessToken))
         {
-            var principal = tokens.GetPrincipalFromExpiredToken(req.AccessToken);
+            var principal = _tokens.GetPrincipalFromExpiredToken(req.AccessToken);
             var subClaim = principal?.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
             if (subClaim != storedToken.UserId.ToString())
                 return Unauthorized(new { error = "Token incohérent." });
@@ -297,7 +314,7 @@ public class AuthController(
             user,
             HttpContext.Connection.RemoteIpAddress?.ToString(),
             Request.Headers.UserAgent.ToString());
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         Response.Cookies.Append("refreshToken", newRefresh, RefreshCookieOptions());
         return Ok(new { accessToken = newAccess, expiresIn = 900 });
@@ -314,9 +331,9 @@ public class AuthController(
         var rawToken = Request.Cookies["refreshToken"];
         if (!string.IsNullOrEmpty(rawToken))
         {
-            var token = await db.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == HashRefreshToken(rawToken));
+            var token = await _db.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == HashRefreshToken(rawToken));
             if (token is not null) token.IsRevoked = true;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
         Response.Cookies.Delete("refreshToken");
         return Ok(new { message = "Déconnecté." });
@@ -340,7 +357,7 @@ public class AuthController(
         // Réponse constante — ne jamais révéler si l'email existe
         const string safeMsg = "Si l'email existe, un lien de réinitialisation a été envoyé.";
 
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == req.Email.ToLower() && !u.IsDeleted);
 
         if (user is not null)
@@ -349,12 +366,12 @@ public class AuthController(
             user.PasswordResetToken = resetToken;
             user.PasswordResetExpiry = DateTime.UtcNow.AddHours(1);
             user.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
-            queue.EnqueueTask(async ct =>
+            _queue.EnqueueTask(async ct =>
             {
-                try { await email.SendPasswordResetAsync(user.Email, user.FullName, resetToken, user.Email, ct); }
-                catch (Exception ex) { logger.LogError(ex, "[AUTH] Reset email failed for {Email}", user.Email); }
+                try { await _email.SendPasswordResetAsync(user.Email, user.FullName, resetToken, user.Email, ct); }
+                catch (Exception ex) { _logger.LogError(ex, "[AUTH] Reset email failed for {Email}", user.Email); }
             });
         }
 
@@ -378,7 +395,7 @@ public class AuthController(
         if (!Regex.IsMatch(req.NewPassword, @"^(?=.*[A-Z])(?=.*\d).{8,}$"))
             return BadRequest(new { error = "Le nouveau mot de passe doit faire au moins 8 caractères avec 1 majuscule et 1 chiffre." });
 
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == req.Email.ToLower() &&
             u.PasswordResetToken == req.Token &&
             !u.IsDeleted);
@@ -396,7 +413,7 @@ public class AuthController(
 
         // Révoquer tous les refresh tokens
         await RevokeAllUserTokensAsync(user.Id);
-        await db.SaveChangesAsync();
+        await _db.SaveChangesAsync();
 
         Response.Cookies.Delete("refreshToken");
         return Ok(new { message = "Mot de passe mis à jour. Reconnectez-vous." });
@@ -413,7 +430,7 @@ public class AuthController(
         if (!ModelState.IsValid)
             return Ok(new { message = "Si l'email existe, un nouveau lien a été envoyé." });
 
-        var user = await db.Users.FirstOrDefaultAsync(u =>
+        var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == req.Email.ToLower() &&
             !u.IsEmailConfirmed &&
             !u.IsDeleted);
@@ -424,12 +441,12 @@ public class AuthController(
             user.EmailConfirmToken = token;
             user.EmailConfirmTokenExpiry = DateTime.UtcNow.AddHours(24);
             user.UpdatedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync();
+            await _db.SaveChangesAsync();
 
-            queue.EnqueueTask(async ct =>
+            _queue.EnqueueTask(async ct =>
             {
-                try { await email.SendEmailConfirmationAsync(user.Email, user.FullName, token, user.Email, ct); }
-                catch (Exception ex) { logger.LogError(ex, "[AUTH] Resend confirm failed for {Email}", user.Email); }
+                try { await _email.SendEmailConfirmationAsync(user.Email, user.FullName, token, user.Email, ct); }
+                catch (Exception ex) { _logger.LogError(ex, "[AUTH] Resend confirm failed for {Email}", user.Email); }
             });
         }
 
@@ -443,10 +460,10 @@ public class AuthController(
     private Task<(string AccessToken, string RefreshToken)> IssueTokenPairAsync(
         AppUser user, string? ip = null, string? ua = null)
     {
-        var accessToken = tokens.GenerateAccessToken(user);
-        var refreshToken = tokens.GenerateRefreshToken();
+        var accessToken = _tokens.GenerateAccessToken(user);
+        var refreshToken = _tokens.GenerateRefreshToken();
 
-        db.RefreshTokens.Add(new RefreshToken
+        _db.RefreshTokens.Add(new RefreshToken
         {
             UserId = user.Id,
             Token = HashRefreshToken(refreshToken), // store SHA-256 hash, never the raw token
@@ -460,7 +477,7 @@ public class AuthController(
 
     private async Task RevokeAllUserTokensAsync(int userId)
     {
-        var userTokens = await db.RefreshTokens
+        var userTokens = await _db.RefreshTokens
             .Where(rt => rt.UserId == userId && !rt.IsRevoked)
             .ToListAsync();
         foreach (var t in userTokens)
@@ -486,9 +503,9 @@ public class AuthController(
     public async Task<IActionResult> TestEmail(
         [FromQuery] string to = "test@example.com")
     {
-        if (!env.IsDevelopment())
+        if (!_env.IsDevelopment())
             return NotFound();
-        await email.SendEmailConfirmationAsync(to, "Jonathan", "test-token-123", to);
+        await _email.SendEmailConfirmationAsync(to, "Jonathan", "test-token-123", to);
         return Ok(new { sent = true, to });
     }
 

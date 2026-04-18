@@ -45,8 +45,11 @@ public class AppUser
 
     public bool IsDeleted { get; set; } = false;
 
+    [MaxLength(32)]
+    public string SubscriptionStatus { get; set; } = "Free"; // "Free" | "Essentiel" | "Pro" | "Ultra"
+
     // ── Lockout anti-brute force ───────────────────────────
-    public int  FailedLoginCount { get; set; } = 0;
+    public int FailedLoginCount { get; set; } = 0;
     public DateTime? LockoutEnd { get; set; }
 
     // ── Timestamps ─────────────────────────────────────────
@@ -208,13 +211,13 @@ public class Bookmark
     [ForeignKey(nameof(UserId))]
     public AppUser User { get; set; } = null!;
 
-    [Required, MaxLength(64)]  public string  JobOfferId   { get; set; } = "";
-    [MaxLength(512)]           public string  JobTitle     { get; set; } = "";
-    [MaxLength(256)]           public string  Company      { get; set; } = "";
-    [MaxLength(256)]           public string  Location     { get; set; } = "";
-    [MaxLength(64)]            public string  ContractType { get; set; } = "";
-    [MaxLength(256)]           public string? SalaryLabel  { get; set; }
-    [MaxLength(1024)]          public string? ApplyUrl     { get; set; }
+    [Required, MaxLength(64)] public string JobOfferId { get; set; } = "";
+    [MaxLength(512)] public string JobTitle { get; set; } = "";
+    [MaxLength(256)] public string Company { get; set; } = "";
+    [MaxLength(256)] public string Location { get; set; } = "";
+    [MaxLength(64)] public string ContractType { get; set; } = "";
+    [MaxLength(256)] public string? SalaryLabel { get; set; }
+    [MaxLength(1024)] public string? ApplyUrl { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -231,16 +234,16 @@ public class SearchAlert
     [ForeignKey(nameof(UserId))]
     public AppUser User { get; set; } = null!;
 
-    [Required, MaxLength(256)] public string  Keywords     { get; set; } = "";
-    [MaxLength(256)]           public string? Location     { get; set; }
-    [MaxLength(64)]            public string? ContractType { get; set; }
+    [Required, MaxLength(256)] public string Keywords { get; set; } = "";
+    [MaxLength(256)] public string? Location { get; set; }
+    [MaxLength(64)] public string? ContractType { get; set; }
 
     /// <summary>"daily" | "weekly"</summary>
-    [MaxLength(16)]            public string  Frequency    { get; set; } = "daily";
+    [MaxLength(16)] public string Frequency { get; set; } = "daily";
 
-    public bool     IsActive  { get; set; } = true;
+    public bool IsActive { get; set; } = true;
     public DateTime? LastSentAt { get; set; }
-    public DateTime CreatedAt  { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
 /// <summary>
@@ -256,17 +259,17 @@ public class JobApplication
     [ForeignKey(nameof(UserId))]
     public AppUser User { get; set; } = null!;
 
-    [Required, MaxLength(512)] public string  Title      { get; set; } = "";
-    [MaxLength(256)]           public string? Company    { get; set; }
-    [MaxLength(256)]           public string? Location   { get; set; }
-    [MaxLength(64)]            public string? JobOfferId { get; set; }
+    [Required, MaxLength(512)] public string Title { get; set; } = "";
+    [MaxLength(256)] public string? Company { get; set; }
+    [MaxLength(256)] public string? Location { get; set; }
+    [MaxLength(64)] public string? JobOfferId { get; set; }
 
     /// <summary>"wishlist" | "applied" | "interview" | "offer" | "rejected"</summary>
-    [MaxLength(32)]  public string  Column    { get; set; } = "wishlist";
-    public int       SortOrder { get; set; } = 0;
+    [MaxLength(32)] public string Column { get; set; } = "wishlist";
+    public int SortOrder { get; set; } = 0;
 
-    [Column(TypeName = "TEXT")] public string? Notes    { get; set; }
-    [MaxLength(1024)]           public string? ApplyUrl { get; set; }
+    [Column(TypeName = "TEXT")] public string? Notes { get; set; }
+    [MaxLength(1024)] public string? ApplyUrl { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

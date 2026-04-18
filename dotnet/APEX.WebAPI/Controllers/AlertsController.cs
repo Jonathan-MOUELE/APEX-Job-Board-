@@ -33,9 +33,16 @@ public class AlertsController(ApexDbContext db) : ControllerBase
         var alerts = await db.SearchAlerts
             .Where(a => a.UserId == uid)
             .OrderByDescending(a => a.CreatedAt)
-            .Select(a => new {
-                a.Id, a.Keywords, a.Location, a.ContractType,
-                a.Frequency, a.IsActive, a.LastSentAt, a.CreatedAt
+            .Select(a => new
+            {
+                a.Id,
+                a.Keywords,
+                a.Location,
+                a.ContractType,
+                a.Frequency,
+                a.IsActive,
+                a.LastSentAt,
+                a.CreatedAt
             })
             .ToListAsync(ct);
         return Ok(alerts);
@@ -60,12 +67,12 @@ public class AlertsController(ApexDbContext db) : ControllerBase
 
         var alert = new SearchAlert
         {
-            UserId       = uid,
-            Keywords     = (req.Keywords ?? "développeur")[..Math.Min((req.Keywords ?? "développeur").Length, 256)],
-            Location     = req.Location,
+            UserId = uid,
+            Keywords = (req.Keywords ?? "développeur")[..Math.Min((req.Keywords ?? "développeur").Length, 256)],
+            Location = req.Location,
             ContractType = req.ContractType,
-            Frequency    = freq,
-            IsActive     = true
+            Frequency = freq,
+            IsActive = true
         };
         db.SearchAlerts.Add(alert);
         await db.SaveChangesAsync(ct);
@@ -100,8 +107,8 @@ public class AlertsController(ApexDbContext db) : ControllerBase
 }
 
 public record CreateAlertRequest(
-    [MaxLength(256)] string?  Keywords,
-    [MaxLength(256)] string?  Location,
-    [MaxLength(64)]  string?  ContractType,
-    [MaxLength(16)]  string?  Frequency
+    [MaxLength(256)] string? Keywords,
+    [MaxLength(256)] string? Location,
+    [MaxLength(64)] string? ContractType,
+    [MaxLength(16)] string? Frequency
 );

@@ -1,7 +1,6 @@
-/* ═══════════════════════════════════════════════════════════════
-   APEX — Clean SaaS Design System  v2.0
-   PURGE: mesh-gradient removed, Material Symbols removed → Lucide SVG
-   ═══════════════════════════════════════════════════════════════ */
+/* APEX — Clean SaaS Design System  v2.0
+   PURGE: mesh-gradient removed, Material Symbols removed
+   ─────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800&family=Inter:wght@400;500;600&display=swap');
 
@@ -434,6 +433,7 @@ html:not(.dark) .glass-card {
   padding: 1px;
   background: linear-gradient(135deg, var(--accent) 0%, transparent 50%, var(--accent-warm) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
@@ -1508,6 +1508,7 @@ html:not(.dark) .bento-mask {
 .truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1943,7 +1944,8 @@ html:not(.dark) .bento-mask {
 
 #swipe-modal .modal {
   width: 100% !important;
-  max-width: 500px !important; /* Format smartphone sur PC */
+  max-width: 500px !important;
+  /* Format smartphone sur PC */
   height: min(90vh, 850px) !important;
   border-radius: 24px !important;
   background: #09090b;
@@ -2015,7 +2017,7 @@ html:not(.dark) .bento-mask {
   align-items: center;
   justify-content: center;
   background: #1c1c1e;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
 }
@@ -2024,15 +2026,33 @@ html:not(.dark) .bento-mask {
   transform: scale(1.15);
 }
 
-.btn-swipe-action.dislike i { color: #fff; }
-.btn-swipe-action.like i { color: var(--orange); fill: var(--orange); }
+.btn-swipe-action.dislike i {
+  color: #fff;
+}
 
-.btn-swipe-action.dislike:hover { background: #333; }
-.btn-swipe-action.like:hover { background: rgba(255, 142, 128, 0.1); }
+.btn-swipe-action.like i {
+  color: var(--orange);
+  fill: var(--orange);
+}
+
+.btn-swipe-action.dislike:hover {
+  background: #333;
+}
+
+.btn-swipe-action.like:hover {
+  background: rgba(255, 142, 128, 0.1);
+}
 
 /* ── Swipe Card Animations ─────────────────────────── */
-.swipe-card.swipe-out-left  { transform: translateX(-150%) rotate(-20deg); opacity: 0; }
-.swipe-card.swipe-out-right { transform: translateX(150%)  rotate(20deg);  opacity: 0; }
+.swipe-card.swipe-out-left {
+  transform: translateX(-150%) rotate(-20deg);
+  opacity: 0;
+}
+
+.swipe-card.swipe-out-right {
+  transform: translateX(150%) rotate(20deg);
+  opacity: 0;
+}
 
 /* ── Recruiter Strip ───────────────────────────────── */
 .recruiters-track {
@@ -2043,51 +2063,204 @@ html:not(.dark) .bento-mask {
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
-.recruiters-track::-webkit-scrollbar { display: none; }
+
+.recruiters-track::-webkit-scrollbar {
+  display: none;
+}
+
 .recruiter-chip {
-  display: flex; align-items: center; gap: .5rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
   padding: .5rem .875rem;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 9999px; cursor: pointer; flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
   scroll-snap-align: start;
   transition: border-color .15s;
 }
-.recruiter-chip:hover { border-color: var(--border-strong); }
+
+.recruiter-chip:hover {
+  border-color: var(--border-strong);
+}
 
 /* ── Mobile Responsive ─────────────────────────────── */
 @media (max-width: 768px) {
-  .hero-section { padding: 2.5rem 1.25rem; }
+  .hero-section {
+    padding: 2.5rem 1.25rem;
+  }
+
   .hero-inner {
     grid-template-columns: 1fr !important;
     text-align: center;
     gap: 2rem;
   }
-  .hero-text { display: flex; flex-direction: column; align-items: center; }
-  .hero-photo-wrap { display: none; }
-  .search-bar { max-width: 100% !important; }
-  .trend-pills { justify-content: center; }
-  .section-inner { padding-left: 1.25rem; padding-right: 1.25rem; }
+
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-photo-wrap {
+    display: none;
+  }
+
+  .search-bar {
+    max-width: 100% !important;
+  }
+
+  .trend-pills {
+    justify-content: center;
+  }
+
+  .section-inner {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
   .sectors-grid {
     grid-template-columns: 1fr 1fr !important;
     grid-auto-rows: 160px !important;
   }
+
   .sectors-grid .bento-card.featured {
     grid-column: span 2 !important;
     grid-row: span 1 !important;
   }
-  .tools-grid { grid-template-columns: 1fr !important; }
-  .plans-grid { grid-template-columns: 1fr !important; }
-  .cities-grid { grid-template-columns: 1fr 1fr !important; }
-  #jobs-grid { grid-template-columns: 1fr !important; }
-  .job-card { padding: 1rem; }
-  .footer-grid { grid-template-columns: 1fr !important; gap: 2rem; }
-  .drawer { max-width: 100vw !important; }
-  .chat-sidebar { display: none !important; }
-  #fab { bottom: 80px !important; }
+
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .plans-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cities-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  #jobs-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .job-card {
+    padding: 1rem;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem;
+  }
+
+  .drawer {
+    max-width: 100vw !important;
+  }
+
+  .chat-sidebar {
+    display: none !important;
+  }
+
+  #fab {
+    bottom: 80px !important;
+  }
 }
 
 @media (max-width: 480px) {
-  h1 { font-size: clamp(1.8rem, 8vw, 2.5rem) !important; }
-  .sectors-grid { grid-template-columns: 1fr !important; }
-  .cities-grid  { grid-template-columns: 1fr !important; }
+  h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
+  }
+
+  .sectors-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cities-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ── Swipe n' Job Modal (Restoration) ─────────────────────────── */
+#swipe-modal .modal {
+  max-width: 550px !important;
+  height: auto !important;
+  min-height: 480px;
+}
+
+#swipe-card-container {
+  position: relative;
+  height: 420px;
+  margin-top: 20px;
+  overflow: visible;
+}
+
+.swipe-card {
+  position: absolute;
+  inset: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex !important;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  cursor: grab;
+  z-index: 1;
+}
+
+.swipe-card.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-100px) rotate(-10deg);
+}
+
+.swipe-card:nth-child(2) { transform: scale(0.96) translateY(10px); z-index: 0; opacity: 0.8; }
+.swipe-card:nth-child(3) { transform: scale(0.92) translateY(20px); z-index: -1; opacity: 0.6; }
+
+/* ── Immersive Job Detail Drawer ───────────────────────────────── */
+.job-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  max-width: 650px;
+  height: 100%;
+  background: var(--surface);
+  z-index: 10020;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.4);
+}
+
+.job-panel.open {
+  right: 0;
+}
+
+.job-panel-hd {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.job-panel-body {
+  flex: 1;
+  padding: 40px 30px;
+  overflow-y: auto;
+}
+
+.salary-result-box {
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

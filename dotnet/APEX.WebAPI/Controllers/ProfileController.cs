@@ -60,16 +60,16 @@ public class ProfileController(
 
         return Ok(new
         {
-            id       = user.Id,
-            email    = user.Email,
-            name     = user.FullName,
-            role     = user.Role,
-            bio      = profile?.Bio ?? profile?.HumanizedBio,
+            id = user.Id,
+            email = user.Email,
+            name = user.FullName,
+            role = user.Role,
+            bio = profile?.Bio ?? profile?.HumanizedBio,
             techs,
             softs,
-            hasCv    = !string.IsNullOrEmpty(user.CvRawText),
-            cvFile   = profile?.CvFileName,
-            cvDate   = profile?.CvUploadedAt
+            hasCv = !string.IsNullOrEmpty(user.CvRawText),
+            cvFile = profile?.CvFileName,
+            cvDate = profile?.CvUploadedAt
         });
     }
 
@@ -88,7 +88,7 @@ public class ProfileController(
         var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
         if (profile is null) return NotFound();
 
-        profile.Bio       = req.Bio?.Trim();
+        profile.Bio = req.Bio?.Trim();
         profile.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
@@ -119,7 +119,7 @@ public class ProfileController(
         if (profile is null) return NotFound();
 
         profile.TechStackJson = JsonSerializer.Serialize(safe);
-        profile.UpdatedAt     = DateTime.UtcNow;
+        profile.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         return Ok(new { message = "Compétences mises à jour.", techs = safe });
@@ -148,7 +148,7 @@ public class ProfileController(
         if (profile is null) return NotFound();
 
         profile.SoftSkillsJson = JsonSerializer.Serialize(safe);
-        profile.UpdatedAt      = DateTime.UtcNow;
+        profile.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
 
         return Ok(new { message = "Soft skills mises à jour.", softs = safe });
@@ -179,7 +179,7 @@ public class ProfileController(
         using (var magicStream = file.OpenReadStream())
         {
             var magic = new byte[4];
-            var read  = await magicStream.ReadAsync(magic.AsMemory(0, 4));
+            var read = await magicStream.ReadAsync(magic.AsMemory(0, 4));
             if (read < 4 || magic[0] != 0x25 || magic[1] != 0x50 || magic[2] != 0x44 || magic[3] != 0x46)
                 return BadRequest(new { error = "Le fichier n'est pas un PDF valide." });
         }
@@ -197,18 +197,18 @@ public class ProfileController(
             var result = await cvParser.ParsePdfAsync(stream);
 
             // Mise à jour de l'entité User (raw text)
-            user.CvRawText  = result.RawText;
-            user.UpdatedAt  = DateTime.UtcNow;
+            user.CvRawText = result.RawText;
+            user.UpdatedAt = DateTime.UtcNow;
 
             // Mise à jour du profil
             var profile = user.Profile ?? new Core.Entities.UserProfile { UserId = userId.Value };
             if (user.Profile is null) db.UserProfiles.Add(profile);
 
             profile.HumanizedBio = result.HumanizedBio;
-            profile.ProfileJson  = JsonSerializer.Serialize(result.Profile, JsonOpts);
-            profile.CvFileName   = file.FileName;
+            profile.ProfileJson = JsonSerializer.Serialize(result.Profile, JsonOpts);
+            profile.CvFileName = file.FileName;
             profile.CvUploadedAt = DateTime.UtcNow;
-            profile.UpdatedAt    = DateTime.UtcNow;
+            profile.UpdatedAt = DateTime.UtcNow;
 
             // Extraire les techs du profil parsé
             if (result.Profile?.Technologies is not null)
@@ -222,9 +222,9 @@ public class ProfileController(
             logger.LogInformation("[PROFILE] CV analysé: userId={Id}", userId);
             return Ok(new
             {
-                message      = "CV analysé avec succès.",
-                bio          = result.HumanizedBio,
-                techs        = result.Profile?.Technologies?.Keys.ToList(),
+                message = "CV analysé avec succès.",
+                bio = result.HumanizedBio,
+                techs = result.Profile?.Technologies?.Keys.ToList(),
                 isImageBased = string.IsNullOrWhiteSpace(result.RawText)
             });
         }

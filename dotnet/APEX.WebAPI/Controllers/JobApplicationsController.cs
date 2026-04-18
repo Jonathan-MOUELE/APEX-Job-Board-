@@ -36,10 +36,19 @@ public class JobApplicationsController(ApexDbContext db) : ControllerBase
             .OrderBy(c => c.Column)
             .ThenBy(c => c.SortOrder)
             .ThenBy(c => c.CreatedAt)
-            .Select(c => new {
-                c.Id, c.Title, c.Company, c.Location, c.JobOfferId,
-                c.Column, c.SortOrder, c.Notes, c.ApplyUrl,
-                c.CreatedAt, c.UpdatedAt
+            .Select(c => new
+            {
+                c.Id,
+                c.Title,
+                c.Company,
+                c.Location,
+                c.JobOfferId,
+                c.Column,
+                c.SortOrder,
+                c.Notes,
+                c.ApplyUrl,
+                c.CreatedAt,
+                c.UpdatedAt
             })
             .ToListAsync(ct);
         return Ok(apps);
@@ -62,20 +71,26 @@ public class JobApplicationsController(ApexDbContext db) : ControllerBase
 
         var app = new JobApplication
         {
-            UserId    = uid,
-            Title     = (req.Title ?? "")[..Math.Min((req.Title ?? "").Length, 512)],
-            Company   = req.Company,
-            Location  = req.Location,
-            JobOfferId= req.JobOfferId,
-            Column    = col,
-            Notes     = req.Notes,
-            ApplyUrl  = req.ApplyUrl
+            UserId = uid,
+            Title = (req.Title ?? "")[..Math.Min((req.Title ?? "").Length, 512)],
+            Company = req.Company,
+            Location = req.Location,
+            JobOfferId = req.JobOfferId,
+            Column = col,
+            Notes = req.Notes,
+            ApplyUrl = req.ApplyUrl
         };
         db.JobApplications.Add(app);
         await db.SaveChangesAsync(ct);
-        return Ok(new {
-            app.Id, app.Title, app.Company, app.Location,
-            app.Column, app.JobOfferId, app.CreatedAt
+        return Ok(new
+        {
+            app.Id,
+            app.Title,
+            app.Company,
+            app.Location,
+            app.Column,
+            app.JobOfferId,
+            app.CreatedAt
         });
     }
 
@@ -91,12 +106,12 @@ public class JobApplicationsController(ApexDbContext db) : ControllerBase
             .FirstOrDefaultAsync(c => c.Id == id && c.UserId == uid, ct);
         if (app is null) return NotFound();
 
-        if (req.Title    is not null) app.Title    = req.Title[..Math.Min(req.Title.Length, 512)];
-        if (req.Company  is not null) app.Company  = req.Company;
+        if (req.Title is not null) app.Title = req.Title[..Math.Min(req.Title.Length, 512)];
+        if (req.Company is not null) app.Company = req.Company;
         if (req.Location is not null) app.Location = req.Location;
-        if (req.Notes    is not null) app.Notes    = req.Notes;
+        if (req.Notes is not null) app.Notes = req.Notes;
         if (req.ApplyUrl is not null) app.ApplyUrl = req.ApplyUrl;
-        if (req.SortOrder.HasValue)   app.SortOrder = req.SortOrder.Value;
+        if (req.SortOrder.HasValue) app.SortOrder = req.SortOrder.Value;
         if (req.Column is not null && ValidColumns.Contains(req.Column))
             app.Column = req.Column;
 
@@ -120,12 +135,12 @@ public class JobApplicationsController(ApexDbContext db) : ControllerBase
 }
 
 public record JobApplicationRequest(
-    [MaxLength(512)] string?  Title,
-    [MaxLength(256)] string?  Company,
-    [MaxLength(256)] string?  Location,
-    [MaxLength(64)]  string?  JobOfferId,
-    [MaxLength(32)]  string?  Column,
-    int?                      SortOrder,
-    string?                   Notes,
+    [MaxLength(512)] string? Title,
+    [MaxLength(256)] string? Company,
+    [MaxLength(256)] string? Location,
+    [MaxLength(64)] string? JobOfferId,
+    [MaxLength(32)] string? Column,
+    int? SortOrder,
+    string? Notes,
     [MaxLength(1024)] string? ApplyUrl
 );

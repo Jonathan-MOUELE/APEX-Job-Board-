@@ -31,9 +31,17 @@ public class BookmarksController(ApexDbContext db) : ControllerBase
         var bks = await db.Bookmarks
             .Where(b => b.UserId == uid)
             .OrderByDescending(b => b.CreatedAt)
-            .Select(b => new {
-                b.Id, b.JobOfferId, b.JobTitle, b.Company,
-                b.Location, b.ContractType, b.SalaryLabel, b.ApplyUrl, b.CreatedAt
+            .Select(b => new
+            {
+                b.Id,
+                b.JobOfferId,
+                b.JobTitle,
+                b.Company,
+                b.Location,
+                b.ContractType,
+                b.SalaryLabel,
+                b.ApplyUrl,
+                b.CreatedAt
             })
             .ToListAsync(ct);
         return Ok(bks);
@@ -68,14 +76,14 @@ public class BookmarksController(ApexDbContext db) : ControllerBase
 
         var bk = new Bookmark
         {
-            UserId       = uid,
-            JobOfferId   = Trim(req.JobOfferId,  64),
-            JobTitle     = Trim(req.JobTitle,   512),
-            Company      = Trim(req.Company,    256),
-            Location     = Trim(req.Location,   256),
+            UserId = uid,
+            JobOfferId = Trim(req.JobOfferId, 64),
+            JobTitle = Trim(req.JobTitle, 512),
+            Company = Trim(req.Company, 256),
+            Location = Trim(req.Location, 256),
             ContractType = Trim(req.ContractType, 64),
-            SalaryLabel  = req.SalaryLabel,
-            ApplyUrl     = req.ApplyUrl
+            SalaryLabel = req.SalaryLabel,
+            ApplyUrl = req.ApplyUrl
         };
         db.Bookmarks.Add(bk);
         await db.SaveChangesAsync(ct);
@@ -97,11 +105,11 @@ public class BookmarksController(ApexDbContext db) : ControllerBase
 }
 
 public record AddBookmarkRequest(
-    [Required, MaxLength(64)]  string  JobOfferId,
-    [MaxLength(512)]           string? JobTitle,
-    [MaxLength(256)]           string? Company,
-    [MaxLength(256)]           string? Location,
-    [MaxLength(64)]            string? ContractType,
-    [MaxLength(256)]           string? SalaryLabel,
-    [MaxLength(1024)]          string? ApplyUrl
+    [Required, MaxLength(64)] string JobOfferId,
+    [MaxLength(512)] string? JobTitle,
+    [MaxLength(256)] string? Company,
+    [MaxLength(256)] string? Location,
+    [MaxLength(64)] string? ContractType,
+    [MaxLength(256)] string? SalaryLabel,
+    [MaxLength(1024)] string? ApplyUrl
 );

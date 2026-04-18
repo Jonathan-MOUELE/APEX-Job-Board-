@@ -23,16 +23,7 @@ namespace APEX.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/jobs")]
-public class JobsController(
-    IJobService jobService,
-    IAgentAnalyst analyst,
-    ApexDbContext db,
-    IOptions<AiSettings> aiOpts,
-    IHttpClientFactory httpFactory,
-    ArbeitnowClient arbeitnow,
-    AdzunaClient adzuna,
-    MuseClient muse,
-    ILogger<JobsController> logger) : ControllerBase
+public class JobsController : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -44,7 +35,37 @@ public class JobsController(
         @"jailbreak|DAN|base64|<script|javascript:|ignore\s+(?:previous|above|all)|pretend|bypass|system\s*prompt|override|eval\s*\(|onerror|onload|onclick|prompt\s*\(|alert\s*\(|document\.|window\.|\bfetch\s*\(|\bimport\s*\(",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private readonly AiSettings _aiSettings = aiOpts.Value;
+    private readonly IJobService _jobService;
+    private readonly IAgentAnalyst _analyst;
+    private readonly ApexDbContext _db;
+    private readonly AiSettings _aiSettings;
+    private readonly IHttpClientFactory _httpFactory;
+    private readonly ArbeitnowClient _arbeitnow;
+    private readonly AdzunaClient _adzuna;
+    private readonly MuseClient _muse;
+    private readonly ILogger<JobsController> _logger;
+
+    public JobsController(
+        IJobService jobService,
+        IAgentAnalyst analyst,
+        ApexDbContext db,
+        IOptions<AiSettings> aiOpts,
+        IHttpClientFactory httpFactory,
+        ArbeitnowClient arbeitnow,
+        AdzunaClient adzuna,
+        MuseClient muse,
+        ILogger<JobsController> logger)
+    {
+        _jobService = jobService;
+        _analyst = analyst;
+        _db = db;
+        _aiSettings = aiOpts.Value;
+        _httpFactory = httpFactory;
+        _arbeitnow = arbeitnow;
+        _adzuna = adzuna;
+        _muse = muse;
+        _logger = logger;
+    }
 
     // ══════════════════════════════════════════════════════════
     //  GET /api/jobs/search
@@ -72,7 +93,7 @@ public class JobsController(
         keywords = Regex.Replace(keywords, @"[<>""';\\]", "").Trim();
         if (keywords.Length > 128) keywords = keywords[..128];
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[JOBS] Search: keywords={K} location={L} contract={C} country={Cnt} user={U}",
             keywords, location, contract, country, userId);
 
@@ -80,37 +101,48 @@ public class JobsController(
         {
             bool isFrance = string.IsNullOrWhiteSpace(country) || country.Equals("fr", StringComparison.OrdinalIgnoreCase);
 
-            // Adzuna (international + France)
-            var adzJobsTask = adzuna.SearchAsync(keywords, location, country, ct);
-
-            // France Travail — only for French searches (it doesn't know "Los Angeles")
-            var ftJobsTask = isFrance
-                ? jobService.SearchJobsAsync(keywords, location, contract, range, ct)
+            // 1. France Travail (Aggressive range 0-149 for infinite scroll support)
+            var ftTask = isFrance
+                ? _jobService.SearchJobsAsync(keywords, location, contract, "0-149", ct)
                 : Task.FromResult<IReadOnlyList<JobOffer>>([]);
 
-            // Arbeitnow — EU/Remote, always included as supplement
-            var arbJobsTask = isFrance
-                ? arbeitnow.SearchAsync(keywords, location, ct)
+            // 2. Adzuna (Fallback/Supplement)
+            var adzTask = _adzuna.SearchAsync(keywords, location, country, ct);
+
+            // 3. Arbeitnow (Disabled for French searches to avoid "filling" with German jobs)
+            var arbTask = (!isFrance && (location?.Contains("Germany") == true || location?.Contains("Remote") == true))
+                ? _arbeitnow.SearchAsync(keywords, location, ct)
                 : Task.FromResult<List<JobOffer>>([]);
 
-            await Task.WhenAll(ftJobsTask, arbJobsTask, adzJobsTask);
+            // Parallel wait with safety
+            try { await ftTask; } catch (Exception ex) { _logger.LogError(ex, "[JOBS] FT failed"); }
+            try { await adzTask; } catch (Exception ex) { _logger.LogError(ex, "[JOBS] Adzuna failed"); }
+            try { await arbTask; } catch (Exception ex) { _logger.LogError(ex, "[JOBS] Arbeitnow failed"); }
 
-            var jobs = ftJobsTask.Result;
-            var arbJobs = arbJobsTask.Result;
-            var adzJobs = adzJobsTask.Result;
+            var jobs = ftTask.IsCompletedSuccessfully ? ftTask.Result : new List<JobOffer>();
+            var adzJobs = adzTask.IsCompletedSuccessfully ? adzTask.Result : new List<JobOffer>();
+            var arbJobs = arbTask.IsCompletedSuccessfully ? arbTask.Result : new List<JobOffer>();
 
-            // Deduplicate: skip results whose title+company already appear in FT
+            // Adzuna filtering for France
+            if (isFrance)
+            {
+                adzJobs = adzJobs.Where(j => j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true
+                                        || j.Location?.Contains("74", StringComparison.OrdinalIgnoreCase) == true // region code
+                                        || string.IsNullOrWhiteSpace(j.Location)).ToList();
+            }
+
             var existingKeys = jobs.Select(j => $"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}").ToHashSet();
-            var newArb = arbJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
             var newAdz = adzJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
-            jobs = [.. jobs, .. newArb, .. newAdz];
+            var newArb = arbJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
+
+            var allResults = jobs.Concat(newAdz).Concat(newArb).ToList();
 
             sw.Stop();
-            logger.LogInformation("[JOBS] Search completed in {Ms}ms — {Count} résultats (FT:{FT} + Arbeitnow:{AN} + Adzuna:{ADZ})",
-                sw.ElapsedMilliseconds, jobs.Count, ftJobsTask.Result.Count, arbJobs.Count, adzJobs.Count);
+            _logger.LogInformation("[JOBS] Final Search {K} in {L}: FT:{FT}, Adzuna:{ADZ}, Arbeitnow:{AN}. Total:{T} in {Ms}ms",
+                keywords, location, jobs.Count, adzJobs.Count, arbJobs.Count, allResults.Count, sw.ElapsedMilliseconds);
 
-            _ = PersistJobsAsync(jobs);
-            return Ok(new { count = jobs.Count, results = jobs });
+            _ = PersistJobsAsync(allResults);
+            return Ok(new { count = allResults.Count, results = allResults });
         }
         catch (ArgumentException ex)
         {
@@ -118,7 +150,7 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[JOBS] Search error");
+            _logger.LogError(ex, "[JOBS] Search error");
             return StatusCode(502, new { error = "Erreur de connexion à France Travail." });
         }
     }
@@ -134,7 +166,7 @@ public class JobsController(
         [FromQuery, Required, MaxLength(128)] string name,
         CancellationToken ct = default)
     {
-        var company = await muse.GetCompanyAsync(name, ct);
+        var company = await _muse.GetCompanyAsync(name, ct);
         if (company is null) return NotFound(new { found = false });
         return Ok(new
         {
@@ -169,10 +201,10 @@ public class JobsController(
             return BadRequest(new { error = "Uploadez votre CV pour accéder à l'analyse IA." });
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var result = await analyst.AnalyzeAsync(req.Job, profile, ct);
+        var result = await _analyst.AnalyzeAsync(req.Job, profile, ct);
         sw.Stop();
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "[JOBS] Analyze: jobId={Id} user={U} score={S} tier={T} in {Ms}ms",
             req.Job.Id, userId, result.OverallScore, result.MatchTier, sw.ElapsedMilliseconds);
 
@@ -206,7 +238,7 @@ public class JobsController(
         var results = new List<MatchResult>();
         foreach (var job in req.Jobs)
         {
-            var r = await analyst.AnalyzeAsync(job, profile, ct);
+            var r = await _analyst.AnalyzeAsync(job, profile, ct);
             results.Add(r);
         }
 
@@ -236,7 +268,7 @@ public class JobsController(
         var model = _aiSettings.FlashModel ?? "gemini-2.0-flash";
         if (string.IsNullOrEmpty(apiKey) || apiKey.StartsWith("REPLACE_ME"))
         {
-            logger.LogError("[CHAT] AI API key not configured!");
+            _logger.LogError("[CHAT] AI API key not configured!");
             return Ok(new { reply = "Clé API IA non configurée. Ajoutez votre clé dans appsettings.Development.json.", fallback = true });
         }
 
@@ -263,7 +295,7 @@ public class JobsController(
                 || status == System.Net.HttpStatusCode.NotFound))
             {
                 var fallbackModel = _aiSettings.ProModel ?? model;
-                logger.LogWarning("[CHAT] Modèle principal indisponible ({Status}) — fallback {M}", (int)status, fallbackModel);
+                _logger.LogWarning("[CHAT] Modèle principal indisponible ({Status}) — fallback {M}", (int)status, fallbackModel);
                 (text, status) = _aiSettings.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase)
                     ? await CallOpenRouterAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct)
                     : await CallGeminiAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct);
@@ -281,7 +313,7 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError("[CHAT] Exception non gérée — {Msg}", ex.Message);
+            _logger.LogError("[CHAT] Exception non gérée — {Msg}", ex.Message);
             return Ok(new { reply = "Erreur technique. Réessayez.", fallback = true });
         }
     }
@@ -318,13 +350,13 @@ public class JobsController(
             max_tokens = _aiSettings.MaxOutputTokens > 0 ? _aiSettings.MaxOutputTokens : 1024
         }, JsonOpts);
 
-        var client = httpFactory.CreateClient();
+        var client = _httpFactory.CreateClient();
         client.Timeout = TimeSpan.FromSeconds(_aiSettings.TimeoutSeconds > 0 ? _aiSettings.TimeoutSeconds : 30);
         client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
         client.DefaultRequestHeaders.TryAddWithoutValidation("HTTP-Referer", _aiSettings.SiteUrl ?? "https://apex-avers.fr");
         client.DefaultRequestHeaders.TryAddWithoutValidation("X-Title", _aiSettings.SiteName ?? "APEX by AVERS");
 
-        logger.LogInformation("[CHAT] OpenRouter POST {Url} model={Model}", baseUrl, model);
+        _logger.LogInformation("[CHAT] OpenRouter POST {Url} model={Model}", baseUrl, model);
 
         HttpResponseMessage response;
         string raw;
@@ -336,13 +368,13 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError("[CHAT] OpenRouter réseau/timeout — {Msg}", ex.Message);
+            _logger.LogError("[CHAT] OpenRouter réseau/timeout — {Msg}", ex.Message);
             return (null, System.Net.HttpStatusCode.ServiceUnavailable);
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogError("[CHAT] OpenRouter {Status} — {Body}", (int)response.StatusCode, raw.Length > 300 ? raw[..300] : raw);
+            _logger.LogError("[CHAT] OpenRouter {Status} — {Body}", (int)response.StatusCode, raw.Length > 300 ? raw[..300] : raw);
             return (null, response.StatusCode);
         }
 
@@ -358,7 +390,7 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError("[CHAT] OpenRouter JSON parse error — {Msg}", ex.Message);
+            _logger.LogError("[CHAT] OpenRouter JSON parse error — {Msg}", ex.Message);
             return (null, response.StatusCode);
         }
     }
@@ -394,10 +426,10 @@ public class JobsController(
 
         var json = JsonSerializer.Serialize(payload, JsonOpts);
         var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-        var client = httpFactory.CreateClient();
+        var client = _httpFactory.CreateClient();
         client.Timeout = TimeSpan.FromSeconds(_aiSettings.TimeoutSeconds > 0 ? _aiSettings.TimeoutSeconds : 30);
 
-        logger.LogInformation("[CHAT] Gemini POST model={Model}", model);
+        _logger.LogInformation("[CHAT] Gemini POST model={Model}", model);
 
         HttpResponseMessage response;
         string raw;
@@ -409,19 +441,19 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError("[CHAT] Gemini réseau/timeout — {Msg}", ex.Message);
+            _logger.LogError("[CHAT] Gemini réseau/timeout — {Msg}", ex.Message);
             return (null, System.Net.HttpStatusCode.ServiceUnavailable);
         }
 
         if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
         {
-            logger.LogWarning("[CHAT] Gemini TooManyRequests [{Model}]", model);
+            _logger.LogWarning("[CHAT] Gemini TooManyRequests [{Model}]", model);
             return (null, System.Net.HttpStatusCode.TooManyRequests);
         }
 
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogError("[CHAT] Gemini {Status} [{Model}] — {Body}", (int)response.StatusCode, model, raw.Length > 300 ? raw[..300] : raw);
+            _logger.LogError("[CHAT] Gemini {Status} [{Model}] — {Body}", (int)response.StatusCode, model, raw.Length > 300 ? raw[..300] : raw);
             return (null, response.StatusCode);
         }
 
@@ -435,7 +467,7 @@ public class JobsController(
         }
         catch (Exception ex)
         {
-            logger.LogError("[CHAT] Gemini JSON parse — {Msg}", ex.Message);
+            _logger.LogError("[CHAT] Gemini JSON parse — {Msg}", ex.Message);
             return (null, response.StatusCode);
         }
     }
@@ -474,13 +506,13 @@ public class JobsController(
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats(CancellationToken ct = default)
     {
-        var totalOffers = await db.JobOffers.CountAsync(ct);
-        var totalUsers = await db.Users.CountAsync(ct);
+        var totalOffers = await _db.JobOffers.CountAsync(ct);
+        var totalUsers = await _db.Users.CountAsync(ct);
         return Ok(new
         {
             totalOffers,
             totalUsers,
-            lastFetch = await db.JobOffers.OrderByDescending(j => j.FetchedAt)
+            lastFetch = await _db.JobOffers.OrderByDescending(j => j.FetchedAt)
                             .Select(j => j.FetchedAt).FirstOrDefaultAsync(ct)
         });
     }
@@ -537,7 +569,7 @@ public class JobsController(
         if (keywords.Length > 128) keywords = keywords[..128];
 
         IReadOnlyList<JobOffer> jobs;
-        try { jobs = await jobService.SearchJobsAsync(keywords, location, contract, "0-29", ct); }
+        try { jobs = await _jobService.SearchJobsAsync(keywords, location, contract, "0-29", ct); }
         catch { return StatusCode(502, new { error = "Erreur lors de la recherche." }); }
 
         static string Csv(string? s) =>
@@ -584,7 +616,7 @@ public class JobsController(
         kw = System.Text.RegularExpressions.Regex.Replace(kw, @"[<>""';\\]", "");
         if (kw.Length > 128) kw = kw[..128];
 
-        var recentJobs = await db.JobOffers
+        var recentJobs = await _db.JobOffers
             .Where(j => j.IsActive && (kw == "" || j.Title.Contains(kw)))
             .OrderByDescending(j => j.FetchedAt)
             .Take(25)
@@ -638,7 +670,7 @@ Réponds UNIQUEMENT en JSON strict:
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[JOBS] SkillsGap error");
+            _logger.LogError(ex, "[JOBS] SkillsGap error");
             return Ok(new { analysis = "Erreur lors de l'analyse.", fallback = true });
         }
     }
@@ -657,7 +689,7 @@ Réponds UNIQUEMENT en JSON strict:
 
     private async Task<CandidateProfile?> LoadUserProfileAsync(int userId)
     {
-        var dbProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
+        var dbProfile = await _db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == userId);
         if (dbProfile?.ProfileJson is null) return null;
         try
         {
@@ -734,7 +766,7 @@ Réponds UNIQUEMENT en JSON strict:
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[JOBS] PersistJobsAsync failed for {Count} jobs", jobs.Count);
+            _logger.LogError(ex, "[JOBS] PersistJobsAsync failed for {Count} jobs", jobs.Count);
         }
     }
 

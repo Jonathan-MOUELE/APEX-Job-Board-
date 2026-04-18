@@ -280,7 +280,7 @@ app.Use(async (ctx, next) =>
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' http://localhost:5191 http://localhost:5188; " +
+        "connect-src 'self' http://localhost:5191 http://localhost:5188 https://unpkg.com https://images.unsplash.com https://api.francetravail.io https://fonts.googleapis.com; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self';";

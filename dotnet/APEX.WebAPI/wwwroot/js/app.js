@@ -57,19 +57,19 @@ const APEX = (() => {
 
   function decodeUtf8Safe(str) {
     if (!str || typeof str !== 'string') return str || '';
-    try { return decodeURIComponent(escape(str)); } catch(e) {}
+    try { return decodeURIComponent(escape(str)); } catch (e) { }
     return str
-      .replace(/Ã©/g,'é').replace(/Ã¨/g,'è').replace(/Ã¦/g,'æ')
-      .replace(/Ã /g,'à').replace(/Ã¢/g,'â').replace(/Ã®/g,'î')
-      .replace(/Ã´/g,'ô').replace(/Ã¹/g,'ù').replace(/Ã»/g,'û')
-      .replace(/Ã§/g,'ç').replace(/Ã‰/g,'É').replace(/Ãª/g,'ê')
-      .replace(/Ã¼/g,'ü').replace(/Ã«/g,'ë').replace(/Ã¯/g,'ï')
-      .replace(/Ã¶/g,'ö').replace(/Ã±/g,'ñ')
-      .replace(/â€™/g,"'").replace(/â€"/g,'–').replace(/â€"/g,'—')
-      .replace(/â€œ/g,'"').replace(/â€/g,'"')
-      .replace(/Ã¢â€šÂ¬/g,'€').replace(/â‚¬/g,'€')
-      .replace(/Â°/g,'°').replace(/Â«/g,'«').replace(/Â»/g,'»')
-      .replace(/Ã‚Â /g,' ').replace(/\u00A0/g,' ');
+      .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã¦/g, 'æ')
+      .replace(/Ã /g, 'à').replace(/Ã¢/g, 'â').replace(/Ã®/g, 'î')
+      .replace(/Ã´/g, 'ô').replace(/Ã¹/g, 'ù').replace(/Ã»/g, 'û')
+      .replace(/Ã§/g, 'ç').replace(/Ã‰/g, 'É').replace(/Ãª/g, 'ê')
+      .replace(/Ã¼/g, 'ü').replace(/Ã«/g, 'ë').replace(/Ã¯/g, 'ï')
+      .replace(/Ã¶/g, 'ö').replace(/Ã±/g, 'ñ')
+      .replace(/â€™/g, "'").replace(/â€"/g, '–').replace(/â€"/g, '—')
+      .replace(/â€œ/g, '"').replace(/â€/g, '"')
+      .replace(/Ã¢â€šÂ¬/g, '€').replace(/â‚¬/g, '€')
+      .replace(/Â°/g, '°').replace(/Â«/g, '«').replace(/Â»/g, '»')
+      .replace(/Ã‚Â /g, ' ').replace(/\u00A0/g, ' ');
   }
 
   function scrollToTop() {
@@ -180,7 +180,7 @@ const APEX = (() => {
   //  THEME
   // ─────────────────────────────────────────────
   function initTheme() {
-    const saved = localStorage.getItem('apex_theme');
+    const saved = localStorage.getItem('apex_theme') || localStorage.getItem('apex-theme');
     const preferDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.classList.toggle('dark', preferDark);
     _updateThemeIcon(preferDark);
@@ -190,6 +190,7 @@ const APEX = (() => {
   function toggleTheme() {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('apex_theme', isDark ? 'dark' : 'light');
+    localStorage.removeItem('apex-theme');
     _updateThemeIcon(isDark);
   }
 
@@ -603,6 +604,9 @@ const APEX = (() => {
   function setFilter(btn, val) {
     _activeFilter = val;
     _currentPage = 1;
+    _allJobs = [];
+    const grid = document.getElementById('jobs-grid');
+    if (grid) grid.innerHTML = '';
     document.querySelectorAll('.filter-pill[id^="pill-"]').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
     renderPage();
@@ -610,12 +614,12 @@ const APEX = (() => {
 
   async function performSearch() {
     const kwEl = document.getElementById('input-keywords-inline')
-              || document.getElementById('sq-job')
-              || document.getElementById('kw-input')
-              || document.getElementById('input-keywords');
+      || document.getElementById('sq-job')
+      || document.getElementById('kw-input')
+      || document.getElementById('input-keywords');
     const locEl = document.getElementById('input-city')
-               || document.getElementById('sq-city')
-               || document.getElementById('loc-input');
+      || document.getElementById('sq-city')
+      || document.getElementById('loc-input');
     const kw = (kwEl?.value || '').trim();
     const loc = (locEl?.value || '').trim();
 
@@ -643,10 +647,10 @@ const APEX = (() => {
       const raw = Array.isArray(data) ? data : (data.resultats || data.results || data.items || data.offres || []);
       _allJobs = raw.map(j => ({
         ...j,
-        intitule:    decodeUtf8Safe(j.intitule    || j.title    || ''),
-        description: decodeUtf8Safe(j.description || j.desc     || ''),
-        entreprise:  { ...(j.entreprise || {}), nom: decodeUtf8Safe(j.entreprise?.nom || j.company || '') },
-        salaire:     { ...(j.salaire || {}), libelle: decodeUtf8Safe(j.salaire?.libelle || j.salary || '') },
+        intitule: decodeUtf8Safe(j.intitule || j.title || ''),
+        description: decodeUtf8Safe(j.description || j.desc || ''),
+        entreprise: { ...(j.entreprise || {}), nom: decodeUtf8Safe(j.entreprise?.nom || j.company || '') },
+        salaire: { ...(j.salaire || {}), libelle: decodeUtf8Safe(j.salaire?.libelle || j.salary || '') },
         lieuTravail: { ...(j.lieuTravail || {}), libelle: decodeUtf8Safe(j.lieuTravail?.libelle || j.location || '') },
       }));
       _currentPage = 1;
@@ -658,7 +662,7 @@ const APEX = (() => {
       const sector = typeof detectSector === 'function' ? detectSector(kw) : null;
       if (sector && typeof fetchFormations === 'function') fetchFormations(sector);
 
-      renderPage();
+      renderPage(true);
     } catch (err) {
       console.error('[APEX] performSearch error:', err);
       const grid = document.getElementById('jobs-grid');
@@ -696,9 +700,17 @@ const APEX = (() => {
     }
   }
 
-  function renderPage() {
+  let _observer = null;
+
+  function renderPage(reset = false) {
+    if (reset) {
+      _currentPage = 1;
+      const grid = document.getElementById('jobs-grid');
+      if (grid) grid.innerHTML = '';
+      if (_observer) _observer.disconnect();
+    }
+
     let jobs = _allJobs;
-    // Apply client-side filter if API didn't
     if (_activeFilter) {
       jobs = jobs.filter(j => {
         const ct = (j.typeContrat || j.contractType || '').toUpperCase();
@@ -718,25 +730,17 @@ const APEX = (() => {
       emptyEl?.classList.remove('hidden');
     } else {
       emptyEl?.classList.add('hidden');
-      renderResults(slice);
+      _appendResults(slice);
+
+      if (start + PAGE_SIZE < total) {
+        _setupInfiniteScroll();
+      }
     }
-
-    renderPagination(total);
   }
 
-  function gotoPage(p) {
-    _currentPage = p;
-    renderPage();
-    scrollToResults();
-  }
-
-  // ─────────────────────────────────────────────
-  //  RENDER RESULTS
-  // ─────────────────────────────────────────────
-  function renderResults(jobs) {
+  function _appendResults(jobs) {
     const grid = document.getElementById('jobs-grid');
     if (!grid) return;
-    grid.innerHTML = '';
 
     jobs.forEach((job, idx) => {
       const globalIdx = (_currentPage - 1) * PAGE_SIZE + idx;
@@ -744,17 +748,37 @@ const APEX = (() => {
       grid.appendChild(card);
     });
 
-    // Animate score rings after render
-    requestAnimationFrame(() => {
-      grid.querySelectorAll('.score-ring-fill[data-offset]').forEach(path => {
-        const offset = parseFloat(path.getAttribute('data-offset'));
-        path.style.strokeDashoffset = String(offset);
-      });
-    });
-
-    updateCompanyStrip(jobs);
     forceLucide();
+    updateCompanyStrip(_allJobs.slice(0, 50));
   }
+
+  function _setupInfiniteScroll() {
+    const grid = document.getElementById('jobs-grid');
+    if (!grid || !grid.lastElementChild) return;
+
+    if (_observer) _observer.disconnect();
+
+    _observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        _observer.disconnect();
+        _currentPage++;
+        renderPage(false);
+      }
+    }, { threshold: 0.1 });
+
+    _observer.observe(grid.lastElementChild);
+  }
+
+  function gotoPage(p) {
+    _currentPage = p;
+    renderPage(true);
+    scrollToResults();
+  }
+
+  // ─────────────────────────────────────────────
+  //  RENDER RESULTS
+  // ─────────────────────────────────────────────
+
 
   function _buildJobCard(job, idx) {
     const title = job.intitule || job.title || 'Offre sans titre';
@@ -779,20 +803,28 @@ const APEX = (() => {
 
     const logoWrap = document.createElement('div');
     logoWrap.className = 'job-logo-wrap'; // Uses style.css class
-    
+
     const domain = (company || '').toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
     const logoImg = document.createElement('img');
-    logoImg.src = job.companyLogoUrl || `https://logo.clearbit.com/${domain}`;
-    logoImg.alt = company;
-    logoImg.onerror = () => {
+    if (job.companyLogoUrl) {
+      logoImg.src = job.companyLogoUrl;
+      logoImg.alt = company;
+      logoImg.onerror = () => {
         logoImg.style.display = 'none';
         const initials = document.createElement('div');
         initials.className = 'initials';
         initials.style.background = initialsColor(company || title);
         initials.textContent = _makeInitials(company || title);
         logoWrap.appendChild(initials);
-    };
-    logoWrap.appendChild(logoImg);
+      };
+      logoWrap.appendChild(logoImg);
+    } else {
+      const initials = document.createElement('div');
+      initials.className = 'initials';
+      initials.style.background = initialsColor(company || title);
+      initials.textContent = _makeInitials(company || title);
+      logoWrap.appendChild(initials);
+    }
 
     const titleWrap = document.createElement('div');
     titleWrap.className = 'flex-1 min-w-0';
@@ -998,32 +1030,10 @@ const APEX = (() => {
     return wrap;
   }
 
+  // Infinite scroll handles pagination now
   function renderPagination(total) {
-    const cont = document.getElementById('pagination');
-    if (!cont) return;
-    cont.innerHTML = '';
-    const pages = Math.ceil(total / PAGE_SIZE);
-    if (pages <= 1) return;
-
-    const addBtn = (label, page, active = false, disabled = false) => {
-      const btn = document.createElement('button');
-      btn.className = 'page-btn' + (active ? ' active' : '');
-      btn.disabled = disabled;
-      btn.setAttribute('aria-label', `Page ${label}`);
-      btn.textContent = label;
-      if (!disabled) btn.addEventListener('click', () => gotoPage(page));
-      cont.appendChild(btn);
-    };
-
-    if (_currentPage > 1) addBtn('‹', _currentPage - 1);
-
-    let start = Math.max(1, _currentPage - 2);
-    let end = Math.min(pages, start + 4);
-    if (end - start < 4) start = Math.max(1, end - 4);
-
-    for (let i = start; i <= end; i++) addBtn(i, i, i === _currentPage);
-
-    if (_currentPage < pages) addBtn('›', _currentPage + 1);
+    // Infinite scroll handles pagination now
+    return;
   }
 
   // ─────────────────────────────────────────────
@@ -1211,7 +1221,7 @@ const APEX = (() => {
   }
 
   async function handleChat() {
-    const inputEl = document.getElementById('chat-input');
+    const inputEl = document.getElementById('chat-inp') || document.getElementById('chat-input');
     if (!inputEl) return;
     const msg = inputEl.value.trim();
     if (!msg) return;
@@ -1235,10 +1245,16 @@ const APEX = (() => {
   }
 
   function sendQuick(text) {
-    const inputEl = document.getElementById('chat-input');
+    const inputEl = document.getElementById('chat-inp') || document.getElementById('chat-input');
     if (inputEl) inputEl.value = text;
     handleChat();
   }
+
+  function chatKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); }
+  }
+
+  function handleChatSend() { handleChat(); }
 
   function onChatFileAttached(file) {
     if (!file) return;
@@ -1804,20 +1820,16 @@ const APEX = (() => {
     scrollToTop,
     switchTab,
     // ─── Nouvelles fonctions B2C / Landing Page ───
-    // Drawer bot APEX (alias sémantique)
     openDrawer: () => openChat(),
     closeDrawer: () => closeChat(),
-    // CV Canvas (délègue au global index.html)
     openCvCanvas: () => (typeof openCvCanvas === 'function' ? openCvCanvas() : null),
     closeCvCanvas: () => (typeof closeCvCanvas === 'function' ? closeCvCanvas() : null),
-    // Modal candidature rapide
     openApplyModal: (title, loc) => {
       const el = document.getElementById('modal-offer-name');
       if (el) el.textContent = `${title || ''} · ${loc || ''}`;
       openPanel('apply-modal');
     },
     closeModal: () => closePanel('apply-modal'),
-    // Onglets Contrat (Stage / Alternance / Intérim)
     switchContractTab: (btn, id) => {
       document.querySelectorAll('.ct-tab').forEach(t => {
         t.classList.remove('active');
@@ -1831,17 +1843,12 @@ const APEX = (() => {
       });
       if (window.lucide) lucide.createIcons();
     },
-    // Accessibilité : grossissement du texte
     toggleFontSize: () => document.body.classList.toggle('large-text'),
-    // Utilitaires CSS
     imgFallback: (img, domain) => {
       img.style.display = 'none';
       const sib = img.nextElementSibling;
-      if (sib && sib.classList.contains('initials')) {
-        sib.style.display = 'flex';
-      }
+      if (sib && sib.classList.contains('initials')) sib.style.display = 'flex';
     },
-    // Calculateur Salaire
     openSalaryCalcModal: () => {
       document.getElementById('salary-calc-modal')?.classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -1861,13 +1868,11 @@ const APEX = (() => {
       const brutMensuel = brutAnnuel / 12;
       const rate = statut === 'cadre' ? 0.75 : 0.78;
       const fmt = v => v.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
-
       const elBrutM = document.getElementById('sc-brut-m');
       const elNetM = document.getElementById('sc-net-m');
       const elBrutA = document.getElementById('sc-brut-a');
       const elNetA = document.getElementById('sc-net-a');
       const elNote = document.getElementById('sc-note');
-
       if (elBrutM) elBrutM.textContent = fmt(brutMensuel);
       if (elNetM) elNetM.textContent = fmt(brutMensuel * rate);
       if (elBrutA) elBrutA.textContent = fmt(brutAnnuel);
@@ -1891,268 +1896,157 @@ const APEX = (() => {
     closeSwipeModal,
     swipeLeft,
     swipeRight,
-    profUploadCv
+    profUploadCv,
+    openJobDetails,
+    checkout,
+    sendQuickMessage: (msg) => sendQuick(msg),
+    triggerSearchCity,
+    initSwipe: () => openSwipeJob(),
+    checkout: (planId) => handleCheckout(planId),
+    openSwipeJob,
+    closeSwipeModal,
+    swipeRight,
+    openSalaryModal,
+    openSalaryCalcModal: () => document.getElementById('salary-calc-modal')?.classList.add('open'),
+    forceLucide: forceIcons,
+    openCitiesOverlay: () => document.getElementById('cities-overlay')?.classList.add('open'),
+    openProfileMenu: () => document.getElementById('apex-account-panel')?.classList.toggle('open'),
+    openJob: (idx) => {
+        _currentJob = _allJobs[idx];
+        if (_currentJob) {
+            const titleEl = document.getElementById('modal-title');
+            const companyEl = document.getElementById('modal-offer-name');
+            if (titleEl) titleEl.textContent = _currentJob.intitule || _currentJob.title;
+            if (companyEl) companyEl.textContent = _currentJob.entreprise?.nom || _currentJob.company;
+            document.getElementById('job-panel')?.classList.add('open');
+        }
+    }
   };
 
-  function searchChip(kw, loc) {
-    const kwEl = document.getElementById('sq-job') || document.getElementById('kw-input');
-    const locEl = document.getElementById('sq-city') || document.getElementById('loc-input');
-    if (kwEl) kwEl.value = kw || '';
-    if (locEl) locEl.value = loc || '';
-    performSearch();
-    return false;
-  }
-
-  function openCitiesOverlay() {
-    const el = document.getElementById('cities-title');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-    showToast('Explorez nos métropoles directement dans la galerie.', 'info');
-  }
-
-  function openProfileMenu() {
-    if (!isLoggedIn()) { openLoginModal(); return; }
-    const p = document.getElementById('apex-account-panel');
-    if (p) {
-      p.classList.toggle('open');
-      // Position panel relative to avatar button if mobile
-      if (window.innerWidth < 768) {
-        p.style.right = '16px';
-        p.style.top = '60px';
-      }
-    }
-
-    // Fill menu info
-    const user = _getUser();
-    if (user) {
-      const uInits = document.getElementById('avatar-initials-menu');
-      const uName = document.getElementById('user-name-menu');
-      const uEmail = document.getElementById('user-email-menu');
-      if (uInits) uInits.textContent = _makeInitials(user.name || user.email || 'U');
-      if (uName) uName.textContent = user.name || 'Utilisateur';
-      if (uEmail) uEmail.textContent = user.email || '';
-    }
-    forceLucide();
-  }
-
-  let _swipeJobs = [];
-  let _swipeIdx = 0;
-
+  // ─────────────────────────────────────────────
+  //  SWIPE n' JOB (Vertical Scroll Mode)
+  // ─────────────────────────────────────────────
   async function openSwipeJob() {
-    openPanel('swipe-modal');
-    _swipeJobs = _allJobs.length ? _allJobs : [];
-    if (!_swipeJobs.length) {
-      showToast('Chargement des offres pour le swipe...', 'info');
+    const modal = document.getElementById('swipe-modal');
+    const container = document.getElementById('swipe-card-container');
+    const emptyEl = document.getElementById('swipe-empty');
+    if (!modal || !container) return;
+
+    if (!_allJobs.length) {
+      showToast('Chargement des offres...', 'info');
       await performSearch();
-      _swipeJobs = _allJobs;
     }
-    _swipeIdx = 0;
-    _renderSwipeCard();
+
+    if (!_allJobs.length) {
+      if (emptyEl) emptyEl.style.display = 'block';
+      modal.classList.add('open');
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+    container.innerHTML = '';
+
+    _allJobs.forEach((job, idx) => {
+      const card = document.createElement('div');
+      card.className = 'swipe-card';
+      card.style.position = 'relative';
+      card.style.marginBottom = '20px';
+      
+      const title = job.intitule || job.title || 'Offre';
+      const company = job.entreprise?.nom || job.company || 'Entreprise';
+      const city = job.lieuTravail?.libelle || job.location || '';
+      
+      card.innerHTML = `
+        <div style="font-weight:800;font-size:18px;margin-bottom:8px">${esc(title)}</div>
+        <div style="color:var(--orange);font-weight:700;font-size:14px;margin-bottom:12px">${esc(company)}</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <span class="chip-sm" style="background:var(--tag-bg);padding:4px 10px;border-radius:20px;font-size:12px">${esc(city)}</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">
+          ${esc(cleanDesc(job.description, 200))}
+        </div>
+        <div style="display:flex;gap:10px;margin-top:auto">
+          <button class="btn-solid-sm" onclick="APEX.openJob(${idx})">Voir plus</button>
+          <button class="btn-ghost-sm" onclick="APEX.swipeRight()">Sauver</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    modal.classList.add('open');
+    forceIcons();
   }
 
   function closeSwipeModal() {
-    closePanel('swipe-modal');
-  }
-
-  function _renderSwipeCard() {
-    const cont = document.getElementById('swipe-card-container');
-    const empty = document.getElementById('swipe-empty');
-    if (!cont) return;
-
-    if (_swipeIdx >= _swipeJobs.length) {
-      cont.innerHTML = '';
-      if (empty) empty.style.display = 'block';
-      return;
-    }
-    if (empty) empty.style.display = 'none';
-    const job = _swipeJobs[_swipeIdx];
-    const card = document.createElement('div');
-    card.className = 'job-card swipe-card';
-    card.style.cssText = `
-      position: absolute; inset: 0; background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: 24px; box-shadow: var(--shadow-md); padding: 28px;
-      display: flex; flex-direction: column; align-items: center; text-align: center;
-      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
-      backface-visibility: hidden;
-    `;
-
-    const initials = _makeInitials(job.entreprise?.nom || job.company || 'J');
-    const color = initialsColor(job.entreprise?.nom || job.company || 'J');
-
-    card.innerHTML = `
-      <div style="width:72px; height:72px; border-radius:18px; background:${color}; color:#fff; display:flex; align-items:center; justify-content:center; margin-bottom:20px; font-size:24px; font-weight:800; box-shadow: 0 4px 12px ${color}44">
-        ${initials}
-      </div>
-      <h3 style="font-size:20px; font-weight:800; margin-bottom:6px; color:var(--text); line-height:1.2">${job.intitule || job.title}</h3>
-      <p style="color:var(--orange); font-weight:700; font-size:14px; margin-bottom:20px">${job.entreprise?.nom || job.company || 'Entreprise'}</p>
-      
-      <div style="display:flex; gap:8px; margin-bottom:24px">
-        <span class="job-tag" style="background:var(--blue-light); color:var(--blue)">${job.typeContratLibelle || job.contractType || 'CDI'}</span>
-        <span class="job-tag"><i data-lucide="map-pin" style="width:12px;height:12px"></i> ${job.lieuTravail?.libelle || job.location || 'France'}</span>
-      </div>
-
-      <div style="flex:1; overflow:hidden; font-size:14px; color:var(--muted); line-height:1.6; text-align:left">
-        ${cleanDesc(job.description || job.desc || '', 240)}
-      </div>
-      
-      <div style="margin-top:20px; width:100%; border-top:1px solid var(--border); padding-top:15px; font-size:12px; color:var(--muted)">
-        Swipez ou utilisez les boutons ci-dessous
-      </div>
-    `;
-
-    cont.innerHTML = '';
-    cont.appendChild(card);
-    if (window.lucide) lucide.createIcons({ nodes: [card] });
-  }
-
-  function swipeLeft() {
-    if (_swipeIdx >= _swipeJobs.length) return;
-    const card = document.querySelector('.swipe-card');
-    if (card) {
-      card.style.transform = 'translateX(-150%) rotate(-30deg)';
-      card.style.opacity = '0';
-    }
-    setTimeout(() => {
-      _swipeIdx++;
-      _renderSwipeCard();
-    }, 400);
+    document.getElementById('swipe-modal')?.classList.remove('open');
   }
 
   function swipeRight() {
-    if (_swipeIdx >= _swipeJobs.length) return;
-    const card = document.querySelector('.swipe-card');
-    if (card) {
-      card.style.transform = 'translateX(150%) rotate(30deg)';
-      card.style.opacity = '0';
-    }
-    const job = _swipeJobs[_swipeIdx];
-    showToast(`Poste ajouté à vos favoris : ${job.intitule || job.title} !`, 'success');
+    showToast('Offre sauvegardée !', 'success');
+  }
 
-    // Simulate API call to save
-    if (isLoggedIn()) {
-      apiFetch('/api/jobs/save', {
+  // ─────────────────────────────────────────────
+  //  STRIPE Tunnel Payment
+  // ─────────────────────────────────────────────
+  async function handleCheckout(planId) {
+    if (!isLoggedIn()) {
+      showToast('Connectez-vous pour passer Premium.', 'warn');
+      openLoginModal();
+      return;
+    }
+
+    try {
+      showToast('Préparation du paiement...', 'info');
+      const res = await apiFetch('/api/stripe/create-checkout-session', {
         method: 'POST',
-        body: JSON.stringify({ jobId: job.id })
-      }).catch(() => { });
-    }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId })
+      });
 
-    setTimeout(() => {
-      _swipeIdx++;
-      _renderSwipeCard();
-    }, 400);
-  }
-
-  function handleSearch(e, clear = false) {
-    if (e && e.preventDefault) e.preventDefault();
-    if (clear) {
-      const kw = document.getElementById('sq-job');
-      const loc = document.getElementById('sq-city');
-      if (kw) kw.value = '';
-      if (loc) loc.value = '';
-    }
-    performSearch();
-  }
-
-  function openExploration() {
-    document.getElementById('offres')?.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function forceLucide() {
-    if (typeof lucide !== 'undefined') {
-      lucide.createIcons();
-    }
-  }
-
-  function updateCompanyStrip(jobs = []) {
-    const strip = document.querySelector('.companies-strip-inner');
-    if (!strip) return;
-
-    const topTier = [
-      { name: 'SFR', domain: 'sfr.fr' },
-      { name: 'BNP Paribas', domain: 'bnpparibas.com' },
-      { name: 'AXA', domain: 'axa.fr' },
-      { name: 'Orange', domain: 'orange.com' },
-      { name: 'Decathlon', domain: 'decathlon.fr' },
-      { name: 'SNCF', domain: 'sncf.com' }
-    ];
-
-    const searchCompanies = jobs.map(j => ({
-      name: j.entreprise?.nom || j.company,
-      domain: (j.entreprise?.nom || j.company || '').toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'
-    })).filter(c => c.name);
-
-    const allC = [...topTier, ...searchCompanies];
-    const uniqueC = Array.from(new Map(allC.map(item => [item.name, item])).values()).slice(0, 15);
-
-    strip.innerHTML = '';
-
-    uniqueC.forEach(company => {
-      const a = document.createElement('a');
-      a.href = '#';
-      a.className = 'company-logo-item';
-      a.title = company.name;
-      if (typeof searchChip === 'function') {
-        a.onclick = (e) => { e.preventDefault(); searchChip(company.name); };
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        a.onclick = (e) => { e.preventDefault(); };
+        throw new Error('No URL returned');
       }
-
-      const img = document.createElement('img');
-      img.src = `https://logo.clearbit.com/${company.domain}`;
-      img.alt = company.name;
-      img.loading = 'lazy';
-
-      img.onerror = function () {
-        this.parentElement.remove();
-      };
-
-      const fallback = document.createElement('span');
-      fallback.className = 'company-logo-fallback';
-      fallback.textContent = company.name;
-
-      a.appendChild(img);
-      a.appendChild(fallback);
-      strip.appendChild(a);
-    });
-
-    forceLucide();
+    } catch (err) {
+      console.error('[STRIPE] Error:', err);
+      showToast('Erreur lors du lancement de Stripe.', 'error');
+    }
   }
 
-  function getCityImage(location) {
-    const cityMap = {
-      'Paris': '1502602898657-3e91760cbb34',
-      'Lyon': '1528666579893-9c88591c062c',
-      'Marseille': '1549490339-1669466f24d7',
-      'Bordeaux': '1594916823525-45d6540c490a',
-      'Nantes': '1560243563-062bff001d68',
-      'Toulouse': '1563229283-8a3939634e9e'
-    };
-    for (const [city, imgId] of Object.entries(cityMap)) {
-      if (location && location.toLowerCase().includes(city.toLowerCase())) {
-        return `https://images.unsplash.com/photo-${imgId}?auto=format&fit=crop&w=600&q=80`;
+  async function checkPaymentSuccess() {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    if (sessionId) {
+      // Remove params to avoid re-triggering
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      try {
+        const res = await apiFetch(`/api/stripe/success?session_id=${sessionId}`);
+        const data = await res.json();
+        if (data.success) {
+          showToast(`⚡ Plan ${data.plan} activé ! Merci de votre soutien.`, 'success');
+          // Update local user object
+          const user = _getUser();
+          if (user) {
+            user.subscriptionStatus = data.plan;
+            localStorage.setItem('apex_user', JSON.stringify(user));
+            updateAuthUI();
+          }
+        }
+      } catch (e) {
+        console.error('[STRIPE] Success verification failed:', e);
       }
     }
-    return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80';
   }
 
-  // ─────────────────────────────────────────────
-  //  EXPOSITION GLOBALE — toutes les fonctions
-  //  exposées sur window pour les onclick= du HTML
-  // ─────────────────────────────────────────────
+  // Hook into DOMContentLoaded
+  document.addEventListener('DOMContentLoaded', () => {
+    checkPaymentSuccess();
+  });
+
   Object.assign(window, publicApi);
-
-  // Aliases supplémentaires demandés par le HTML
-  window.openDrawer        = openChat;
-  window.closeDrawer       = closeChat;
-  window.closeModal        = () => closePanel('apply-modal');
-  window.openSalaryModal   = () => showToast("L'analyse comparative des salaires arrive bientôt.", "info");
-  window.sendQuickMessage  = (msg) => sendQuick(msg);
-  window.triggerSearchCity  = triggerSearchCity;
-  window.decodeUtf8Safe     = decodeUtf8Safe;
-  window.initRecruiters     = typeof initRecruiters === 'function' ? initRecruiters : () => {};
-  window.closeAllPanels     = closeAll;
-  window.openSwipe          = openSwipeJob;
-  window.closeSwipe         = closeSwipeModal;
-  window.initSwipe          = openSwipeJob;
-
+  window.APEX = publicApi;
   return publicApi;
 })();
