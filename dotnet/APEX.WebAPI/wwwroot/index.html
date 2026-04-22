@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -11,6 +11,9 @@
     rel="stylesheet">
   <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+  <!--manifest-->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f97316">
   <script>
     (function () {
       const theme = localStorage.getItem('apex_theme') || localStorage.getItem('apex-theme') || 'light';
@@ -3077,7 +3080,7 @@
         <h1>Trouvez l'emploi<br>qui vous <em>ressemble</em><br><span class="blue-em">vraiment.</span></h1>
         <p class="hero-sub">Des milliers d'offres analysées pour vous. Postulez directement, suivez vos candidatures, et
           laissez votre carrière prendre son élan.</p>
-        <form class="search-wrap" onsubmit="handleSearch(event)" role="search">
+        <form class="search-wrap" onsubmit="window.handleSearch(event)" role="search">
           <div class="search-field">
             <i data-lucide="search" aria-hidden="true"></i>
             <input type="text" id="sq-job" placeholder="Métier, compétence, entreprise…" aria-label="Métier recherché">
@@ -3089,19 +3092,14 @@
           </div>
           <button type="submit" class="search-go">Rechercher</button>
         </form>
+
         <div class="quick-tags" role="list" aria-label="Filtres rapides">
-          <a href="javascript:void(0)" class="qtag active" onclick="APEX.setFilter(this, ''); return false;"
-            role="listitem">Tous</a>
-          <a href="javascript:void(0)" class="qtag" onclick="APEX.setFilter(this, 'CDI'); return false;"
-            role="listitem">CDI</a>
-          <a href="javascript:void(0)" class="qtag" onclick="APEX.setFilter(this, 'CDD'); return false;"
-            role="listitem">CDD</a>
-          <a href="javascript:void(0)" class="qtag" onclick="APEX.setFilter(this, 'Alternance'); return false;"
+          <a href="javascript:void(0)" class="qtag active" onclick="setFilter(this, '')" role="listitem">Tous</a>
+          <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'CDI')" role="listitem">CDI</a>
+          <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'CDD')" role="listitem">CDD</a>
+          <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Alternance')"
             role="listitem">Alternance</a>
-          <a href="javascript:void(0)" class="qtag" onclick="APEX.setFilter(this, 'Intérim'); return false;"
-            role="listitem">Intérim</a>
-          <a href="javascript:void(0)" class="qtag" onclick="APEX.setFilter(this, 'Télétravail'); return false;"
-            role="listitem">Télétravail</a>
+          <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Intérim')" role="listitem">Intérim</a>
         </div>
       </div>
       <div class="hero-collage" aria-hidden="true">
@@ -3698,7 +3696,7 @@
           <!-- Marseille -->
           <div class="city-card-gallery" onclick="searchChip('','Marseille'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1549490339-1669466f24d7?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1563964461017-cbe0be1ef5a3?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3709,7 +3707,7 @@
           <!-- Lyon -->
           <div class="city-card-gallery" onclick="searchChip('','Lyon'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1528666579893-9c88591c062c?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3720,7 +3718,7 @@
           <!-- Toulouse -->
           <div class="city-card-gallery" onclick="searchChip('','Toulouse'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1563229283-8a3939634e9e?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1610332822830-589574efbcbf?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3731,7 +3729,7 @@
           <!-- Nice -->
           <div class="city-card-gallery" onclick="searchChip('','Nice'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1557948286-9a2cdd74cc5b?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3742,7 +3740,7 @@
           <!-- Bordeaux -->
           <div class="city-card-gallery" onclick="searchChip('','Bordeaux'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1594916823525-45d6540c490a?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1517036224446-2475ab5ec7d3?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3753,7 +3751,7 @@
           <!-- Lille -->
           <div class="city-card-gallery" onclick="searchChip('','Lille'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1632731818293-67858c8ec3f8?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1598284534125-630ebbf21147?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3764,7 +3762,7 @@
           <!-- Nantes -->
           <div class="city-card-gallery" onclick="searchChip('','Nantes'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1560243563-062bff001d68?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1596700810459-bc1dfecbae10?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3775,7 +3773,7 @@
           <!-- Strasbourg -->
           <div class="city-card-gallery" onclick="searchChip('','Strasbourg'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1599839619722-39751411ea63?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3786,7 +3784,7 @@
           <!-- Rennes -->
           <div class="city-card-gallery" onclick="searchChip('','Rennes'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1596434442111-5d63f03a6285?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1562208164-964fa4c4b69d?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3797,7 +3795,7 @@
           <!-- Grenoble -->
           <div class="city-card-gallery" onclick="searchChip('','Grenoble'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1626197031507-c17099753214?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1606830589255-a50d2f00a5a5?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -3808,7 +3806,7 @@
           <!-- Reims -->
           <div class="city-card-gallery" onclick="searchChip('','Reims'); return false;">
             <div class="city-gallery-img"
-              style="background-image:url('https://images.unsplash.com/photo-1590736704728-f4730bb30770?w=1000&q=80')">
+              style="background-image:url('https://images.unsplash.com/photo-1662489431713-3ff1656885df?w=1000&q=80')">
             </div>
             <div class="city-gallery-overlay"></div>
             <div class="city-gallery-content">
@@ -4144,7 +4142,8 @@
 
   <!-- MODAL SWIPE N' JOB (Restored & Optimized) -->
   <div class="modal-overlay" id="swipe-modal" role="dialog" aria-modal="true" aria-labelledby="swipe-title">
-    <div class="modal" style="max-width:500px; height:85vh; padding:0; display:flex; flex-direction:column; overflow:hidden">
+    <div class="modal"
+      style="max-width:500px; height:85vh; padding:0; display:flex; flex-direction:column; overflow:hidden">
       <div class="modal-hd" style="padding:20px 24px; border-bottom:1px solid var(--border)">
         <div>
           <div class="modal-title" id="swipe-title">Swipe n' Job</div>
@@ -4152,7 +4151,7 @@
         </div>
         <button class="modal-close" onclick="closeSwipeModal()"><i data-lucide="x"></i></button>
       </div>
-      
+
       <div id="swipe-card-container" style="flex:1; overflow-y:auto; padding:20px; scroll-snap-type: y mandatory;">
         <!-- Vertical Cards will be injected here via app.js -->
         <div id="swipe-empty" style="display:none; text-align:center; padding-top:100px; color:var(--muted)">
@@ -4160,7 +4159,8 @@
         </div>
       </div>
 
-      <div class="modal-ft" style="padding:16px; border-top:1px solid var(--border); background:var(--bg-card); display:flex; justify-content:center; gap:16px">
+      <div class="modal-ft"
+        style="padding:16px; border-top:1px solid var(--border); background:var(--bg-card); display:flex; justify-content:center; gap:16px">
         <button class="btn-ghost" onclick="closeSwipeModal()">Fermer</button>
       </div>
     </div>
@@ -4176,7 +4176,12 @@
       }
     })(0);
   </script>
-  <script src="js/app.js" defer></script>
+  </script>
+  <script src="js/core.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/features.js"></script>
 </body>
 
 </html>

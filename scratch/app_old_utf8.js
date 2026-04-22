@@ -1,20 +1,20 @@
-/**
- * APEX — app.js  v1.0
- * Vanilla JS Module Pattern — NO framework
+﻿/**
+ * APEX ÔÇö app.js  v1.0
+ * Vanilla JS Module Pattern ÔÇö NO framework
  * Port API : http://localhost:5191
  */
 'use strict';
 
 const APEX = (() => {
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  Config
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const API = 'http://localhost:5191';
   const PAGE_SIZE = 5;
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  State
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   let _allJobs = [];
   let _currentJob = null;   // currently open job object
   let _currentJobIdx = -1;
@@ -22,9 +22,9 @@ const APEX = (() => {
   let _activeFilter = null;
   let _activeTabGroup = {}; // { groupId: activePanel }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  UTILS
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function esc(str) {
     if (str === null || str === undefined) return '';
     const d = document.createElement('div');
@@ -35,14 +35,14 @@ const APEX = (() => {
   function formatSalary(label) {
     if (!label) return '';
     const cleaned = String(label)
-      .replace(/euros?/gi, '€')
-      .replace(/à/gi, '–')
+      .replace(/euros?/gi, 'Ôé¼')
+      .replace(/├á/gi, 'ÔÇô')
       .replace(/\s+/g, ' ')
       .trim();
-    // "44000 – 75000 €" → "44 000 – 75 000 €/an"
+    // "44000 ÔÇô 75000 Ôé¼" ÔåÆ "44 000 ÔÇô 75 000 Ôé¼/an"
     return cleaned.replace(/(\d{4,})/g, n =>
       parseInt(n, 10).toLocaleString('fr-FR')
-    ).replace(/€(?!\/)/g, '€/an');
+    ).replace(/Ôé¼(?!\/)/g, 'Ôé¼/an');
   }
 
   function cleanDesc(raw, max = 120) {
@@ -52,24 +52,24 @@ const APEX = (() => {
       .replace(/&[a-z]+;/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, max) + (raw.length > max ? '…' : '');
+      .slice(0, max) + (raw.length > max ? 'ÔÇª' : '');
   }
 
   function decodeUtf8Safe(str) {
     if (!str || typeof str !== 'string') return str || '';
     try { return decodeURIComponent(escape(str)); } catch (e) { }
     return str
-      .replace(/Ã©/g, 'é').replace(/Ã¨/g, 'è').replace(/Ã¦/g, 'æ')
-      .replace(/Ã /g, 'à').replace(/Ã¢/g, 'â').replace(/Ã®/g, 'î')
-      .replace(/Ã´/g, 'ô').replace(/Ã¹/g, 'ù').replace(/Ã»/g, 'û')
-      .replace(/Ã§/g, 'ç').replace(/Ã‰/g, 'É').replace(/Ãª/g, 'ê')
-      .replace(/Ã¼/g, 'ü').replace(/Ã«/g, 'ë').replace(/Ã¯/g, 'ï')
-      .replace(/Ã¶/g, 'ö').replace(/Ã±/g, 'ñ')
-      .replace(/â€™/g, "'").replace(/â€"/g, '–').replace(/â€"/g, '—')
-      .replace(/â€œ/g, '"').replace(/â€/g, '"')
-      .replace(/Ã¢â€šÂ¬/g, '€').replace(/â‚¬/g, '€')
-      .replace(/Â°/g, '°').replace(/Â«/g, '«').replace(/Â»/g, '»')
-      .replace(/Ã‚Â /g, ' ').replace(/\u00A0/g, ' ');
+      .replace(/├â┬®/g, '├®').replace(/├â┬¿/g, '├¿').replace(/├â┬ª/g, '├ª')
+      .replace(/├â /g, '├á').replace(/├â┬ó/g, '├ó').replace(/├â┬«/g, '├«')
+      .replace(/├â┬┤/g, '├┤').replace(/├â┬╣/g, '├╣').replace(/├â┬╗/g, '├╗')
+      .replace(/├â┬º/g, '├º').replace(/├âÔÇ░/g, '├ë').replace(/├â┬¬/g, '├¬')
+      .replace(/├â┬╝/g, '├╝').replace(/├â┬½/g, '├½').replace(/├â┬»/g, '├»')
+      .replace(/├â┬Â/g, '├Â').replace(/├â┬▒/g, '├▒')
+      .replace(/├óÔé¼Ôäó/g, "'").replace(/├óÔé¼"/g, 'ÔÇô').replace(/├óÔé¼"/g, 'ÔÇö')
+      .replace(/├óÔé¼┼ô/g, '"').replace(/├óÔé¼/g, '"')
+      .replace(/├â┬ó├óÔé¼┼í├é┬¼/g, 'Ôé¼').replace(/├óÔÇÜ┬¼/g, 'Ôé¼')
+      .replace(/├é┬░/g, '┬░').replace(/├é┬½/g, '┬½').replace(/├é┬╗/g, '┬╗')
+      .replace(/├âÔÇÜ├é /g, ' ').replace(/\u00A0/g, ' ');
   }
 
   function scrollToTop() {
@@ -87,7 +87,7 @@ const APEX = (() => {
     }
   }
 
-  // Lucide icon loader — appel immédiat + rattrapage dynamique 300ms
+  // Lucide icon loader ÔÇö appel imm├®diat + rattrapage dynamique 300ms
   function forceIcons() {
     if (typeof lucide !== 'undefined') {
       lucide.createIcons();
@@ -104,9 +104,9 @@ const APEX = (() => {
 
     // ... reste de ton init (IntersectionObserver, etc.)
   });
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  SECURE FETCH (JWT + HttpOnly refresh)
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   async function apiFetch(path, opts = {}) {
     opts.credentials = 'include';
     opts.headers = opts.headers || {};
@@ -118,7 +118,7 @@ const APEX = (() => {
 
     let res = await fetch(API + path, opts);
 
-    // Token expiry → try refresh
+    // Token expiry ÔåÆ try refresh
     if (res.status === 401) {
       try {
         const rr = await fetch(API + '/api/auth/refresh', {
@@ -143,16 +143,16 @@ const APEX = (() => {
     return res;
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  TOAST
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function showToast(msg, type = 'info') {
     const existing = document.getElementById('apex-toast');
     if (existing) existing.remove();
     const t = document.createElement('div');
     t.id = 'apex-toast';
     const colors = { success: '#22c55e', warn: '#f59e0b', info: 'var(--orange)', error: '#ef4444' };
-    const icons = { success: '✓', warn: '⚠', info: 'ℹ', error: '✕' };
+    const icons = { success: 'Ô£ô', warn: 'ÔÜá', info: 'Ôä╣', error: 'Ô£ò' };
     const c = colors[type] || colors.info;
     const ic = icons[type] || icons.info;
     t.style.cssText = `
@@ -176,9 +176,9 @@ const APEX = (() => {
     }, 3200);
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  THEME
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function initTheme() {
     const saved = localStorage.getItem('apex_theme') || localStorage.getItem('apex-theme');
     const preferDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -201,9 +201,9 @@ const APEX = (() => {
     if (window.lucide) lucide.createIcons({ nodes: [icon] });
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  AUTH
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function isLoggedIn() {
     return !!localStorage.getItem('apex_token');
   }
@@ -298,7 +298,7 @@ const APEX = (() => {
       return;
     }
 
-    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Connexion…'; }
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'ConnexionÔÇª'; }
     if (errEl) errEl.classList.add('hidden');
 
     try {
@@ -321,13 +321,13 @@ const APEX = (() => {
       if (token) localStorage.setItem('apex_token', token);
       if (data.user) localStorage.setItem('apex_user', JSON.stringify(data.user));
 
-      // Accès test Plan Ultra
+      // Acc├¿s test Plan Ultra
       if (email.toLowerCase() === 'jonathanmouele42@gmail.com') {
         localStorage.setItem('apex_role', 'Admin');
         setTimeout(() => {
           const t = document.createElement('div');
           t.className = 'toast toast-success';
-          t.textContent = '⚡ Mode Ultra activé — Bienvenue, Admin.';
+          t.textContent = 'ÔÜí Mode Ultra activ├® ÔÇö Bienvenue, Admin.';
           document.body.appendChild(t);
           setTimeout(() => t.remove(), 4000);
         }, 400);
@@ -336,7 +336,7 @@ const APEX = (() => {
       closeLoginModal();
       updateAuthUI();
     } catch (_) {
-      if (errEl) { errEl.textContent = 'Erreur réseau. Réessayez.'; errEl.classList.remove('hidden'); }
+      if (errEl) { errEl.textContent = 'Erreur r├®seau. R├®essayez.'; errEl.classList.remove('hidden'); }
     } finally {
       if (btnEl) {
         btnEl.disabled = false;
@@ -366,15 +366,15 @@ const APEX = (() => {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        showToast(data.message || 'Erreur lors de l’inscription.', 'error');
+        showToast(data.message || 'Erreur lors de lÔÇÖinscription.', 'error');
         return;
       }
 
-      showToast('Inscription réussie ! Connectez-vous.', 'success');
+      showToast('Inscription r├®ussie ! Connectez-vous.', 'success');
       closeRegisterModal();
       openLoginModal();
     } catch (_) {
-      showToast('Erreur réseau.', 'error');
+      showToast('Erreur r├®seau.', 'error');
     }
   }
 
@@ -401,18 +401,18 @@ const APEX = (() => {
   }
 
   const SALARY_DATA = [
-    { sector: 'Tech & IT', icon: 'laptop', junior: '2 666 €', confirme: '3 750 €', senior: '5 833 €' },
-    { sector: 'Santé', icon: 'heart-pulse', junior: '2 000 €', confirme: '2 833 €', senior: '4 333 €' },
-    { sector: 'BTP', icon: 'hard-hat', junior: '2 333 €', confirme: '3 166 €', senior: '4 833 €' },
-    { sector: 'Commerce', icon: 'shopping-bag', junior: '1 833 €', confirme: '2 333 €', senior: '3 500 €' },
-    { sector: 'Finance', icon: 'landmark', junior: '2 833 €', confirme: '4 000 €', senior: '6 666 €' },
-    { sector: 'Logistique', icon: 'truck', junior: '2 000 €', confirme: '2 500 €', senior: '3 666 €' },
-    { sector: 'Restauration', icon: 'utensils', junior: '1 666 €', confirme: '2 166 €', senior: '3 166 €' },
-    { sector: 'Marketing', icon: 'trending-up', junior: '2 333 €', confirme: '3 166 €', senior: '4 833 €' },
-    { sector: 'Juridique', icon: 'scale', junior: '2 666 €', confirme: '3 750 €', senior: '6 250 €' },
-    { sector: 'Éducation', icon: 'graduation-cap', junior: '1 833 €', confirme: '2 333 €', senior: '3 500 €' },
-    { sector: 'Environnement', icon: 'leaf', junior: '2 166 €', confirme: '2 833 €', senior: '4 166 €' },
-    { sector: 'Hôtellerie', icon: 'bed', junior: '1 666 €', confirme: '2 166 €', senior: '3 333 €' },
+    { sector: 'Tech & IT', icon: 'laptop', junior: '2 666 Ôé¼', confirme: '3 750 Ôé¼', senior: '5 833 Ôé¼' },
+    { sector: 'Sant├®', icon: 'heart-pulse', junior: '2 000 Ôé¼', confirme: '2 833 Ôé¼', senior: '4 333 Ôé¼' },
+    { sector: 'BTP', icon: 'hard-hat', junior: '2 333 Ôé¼', confirme: '3 166 Ôé¼', senior: '4 833 Ôé¼' },
+    { sector: 'Commerce', icon: 'shopping-bag', junior: '1 833 Ôé¼', confirme: '2 333 Ôé¼', senior: '3 500 Ôé¼' },
+    { sector: 'Finance', icon: 'landmark', junior: '2 833 Ôé¼', confirme: '4 000 Ôé¼', senior: '6 666 Ôé¼' },
+    { sector: 'Logistique', icon: 'truck', junior: '2 000 Ôé¼', confirme: '2 500 Ôé¼', senior: '3 666 Ôé¼' },
+    { sector: 'Restauration', icon: 'utensils', junior: '1 666 Ôé¼', confirme: '2 166 Ôé¼', senior: '3 166 Ôé¼' },
+    { sector: 'Marketing', icon: 'trending-up', junior: '2 333 Ôé¼', confirme: '3 166 Ôé¼', senior: '4 833 Ôé¼' },
+    { sector: 'Juridique', icon: 'scale', junior: '2 666 Ôé¼', confirme: '3 750 Ôé¼', senior: '6 250 Ôé¼' },
+    { sector: '├ëducation', icon: 'graduation-cap', junior: '1 833 Ôé¼', confirme: '2 333 Ôé¼', senior: '3 500 Ôé¼' },
+    { sector: 'Environnement', icon: 'leaf', junior: '2 166 Ôé¼', confirme: '2 833 Ôé¼', senior: '4 166 Ôé¼' },
+    { sector: 'H├┤tellerie', icon: 'bed', junior: '1 666 Ôé¼', confirme: '2 166 Ôé¼', senior: '3 333 Ôé¼' },
   ];
 
   function openSalaryModal() {
@@ -506,26 +506,26 @@ const APEX = (() => {
     } catch (_) { }
   })();
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  SEARCH & SUGGEST
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const SUGGEST_TERMS = [
-    'Développeur web', 'Développeur full stack', 'Développeur React',
-    'Développeur .NET', 'Développeur Python', 'Data Scientist',
+    'D├®veloppeur web', 'D├®veloppeur full stack', 'D├®veloppeur React',
+    'D├®veloppeur .NET', 'D├®veloppeur Python', 'Data Scientist',
     'Data Analyst', 'Data Engineer', 'Machine Learning Engineer',
-    'DevOps', 'SysAdmin', 'Architecte cloud', 'Ingénieur cybersécurité',
+    'DevOps', 'SysAdmin', 'Architecte cloud', 'Ing├®nieur cybers├®curit├®',
     'Chef de projet IT', 'Chef de projet MOA', 'Scrum Master', 'Product Owner',
-    'Infirmier', 'Aide-soignant', 'Médecin généraliste', 'Pharmacien',
-    'Kinésithérapeute', 'Psychologue', 'Orthophoniste',
-    'Comptable', 'Expert-comptable', 'Contrôleur de gestion', 'DAF',
+    'Infirmier', 'Aide-soignant', 'M├®decin g├®n├®raliste', 'Pharmacien',
+    'Kin├®sith├®rapeute', 'Psychologue', 'Orthophoniste',
+    'Comptable', 'Expert-comptable', 'Contr├┤leur de gestion', 'DAF',
     'Commercial', 'Commercial terrain', 'Business Developer', 'Account Manager',
     'Responsable marketing', 'Community Manager', 'Traffic Manager', 'SEO',
-    'Juriste', 'Avocat', 'Paralégiste', 'Compliance Officer',
+    'Juriste', 'Avocat', 'Paral├®giste', 'Compliance Officer',
     'Recruteur', 'Responsable RH', 'Gestionnaire paie',
     'Logisticien', 'Gestionnaire de stocks', 'Chauffeur SPL',
-    'Conducteur de travaux', 'Chef de chantier', 'Plombier', 'Électricien',
+    'Conducteur de travaux', 'Chef de chantier', 'Plombier', '├ëlectricien',
     'Cuisinier', 'Chef de cuisine', 'Barman', 'Serveur',
-    'Enseignant', 'Formateur', 'Educateur spécialisé',
+    'Enseignant', 'Formateur', 'Educateur sp├®cialis├®',
   ];
 
   let _suggestTimeout = null;
@@ -630,8 +630,8 @@ const APEX = (() => {
 
     const titleEl = document.getElementById('results-title');
     const subtitleEl = document.getElementById('results-subtitle');
-    if (titleEl) titleEl.textContent = kw ? `Offres pour « ${kw} »` : 'Toutes les offres';
-    if (subtitleEl) subtitleEl.textContent = 'Recherche en cours…';
+    if (titleEl) titleEl.textContent = kw ? `Offres pour ┬½ ${kw} ┬╗` : 'Toutes les offres';
+    if (subtitleEl) subtitleEl.textContent = 'Recherche en coursÔÇª';
 
     showSkeletons();
 
@@ -656,7 +656,7 @@ const APEX = (() => {
       _currentPage = 1;
 
       if (subtitleEl) {
-        subtitleEl.textContent = `${_allJobs.length.toLocaleString('fr-FR')} offre${_allJobs.length !== 1 ? 's' : ''} trouvée${_allJobs.length !== 1 ? 's' : ''}`;
+        subtitleEl.textContent = `${_allJobs.length.toLocaleString('fr-FR')} offre${_allJobs.length !== 1 ? 's' : ''} trouv├®e${_allJobs.length !== 1 ? 's' : ''}`;
       }
 
       const sector = typeof detectSector === 'function' ? detectSector(kw) : null;
@@ -775,9 +775,9 @@ const APEX = (() => {
     scrollToResults();
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  RENDER RESULTS
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 
   function _buildJobCard(job, idx) {
@@ -833,7 +833,7 @@ const APEX = (() => {
     titleH.textContent = title;
     const companyP = document.createElement('p');
     companyP.className = 'job-company'; // Uses style.css class
-    companyP.textContent = [company, city].filter(Boolean).join(' · ');
+    companyP.textContent = [company, city].filter(Boolean).join(' ┬À ');
     titleWrap.append(titleH, companyP);
     header.append(logoWrap, titleWrap);
 
@@ -898,7 +898,7 @@ const APEX = (() => {
 
     const btnView = document.createElement('button');
     btnView.className = 'btn btn-ghost btn-sm';
-    const viewTxt = document.createTextNode('Voir →');
+    const viewTxt = document.createTextNode('Voir ÔåÆ');
     btnView.appendChild(viewTxt);
     btnView.addEventListener('click', e => { e.stopPropagation(); openJob(idx); });
 
@@ -959,7 +959,7 @@ const APEX = (() => {
       section.className = 'mt-3';
       const lbl = document.createElement('p');
       lbl.className = 'text-[.7rem] font-semibold text-[var(--muted)] uppercase tracking-wider mb-1.5';
-      lbl.textContent = 'Compétences validées';
+      lbl.textContent = 'Comp├®tences valid├®es';
       section.appendChild(lbl);
       const chips = document.createElement('div');
       chips.className = 'flex flex-wrap gap-1.5';
@@ -981,7 +981,7 @@ const APEX = (() => {
       section.className = 'mt-3';
       const lbl = document.createElement('p');
       lbl.className = 'text-[.7rem] font-semibold text-[var(--muted)] uppercase tracking-wider mb-1.5';
-      lbl.textContent = 'Compétences manquantes';
+      lbl.textContent = 'Comp├®tences manquantes';
       section.appendChild(lbl);
       const chips = document.createElement('div');
       chips.className = 'flex flex-wrap gap-1.5';
@@ -1036,9 +1036,9 @@ const APEX = (() => {
     return;
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  JOB PANEL
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function openJob(idx) {
     const job = _allJobs[idx];
     if (!job) return;
@@ -1068,7 +1068,7 @@ const APEX = (() => {
     h2.textContent = title;
     const sub = document.createElement('p');
     sub.className = 'text-sm text-[var(--text-2)]';
-    sub.textContent = [company, city].filter(Boolean).join(' · ');
+    sub.textContent = [company, city].filter(Boolean).join(' ┬À ');
     hdr.append(h2, sub);
     content.appendChild(hdr);
 
@@ -1103,7 +1103,7 @@ const APEX = (() => {
   }
 
   async function analyzeJob(btn) {
-    // Si appelé depuis une carte (btn = élément HTML), ouvre le drawer bot
+    // Si appel├® depuis une carte (btn = ├®l├®ment HTML), ouvre le drawer bot
     if (btn instanceof Element) {
       const card = btn.closest('[data-job-title]') || btn.closest('.job-card');
       const title = card ? (card.dataset.jobTitle || card.querySelector('.job-title')?.textContent || 'cette offre') : 'cette offre';
@@ -1113,13 +1113,13 @@ const APEX = (() => {
       try {
         const res = await apiFetch('/api/jobs/chat', {
           method: 'POST',
-          body: JSON.stringify({ message: `Analyse détaillée de l'offre : ${title}. Répond en JSON : match_score (0-100), verdict (GO/NO-GO), analytical_justification, validated_skills[], missing_skills[].` }),
+          body: JSON.stringify({ message: `Analyse d├®taill├®e de l'offre : ${title}. R├®pond en JSON : match_score (0-100), verdict (GO/NO-GO), analytical_justification, validated_skills[], missing_skills[].` }),
         });
         const data = await res.json().catch(() => ({}));
-        const reply = data.message || data.reply || data.response || 'Analyse terminée.';
+        const reply = data.message || data.reply || data.response || 'Analyse termin├®e.';
         appendAgent(reply);
       } catch (_) {
-        appendAgent('Impossible de contacter le serveur. Vérifiez votre connexion.');
+        appendAgent('Impossible de contacter le serveur. V├®rifiez votre connexion.');
       }
       return;
     }
@@ -1165,7 +1165,7 @@ const APEX = (() => {
       typingDiv.remove();
       const errEl = document.createElement('p');
       errEl.className = 'text-sm text-[var(--error)]';
-      errEl.textContent = 'Erreur lors de l\'analyse. Réessayez.';
+      errEl.textContent = 'Erreur lors de l\'analyse. R├®essayez.';
       aiResult.appendChild(errEl);
     }
   }
@@ -1177,9 +1177,9 @@ const APEX = (() => {
     analyzeJob();
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  CHAT
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function openChat() {
     openPanel('chat-overlay');
   }
@@ -1240,7 +1240,7 @@ const APEX = (() => {
       appendAgent(data.reply || data.message || data.content || 'Je n\'ai pas compris votre demande.');
     } catch (_) {
       typingEl?.remove();
-      appendAgent('Erreur de connexion. Vérifiez que l\'API est démarrée sur le port 5191.');
+      appendAgent('Erreur de connexion. V├®rifiez que l\'API est d├®marr├®e sur le port 5191.');
     }
   }
 
@@ -1262,13 +1262,13 @@ const APEX = (() => {
     const typingEl = appendTyping();
     setTimeout(() => {
       typingEl?.remove();
-      appendAgent(`J'ai bien reçu votre fichier "${file.name}". Analyse en cours — mais l'upload de fichiers via le chat est disponible uniquement avec un compte connecté et le CV uploadé dans votre profil.`);
+      appendAgent(`J'ai bien re├ºu votre fichier "${file.name}". Analyse en cours ÔÇö mais l'upload de fichiers via le chat est disponible uniquement avec un compte connect├® et le CV upload├® dans votre profil.`);
     }, 1200);
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  PROFILE
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   let _techSkills = [];
   let _softSkills = [];
 
@@ -1317,7 +1317,7 @@ const APEX = (() => {
       const rm = document.createElement('span');
       rm.className = 'chip-remove';
       rm.setAttribute('aria-label', `Supprimer ${s}`);
-      rm.textContent = '×';
+      rm.textContent = '├ù';
       rm.addEventListener('click', () => removeChip(type, i));
       chip.append(txt, rm);
       cont.appendChild(chip);
@@ -1387,7 +1387,7 @@ const APEX = (() => {
   async function profUploadCv(file) {
     if (!file) return;
     const statusEl = document.getElementById('cv-status');
-    if (statusEl) statusEl.textContent = 'Upload en cours…';
+    if (statusEl) statusEl.textContent = 'Upload en coursÔÇª';
 
     try {
       const fd = new FormData();
@@ -1395,31 +1395,31 @@ const APEX = (() => {
       const res = await apiFetch('/api/profile/upload-cv', {
         method: 'POST',
         body: fd,
-        // Don't set Content-Type — FormData sets it automatically
+        // Don't set Content-Type ÔÇö FormData sets it automatically
         headers: (() => {
           const token = localStorage.getItem('apex_token');
           return token ? { 'Authorization': `Bearer ${token}` } : {};
         })(),
       });
       if (res.ok) {
-        if (statusEl) statusEl.textContent = `CV "${file.name}" importé avec succès.`;
+        if (statusEl) statusEl.textContent = `CV "${file.name}" import├® avec succ├¿s.`;
       } else {
         if (statusEl) statusEl.textContent = 'Erreur lors de l\'upload.';
       }
     } catch (_) {
-      if (statusEl) statusEl.textContent = 'Erreur réseau.';
+      if (statusEl) statusEl.textContent = 'Erreur r├®seau.';
     }
   }
 
-  // ─────────────────────────────────────────────
-  //  SUIVI (Kanban → "Suivi des candidatures")
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  //  SUIVI (Kanban ÔåÆ "Suivi des candidatures")
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const SUIVI_COLS = [
-    { id: 'todo', label: 'À postuler', color: 'var(--muted)' },
-    { id: 'applied', label: 'Postulé', color: 'var(--accent)' },
+    { id: 'todo', label: '├Ç postuler', color: 'var(--muted)' },
+    { id: 'applied', label: 'Postul├®', color: 'var(--accent)' },
     { id: 'interview', label: 'Entretien', color: '#a855f7' },
-    { id: 'offer', label: 'Offre reçue', color: 'var(--success)' },
-    { id: 'rejected', label: 'Refusé', color: 'var(--error)' },
+    { id: 'offer', label: 'Offre re├ºue', color: 'var(--success)' },
+    { id: 'rejected', label: 'Refus├®', color: 'var(--error)' },
   ];
 
   let _suivi = {};
@@ -1548,20 +1548,20 @@ const APEX = (() => {
     } catch (_) { }
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  FORMATIONS
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const SECTOR_KEYWORDS = {
-    numerique: ['développeur', 'dev', 'frontend', 'backend', 'fullstack', 'react', 'angular', 'vue', 'python', 'java', 'dotnet', '.net', 'javascript', 'typescript', 'cloud', 'devops', 'data', 'ia', 'ml', 'machine learning', 'cyber', 'infra', 'réseau'],
-    sante: ['infirmier', 'médecin', 'aide-soignant', 'pharmacien', 'kiné', 'orthophoniste', 'paramédical', 'santé', 'hôpital', 'clinique', 'ehpad'],
-    restauration: ['cuisinier', 'chef', 'serveur', 'barman', 'restauration', 'hôtellerie', 'cuisine', 'hôtel', 'pâtissier'],
+    numerique: ['d├®veloppeur', 'dev', 'frontend', 'backend', 'fullstack', 'react', 'angular', 'vue', 'python', 'java', 'dotnet', '.net', 'javascript', 'typescript', 'cloud', 'devops', 'data', 'ia', 'ml', 'machine learning', 'cyber', 'infra', 'r├®seau'],
+    sante: ['infirmier', 'm├®decin', 'aide-soignant', 'pharmacien', 'kin├®', 'orthophoniste', 'param├®dical', 'sant├®', 'h├┤pital', 'clinique', 'ehpad'],
+    restauration: ['cuisinier', 'chef', 'serveur', 'barman', 'restauration', 'h├┤tellerie', 'cuisine', 'h├┤tel', 'p├ótissier'],
     logistique: ['logistique', 'logisticien', 'chauffeur', 'livreur', 'stock', 'magasinier', 'supply chain', 'transport'],
-    btp: ['btp', 'conducteur de travaux', 'chantier', 'bâtiment', 'électricien', 'plombier', 'maçon', 'charpentier', 'génie civil'],
-    finance: ['comptable', 'contrôleur de gestion', 'expert-comptable', 'audit', 'banque', 'assurance', 'finance', 'daf', 'trésorier'],
+    btp: ['btp', 'conducteur de travaux', 'chantier', 'b├ótiment', '├®lectricien', 'plombier', 'ma├ºon', 'charpentier', 'g├®nie civil'],
+    finance: ['comptable', 'contr├┤leur de gestion', 'expert-comptable', 'audit', 'banque', 'assurance', 'finance', 'daf', 'tr├®sorier'],
     marketing: ['marketing', 'communication', 'community manager', 'seo', 'sea', 'traffic', 'brand', 'product marketing'],
     rh: ['rh', 'recruteur', 'ressources humaines', 'formation', 'talent', 'drh', 'gestionnaire de paie'],
-    juridique: ['juriste', 'avocat', 'paralégiste', 'compliance', 'droit', 'contrats', 'contentieux'],
-    commerce: ['commercial', 'vente', 'account manager', 'business developer', 'retail', 'sales', 'négociateur', 'e-commerce'],
+    juridique: ['juriste', 'avocat', 'paral├®giste', 'compliance', 'droit', 'contrats', 'contentieux'],
+    commerce: ['commercial', 'vente', 'account manager', 'business developer', 'retail', 'sales', 'n├®gociateur', 'e-commerce'],
   };
 
   function detectSector(kw) {
@@ -1616,9 +1616,9 @@ const APEX = (() => {
     } catch (_) { }
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  PANEL / BACKDROP HELPERS
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const PANEL_IDS = ['job-panel', 'chat-overlay', 'profile-panel', 'suivi-panel', 'swipe-modal'];
 
   function openPanel(id) {
@@ -1663,9 +1663,9 @@ const APEX = (() => {
     document.getElementById('backdrop')?.classList.remove('visible');
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  TABS
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function switchTab(group, panelId) {
     // Find parent panel and switch tabs
     const panel = document.getElementById(panelId)?.closest('.panel');
@@ -1680,9 +1680,9 @@ const APEX = (() => {
     if (btns[btnIdx]) { btns[btnIdx].classList.add('active'); btns[btnIdx].setAttribute('aria-selected', 'true'); }
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  MOBILE
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   function showMobileHome() {
     document.querySelectorAll('.mobile-tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('mnav-home')?.classList.add('active');
@@ -1733,9 +1733,9 @@ const APEX = (() => {
     scrollToResults();
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  INIT
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     updateAuthUI();
@@ -1777,11 +1777,11 @@ const APEX = (() => {
     }
   });
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  Public API
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const publicApi = {
-    // Thème
+    // Th├¿me
     toggleTheme,
     // Auth
     openLoginModal, closeLoginModal,
@@ -1819,14 +1819,14 @@ const APEX = (() => {
     // Divers
     scrollToTop,
     switchTab,
-    // ─── Nouvelles fonctions B2C / Landing Page ───
+    // ÔöÇÔöÇÔöÇ Nouvelles fonctions B2C / Landing Page ÔöÇÔöÇÔöÇ
     openDrawer: () => openChat(),
     closeDrawer: () => closeChat(),
     openCvCanvas: () => (typeof openCvCanvas === 'function' ? openCvCanvas() : null),
     closeCvCanvas: () => (typeof closeCvCanvas === 'function' ? closeCvCanvas() : null),
     openApplyModal: (title, loc) => {
       const el = document.getElementById('modal-offer-name');
-      if (el) el.textContent = `${title || ''} · ${loc || ''}`;
+      if (el) el.textContent = `${title || ''} ┬À ${loc || ''}`;
       openPanel('apply-modal');
     },
     closeModal: () => closePanel('apply-modal'),
@@ -1923,9 +1923,9 @@ const APEX = (() => {
     }
   };
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  SWIPE n' JOB (Vertical Scroll Mode)
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   async function openSwipeJob() {
     const modal = document.getElementById('swipe-modal');
     const container = document.getElementById('swipe-card-container');
@@ -1982,12 +1982,12 @@ const APEX = (() => {
   }
 
   function swipeRight() {
-    showToast('Offre sauvegardée !', 'success');
+    showToast('Offre sauvegard├®e !', 'success');
   }
 
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   //  STRIPE Tunnel Payment
-  // ─────────────────────────────────────────────
+  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   async function handleCheckout(planId) {
     if (!isLoggedIn()) {
       showToast('Connectez-vous pour passer Premium.', 'warn');
@@ -1996,7 +1996,7 @@ const APEX = (() => {
     }
 
     try {
-      showToast('Préparation du paiement...', 'info');
+      showToast('Pr├®paration du paiement...', 'info');
       const res = await apiFetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2026,7 +2026,7 @@ const APEX = (() => {
         const res = await apiFetch(`/api/stripe/success?session_id=${sessionId}`);
         const data = await res.json();
         if (data.success) {
-          showToast(`⚡ Plan ${data.plan} activé ! Merci de votre soutien.`, 'success');
+          showToast(`ÔÜí Plan ${data.plan} activ├® ! Merci de votre soutien.`, 'success');
           // Update local user object
           const user = _getUser();
           if (user) {
