@@ -54,110 +54,7 @@ const SUGGESTIONS = [
   'Responsable RH','Gestionnaire paie','Alternance Développeur','Stage Ingénieur',
 ];
 
-class SearchBar {
-  constructor(inputId, dropdownId) {
-    this.input    = document.getElementById(inputId);
-    this.dropdown = document.getElementById(dropdownId);
-    if (!this.input || !this.dropdown) return;
-    this._debounceTimer = null;
-    this._activeIdx     = -1;
-    this._items         = [];
-    this._init();
-  }
-
-  _init() {
-    // Position dropdown relative to input
-    this.dropdown.style.cssText = `
-      position:absolute;top:calc(100% + 6px);left:0;right:0;
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);
-      z-index:500;overflow:hidden;display:none;
-      animation:_ddFadeIn .15s ease`;
-    if (!document.getElementById('_ddFadeCSS')) {
-      const s=document.createElement('style'); s.id='_ddFadeCSS';
-      s.textContent='@keyframes _ddFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}';
-      document.head.appendChild(s);
-    }
-    // Make input parent relative
-    const wrap = this.input.closest('.search-wrap,.search-field') || this.input.parentElement;
-    if (wrap) wrap.style.position='relative';
-
-    this.input.setAttribute('autocomplete','off');
-    this.input.setAttribute('role','combobox');
-    this.input.setAttribute('aria-autocomplete','list');
-    this.input.setAttribute('aria-expanded','false');
-
-    this.input.addEventListener('input', () => {
-      clearTimeout(this._debounceTimer);
-      this._debounceTimer = setTimeout(() => this._suggest(), 180);
-    });
-    this.input.addEventListener('keydown', e => this._onKey(e));
-    this.input.addEventListener('blur', () => setTimeout(() => this.close(), 200));
-  }
-
-  _suggest() {
-    const val = this.input.value.trim();
-    if (!val || val.length < 2) { this.close(); return; }
-    const q = val.toLowerCase();
-    this._items = SUGGESTIONS.filter(s => s.toLowerCase().includes(q)).slice(0, 7);
-    if (!this._items.length) { this.close(); return; }
-    this._render(val);
-  }
-
-  _highlight(text, query) {
-    const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
-    return esc(text).replace(re, '<mark style="background:var(--orange-light,#fff7ed);color:var(--orange,#f97316);border-radius:2px;padding:0 1px">$1</mark>');
-  }
-
-  _render(val) {
-    this.dropdown.innerHTML = '';
-    this._activeIdx = -1;
-    this._items.forEach((item, i) => {
-      const d = document.createElement('div');
-      d.className  = 'dd-item';
-      d.style.cssText = 'padding:10px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .12s';
-      d.innerHTML  = `<i data-lucide="search" style="width:14px;height:14px;color:var(--muted);flex-shrink:0"></i><span>${this._highlight(item, val)}</span>`;
-      d.addEventListener('mouseenter', () => this._activate(i));
-      d.addEventListener('mousedown',  e => { e.preventDefault(); this._select(item); });
-      this.dropdown.appendChild(d);
-    });
-    forceLucide(this.dropdown);
-    this.dropdown.style.display = '';
-    this.input.setAttribute('aria-expanded','true');
-  }
-
-  _activate(idx) {
-    const items = this.dropdown.querySelectorAll('.dd-item');
-    items.forEach((d,i) => d.style.background = i===idx ? 'var(--surface2)' : '');
-    this._activeIdx = idx;
-  }
-
-  _onKey(e) {
-    const items = this.dropdown.querySelectorAll('.dd-item');
-    if (!items.length) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault(); this._activate(Math.min(this._activeIdx+1, items.length-1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault(); this._activate(Math.max(this._activeIdx-1, 0));
-    } else if (e.key === 'Enter' && this._activeIdx >= 0) {
-      e.preventDefault(); this._select(this._items[this._activeIdx]);
-    } else if (e.key === 'Escape') {
-      this.close();
-    }
-  }
-
-  _select(item) {
-    this.input.value = item;
-    this.close();
-    window.triggerSearch?.(item);
-  }
-
-  close() {
-    this.dropdown.style.display = 'none';
-    this.input.setAttribute('aria-expanded','false');
-    this._activeIdx = -1;
-  }
-}
+// SearchBar logic replaced by autoComplete.js
 
 // ══════════════════════════════════════════════════════
 //  C. INFINITE SCROLL ENGINE  (IntersectionObserver)
@@ -186,11 +83,25 @@ class InfiniteScrollFeed {
 
   _attachSentinel() {
     if (!this.grid || this._sentinel) return;
-    this._sentinel = createSentinel(this.grid, () => this._loadMore(), '300px');
+    const sentinelEl = document.getElementById('infinite-scroll-sentinel-main');
+    if (!sentinelEl) return;
+    
+    sentinelEl.style.display = 'block';
+    this._sentinelObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        this._loadMore();
+      }
+    }, { rootMargin: '300px' });
+    this._sentinelObserver.observe(sentinelEl);
+    this._sentinel = sentinelEl;
   }
 
   _detachSentinel() {
-    this._sentinel?.disconnect();
+    if (this._sentinelObserver && this._sentinel) {
+      this._sentinelObserver.disconnect();
+      this._sentinel.style.display = 'none';
+    }
+    this._sentinelObserver = null;
     this._sentinel = null;
   }
 
@@ -220,8 +131,8 @@ class InfiniteScrollFeed {
       jobs.forEach((job, i) => {
         const card = buildJobCard(job, baseIdx+i);
         card.style.cssText += 'animation:_fadeUp .3s ease both;animation-delay:'+Math.min(i*0.05,0.3)+'s';
-        // Déplacer la sentinelle en insérant avant elle
-        this.grid.insertBefore(card, this._sentinel?.sentinel || null);
+        // Les cartes sont ajoutées à la grille, la sentinelle est gérée en dessous de la grille dans le html
+        this.grid.appendChild(card);
       });
       if(!document.getElementById('_fadeUpCSS')){
         const s=document.createElement('style');s.id='_fadeUpCSS';
@@ -282,7 +193,10 @@ window.searchChip = function(kw, city, contract) {
   const kEl=document.getElementById('sq-job'), cEl=document.getElementById('sq-city');
   if(kEl) kEl.value=kw||''; if(cEl) cEl.value=city||'';
   if(contract) window._state.filter=contract;
-  window._state.page=1; performSearch(); return false;
+  window._state.page=1; performSearch();
+  const offresSec = document.getElementById('offres');
+  if(offresSec) offresSec.scrollIntoView({behavior:'smooth'});
+  return false;
 };
 
 window.fastSearch = kw => triggerSearch(kw);
@@ -614,20 +528,42 @@ window.renderFeatured = async function(){
 let _searchBar = null;
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Instancier SearchBar
-  const wrap=document.getElementById('sq-job')?.parentElement;
-  if(wrap){
-    // Injecter dropdown dans le parent
-    const dd=document.createElement('div');
-    dd.id='_apex_autocomplete';
-    dd.setAttribute('role','listbox');
-    wrap.style.position='relative';
-    wrap.appendChild(dd);
-    _searchBar=new SearchBar('sq-job','_apex_autocomplete');
+  // Instancier autoComplete.js
+  if (document.getElementById('sq-job') && typeof autoComplete !== 'undefined') {
+    window._searchBar = new autoComplete({
+        selector: "#sq-job",
+        data: {
+            src: SUGGESTIONS,
+            cache: true,
+        },
+        resultsList: {
+            element: (list, data) => {
+                if (!data.results.length) {
+                    const message = document.createElement("div");
+                    message.setAttribute("class", "no_result");
+                    message.style.padding = "10px 16px";
+                    message.style.color = "var(--muted)";
+                    message.innerHTML = `<span>Aucune suggestion pour "${data.query}"</span>`;
+                    list.prepend(message);
+                }
+            },
+            noResults: true,
+        },
+        resultItem: {
+            highlight: true
+        },
+        events: {
+            input: {
+                selection: (event) => {
+                    const selection = event.detail.selection.value;
+                    window._searchBar.input.value = selection;
+                    window.triggerSearch?.(selection);
+                }
+            }
+        },
+        debounce: 300
+    });
   }
-
-  // Click hors dropdown
-  document.addEventListener('click',e=>{ if(!e.target.closest('.search-wrap')) _searchBar?.close(); });
 
   // Enter sur inputs de recherche
   ['sq-job','sq-city'].forEach(id=>{
@@ -648,8 +584,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(q){const el=document.getElementById('sq-job');if(el)el.value=q;}
     if(l){const el=document.getElementById('sq-city');if(el)el.value=l;}
     if(q||l) setTimeout(performSearch,600);
-    else     setTimeout(renderFeatured,800);
-  }catch(_){ setTimeout(renderFeatured,800); }
+    // else     setTimeout(renderFeatured,800);
+  }catch(_){ /* setTimeout(renderFeatured,800); */ }
 
   // EventBus listeners
   EventBus.on(EV.FILTER_CHANGE, ()=>{

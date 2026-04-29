@@ -276,8 +276,8 @@ app.Use(async (ctx, next) =>
     // Content-Security-Policy
     h["Content-Security-Policy"] =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; " +
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https:; " +
         "connect-src 'self' http://localhost:5191 http://localhost:5188 https://unpkg.com https://images.unsplash.com https://api.francetravail.io https://fonts.googleapis.com; " +

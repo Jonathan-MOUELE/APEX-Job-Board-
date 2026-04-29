@@ -149,31 +149,29 @@ class SwipeEngine {
     this.jobs     = [];
     this.idx      = 0;
     this.liked    = [];
-    this.arena    = null;
-    this.dragging = false;
-    this.startX   = 0;
+    this.container= null;
     this.apiPage  = 1;
     this._sentinel= null;
-    this._topCard = null;
+    this._sentinelObserver= null;
+    this._loading = false;
   }
 
   async open() {
-    this.arena = document.getElementById('swipe-arena');
+    this.container = document.getElementById('swipe-card-container');
     openModal('swipe-modal');
 
     if(window._state.jobs.length > 0) {
       this.jobs = [...window._state.jobs];
     } else {
-      const cnt=document.getElementById('swipe-counter');
-      if(cnt) cnt.textContent='Chargement…';
       await this._loadPage(1);
     }
-    this.idx = 0;
-    this._render();
+    this._renderAll();
     this._attachSentinel();
   }
 
   async _loadPage(p) {
+    if (this._loading) return;
+    this._loading = true;
     try{
       const q=window._state.query||'emploi';
       const params=new URLSearchParams({keyword:q});
@@ -187,174 +185,138 @@ class SwipeEngine {
       const jobs=await DataWorker.process(raw);
       this.jobs.push(...jobs);
       this.apiPage=p;
-    }catch(_){}
+    }catch(_){}finally{
+      this._loading = false;
+    }
   }
 
   _attachSentinel() {
-    if(!this.arena||this._sentinel) return;
-    this._sentinel = createSentinel(this.arena, ()=>{ if(this.jobs.length-this.idx<5) this._loadMore(); }, '100px');
+    if(!this.container||this._sentinelObserver) return;
+    const sentinelEl = document.getElementById('infinite-scroll-sentinel-swipe');
+    if (!sentinelEl) return;
+    
+    sentinelEl.style.display = 'block';
+    this._sentinelObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        this.loadMoreSwipe();
+      }
+    }, { rootMargin: '300px' });
+    this._sentinelObserver.observe(sentinelEl);
+    this._sentinel = sentinelEl;
   }
 
-  async _loadMore() {
+  async loadMoreSwipe() {
+    const prevLen = this.jobs.length;
     await this._loadPage(this.apiPage+1);
-    this._updateCounter();
+    if (this.jobs.length > prevLen) {
+      for (let i = prevLen; i < this.jobs.length; i++) {
+        const card = this._buildCard(this.jobs[i], i);
+        // Insert before the sentinel
+        this.container.insertBefore(card, this._sentinel);
+      }
+      forceLucide(this.container);
+    } else {
+      // no more jobs
+      if (this._sentinel) this._sentinel.style.display = 'none';
+      const empty = document.getElementById('swipe-empty');
+      if (empty) empty.style.display = 'block';
+    }
   }
 
-  _updateCounter() {
-    const cnt=document.getElementById('swipe-counter');
-    const rem=this.jobs.length-this.idx;
-    if(cnt) cnt.textContent=`${rem} offre${rem!==1?'s':''} restante${rem!==1?'s':''}`;
-  }
+  _renderAll() {
+    if(!this.container) return;
+    // Clear previous cards but keep sentinel and empty state
+    this.container.querySelectorAll('.swipe-card').forEach(c=>c.remove());
+    
+    const empty = document.getElementById('swipe-empty');
+    if (empty) empty.style.display = 'none';
 
-  _render() {
-    if(!this.arena) return;
-    // Garder max 3 cards dans le DOM (virtual)
-    const existingCards=this.arena.querySelectorAll('.swipe-card');
-    existingCards.forEach(c=>c.remove());
-
-    if(this.idx>=this.jobs.length){
-      this.arena.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:12px;text-align:center;padding:1.5rem">
-        <div style="font-size:3.5rem">🎉</div>
-        <h3 style="font-weight:800;font-size:18px">Tout parcouru !</h3>
-        <p style="color:var(--muted);font-size:14px">${this.liked.length} offre${this.liked.length!==1?'s':''} sauvegardée${this.liked.length!==1?'s':''}</p>
-        <button onclick="closeSwipeModal()" style="background:var(--orange);color:#fff;border:none;border-radius:9999px;padding:10px 24px;font-weight:700;cursor:pointer;font-size:14px">Retour aux offres</button>
-      </div>`;
+    if(this.jobs.length === 0){
+      if (empty) empty.style.display = 'block';
       return;
     }
 
-    this._updateCounter();
-
-    // Cartes empilées (max 3)
-    const count=Math.min(3, this.jobs.length-this.idx);
-    for(let i=count-1;i>=0;i--){
-      const job=this.jobs[this.idx+i];
-      const card=this._buildCard(job, i===0);
-      card.style.transform=`scale(${1-i*.04}) translateY(${i*8}px)`;
-      card.style.zIndex=10-i;
-      card.style.opacity=i===0?'1':'.5';
-      this.arena.insertBefore(card, this.arena.firstChild);
-    }
-    this._topCard=this.arena.querySelector('.swipe-card');
-    if(this._topCard) this._attachDrag(this._topCard);
-    forceLucide(this.arena);
+    this.jobs.forEach((job, i) => {
+      const card = this._buildCard(job, i);
+      this.container.insertBefore(card, this._sentinel);
+    });
+    
+    forceLucide(this.container);
   }
 
-  _buildCard(job, isTop) {
+  _buildCard(job, idx) {
     const card=document.createElement('div');
     card.className='swipe-card';
-    card.style.cssText=`position:absolute;inset:0;background:var(--surface);border:1px solid var(--border);
-      border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:10px;
-      transition:transform .3s cubic-bezier(.25,.46,.45,.94),opacity .3s;user-select:none`;
+    card.style.cssText=`background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;
+      margin-bottom:20px; min-height:80vh; scroll-snap-align:start;`;
 
     const color=getCompanyColor(job.entreprise?.nom);
     const init=getCompanyInitials(job.entreprise?.nom);
     const logo=getCompanyLogoUrl(job.entreprise?.nom);
+    
+    const imgs = [
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=800&q=80'
+    ];
+    const bgImg = imgs[idx % imgs.length];
 
     card.innerHTML=`
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:54px;height:54px;border-radius:12px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);background:${color}15;display:flex;align-items:center;justify-content:center">
+      <div style="height:200px; width:100%; border-radius:14px; overflow:hidden; flex-shrink:0; margin-bottom:-20px;">
+        <img loading="lazy" src="${bgImg}" style="width:100%; height:100%; object-fit:cover;" alt="">
+      </div>
+      <div style="display:flex;align-items:center;gap:16px; position:relative; z-index:10; padding:0 16px;">
+        <div style="width:64px;height:64px;border-radius:14px;overflow:hidden;flex-shrink:0;border:1px solid var(--border);background:${color}15;display:flex;align-items:center;justify-content:center">
           ${logo?`<img loading="lazy" src="${esc(logo)}" alt="" style="width:100%;height:100%;object-fit:contain;transition:transform .3s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform=''" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-            <span style="display:none;color:${color};font-weight:800;font-size:14px">${esc(init)}</span>`
-          :`<span style="color:${color};font-weight:800;font-size:14px">${esc(init)}</span>`}
+            <span style="display:none;color:${color};font-weight:800;font-size:16px">${esc(init)}</span>`
+          :`<span style="color:${color};font-weight:800;font-size:16px">${esc(init)}</span>`}
         </div>
         <div style="min-width:0">
-          <p style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:2px">${esc(job.entreprise?.nom||'')}</p>
-          <h3 style="font-weight:800;font-size:16px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(job.intitule||'')}</h3>
+          <p style="font-size:14px;font-weight:600;color:var(--muted);margin-bottom:4px">${esc(job.entreprise?.nom||'')}</p>
+          <h3 style="font-weight:800;font-size:20px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(job.intitule||'')}</h3>
         </div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${[job.lieuTravail?.libelle,job.typeContrat,formatSalary(job.salaire?.libelle||'')].filter(Boolean).map(t=>`<span class="job-tag">${esc(t)}</span>`).join('')}
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${[job.lieuTravail?.libelle,job.typeContrat,formatSalary(job.salaire?.libelle||'')].filter(Boolean).map(t=>`<span class="job-tag" style="padding:6px 12px;font-size:13px">${esc(t)}</span>`).join('')}
       </div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;flex:1">
-        ${esc(cleanDesc(job.description||'',280))}
+      <p style="font-size:15px;color:var(--text);line-height:1.6;flex:1;overflow-y:auto;margin:8px 0;">
+        ${esc(cleanDesc(job.description||'',800))}
       </p>
-      <div style="display:flex;gap:6px;margin-top:auto">
-        <a href="https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(job.entreprise?.nom||'')}"
-           target="_blank" rel="noopener noreferrer"
-           style="font-size:12px;color:#0a66c2;text-decoration:none;border:1px solid #0a66c220;border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:4px"
-           onclick="event.stopPropagation()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="#0a66c2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn
-        </a>
-        <button onclick="openApplyModal('${esc(job.intitule||'').replace(/'/g,"\\'")}','')"
-                style="flex:1;font-size:12px;background:var(--orange);color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:700">
+      <div style="display:flex;gap:12px;margin-top:auto">
+        <button onclick="window.swipeRight(${idx})" class="btn-swipe-action like" style="flex:1;height:48px;border-radius:12px;background:var(--green-light);color:var(--green);border:1px solid var(--green);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all 0.2s;">
+          <i data-lucide="heart" style="width:20px;height:20px"></i> Sauvegarder
+        </button>
+        <button onclick="openApplyModal('${esc(job.intitule||'').replace(/'/g,"\\'")}','')" style="flex:2;height:48px;border-radius:12px;background:var(--orange);color:#fff;border:none;font-weight:800;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
           Postuler
         </button>
       </div>`;
     return card;
   }
 
-  _attachDrag(card) {
-    let startX=0, startY=0;
-
-    // Touch
-    card.addEventListener('touchstart', e=>{ startX=e.touches[0].clientX; startY=e.touches[0].clientY; card.style.transition='none'; },{passive:true});
-    card.addEventListener('touchmove', e=>{
-      const dx=e.touches[0].clientX-startX, dy=e.touches[0].clientY-startY;
-      if(Math.abs(dx)>Math.abs(dy)){ card.style.transform=`translateX(${dx}px) rotate(${dx*.04}deg)`; this._showHint(card, dx); }
-    },{passive:true});
-    card.addEventListener('touchend', e=>{
-      card.style.transition='';
-      const dx=e.changedTouches[0].clientX-startX;
-      this._hideHint(card);
-      if(dx<-80) this.swipeLeft(); else if(dx>80) this.swipeRight(); else card.style.transform='';
-    });
-
-    // Mouse
-    card.addEventListener('mousedown', e=>{ startX=e.clientX; this.dragging=true; card.style.cursor='grabbing'; card.style.transition='none'; });
-    window.addEventListener('mousemove', e=>{
-      if(!this.dragging) return;
-      const dx=e.clientX-startX;
-      card.style.transform=`translateX(${dx}px) rotate(${dx*.025}deg)`;
-      this._showHint(card, dx);
-    });
-    window.addEventListener('mouseup', e=>{
-      if(!this.dragging) return;
-      this.dragging=false; card.style.cursor=''; card.style.transition='';
-      const dx=e.clientX-startX;
-      this._hideHint(card);
-      if(dx<-100) this.swipeLeft(); else if(dx>100) this.swipeRight(); else card.style.transform='';
-    });
-  }
-
-  _showHint(card, dx) {
-    let hint=card.querySelector('.swipe-hint-label');
-    if(!hint){ hint=document.createElement('div'); hint.className='swipe-hint-label'; hint.style.cssText='position:absolute;top:20px;padding:6px 14px;border-radius:9999px;font-weight:800;font-size:14px;letter-spacing:.04em;transition:opacity .1s;pointer-events:none'; card.style.position='relative'; card.appendChild(hint); }
-    if(dx>30){hint.style.background='#22c55e';hint.style.color='#fff';hint.textContent='♥ SAUVER';hint.style.right='16px';hint.style.left='auto';hint.style.opacity=Math.min((dx-30)/80,1).toFixed(2);}
-    else if(dx<-30){hint.style.background='#ef4444';hint.style.color='#fff';hint.textContent='✕ PASSER';hint.style.left='16px';hint.style.right='auto';hint.style.opacity=Math.min((-dx-30)/80,1).toFixed(2);}
-    else{hint.style.opacity='0';}
-  }
-  _hideHint(card){ card.querySelector('.swipe-hint-label')?.remove(); }
-
-  swipeLeft() {
-    if(this._topCard){ this._animateOut(this._topCard,'left'); }
-    const job=this.jobs[this.idx];
-    EventBus.emit(EV.JOB_SWIPE_L, {title:job?.intitule, company:job?.entreprise?.nom});
-    setTimeout(()=>{ this.idx++; this._render(); }, 320);
-  }
-
-  swipeRight() {
-    if(this._topCard){ this._animateOut(this._topCard,'right'); }
-    const job=this.jobs[this.idx];
+  likeJob(idx) {
+    const job = this.jobs[idx];
     if(job){
       this.liked.push(job);
       showToast(`♥ "${(job.intitule||'Offre').slice(0,40)}" sauvegardée`,'success');
       EventBus.emit(EV.JOB_SWIPE_R, {title:job.intitule, company:job.entreprise?.nom});
       if(isLoggedIn()) apiFetch('/api/jobs/bookmark',{method:'POST',body:JSON.stringify({jobId:job.id})}).catch(()=>{});
     }
-    setTimeout(()=>{ this.idx++; this._render(); }, 320);
-  }
-
-  _animateOut(card, dir) {
-    card.style.transition='transform .32s cubic-bezier(.25,.46,.45,.94),opacity .32s';
-    card.style.transform=dir==='left'?'translateX(-140%) rotate(-20deg)':'translateX(140%) rotate(20deg)';
-    card.style.opacity='0';
   }
 
   close() {
     closeModal_id('swipe-modal');
-    this._sentinel?.disconnect();
+    if (this._sentinelObserver) {
+      this._sentinelObserver.disconnect();
+    }
+    this._sentinelObserver=null;
+    if (this._sentinel) {
+      this._sentinel.style.display = 'none';
+    }
     this._sentinel=null;
-    this.dragging=false;
   }
 }
 
@@ -362,8 +324,7 @@ const _swipeEngine = new SwipeEngine();
 
 window.openSwipeJob    = ()=>_swipeEngine.open();
 window.closeSwipeModal = ()=>_swipeEngine.close();
-window.swipeLeft       = ()=>_swipeEngine.swipeLeft();
-window.swipeRight      = ()=>_swipeEngine.swipeRight();
+window.swipeRight      = (idx)=>_swipeEngine.likeJob(idx);
 
 // ══════════════════════════════════════════════════════
 //  C. PROFIL UPLOAD CV

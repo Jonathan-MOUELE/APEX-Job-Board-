@@ -314,7 +314,7 @@ async function _doChat(msg) {
   const ctrl=new AbortController();
   const to=setTimeout(()=>ctrl.abort(),30000);
   try{
-    const res=await apiFetch('/api/jobs/chat',{
+    const res=await apiFetch('/api/bot/chat',{
       method:'POST', signal:ctrl.signal,
       body:JSON.stringify({message:msg.slice(0,500), history:window._state.chatHistory.slice(-20)}),
     });
@@ -411,6 +411,8 @@ window.openSalaryCalcModal  = ()=>openModal('salary-calc-modal');
 window.closeSalaryCalcModal = ()=>closeModal_id('salary-calc-modal');
 window.openSalaryModal      = ()=>openModal('salary-modal');
 window.closeSalaryModal     = ()=>closeModal_id('salary-modal');
+window.openCitiesOverlay    = ()=>openModal('cities-overlay');
+window.closeCitiesOverlay   = ()=>closeModal_id('cities-overlay');
 
 window.calcSalary = function() {
   // Clamp value to avoid overflow

@@ -236,7 +236,7 @@ window.telemetry = (()=>{
   const flush=()=>{
     if(flushing||!Q.length) return; flushing=true;
     const batch=Q.splice(0,10);
-    try{navigator.sendBeacon(window._API+'/api/telemetry',JSON.stringify({events:batch}));}catch(_){}
+    // try{navigator.sendBeacon(window._API+'/api/telemetry',JSON.stringify({events:batch}));}catch(_){}
     flushing=false;
   };
   EventBus.on(EV.SEARCH_DONE,({query,count})=>T.track('search',{q:query?.slice(0,50),count}));
@@ -312,15 +312,19 @@ window.hideBackdrop = ()=>{ if(_openModals.size>0) return; const b=document.getE
 
 window.openModal = function(id){
   const el=document.getElementById(id); if(!el) return;
-  el.classList.add('open'); _openModals.add(id); showBackdrop(); forceLucide(el);
+  el.classList.add('open'); el.setAttribute('aria-hidden', 'false'); _openModals.add(id); showBackdrop(); forceLucide(el);
   requestAnimationFrame(()=>el.querySelector('input,button,[tabindex]:not([tabindex="-1"])')?.focus());
 };
 window.closeModal_id = function(id){
-  document.getElementById(id)?.classList.remove('open');
+  const el=document.getElementById(id);
+  if(el){ el.classList.remove('open'); el.setAttribute('aria-hidden', 'true'); }
   _openModals.delete(id); hideBackdrop();
 };
 window.closeAll = function(){
-  _openModals.forEach(id=>document.getElementById(id)?.classList.remove('open'));
+  _openModals.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.classList.remove('open'); el.setAttribute('aria-hidden', 'true'); }
+  });
   _openModals.clear();
   document.getElementById('apex-drawer')?.classList.remove('open');
   document.getElementById('drawer-overlay')?.classList.remove('open');
@@ -394,16 +398,16 @@ window.createSentinel = function(containerEl, onIntersect, margin='200px'){
 // ════════════════════════════════════════════════════════
 //  N. PWA
 // ════════════════════════════════════════════════════════
-window._pwaInstallPrompt=null;
-(function(){
-  if(!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.register('/service-worker.js',{scope:'/'})
-    .then(r=>{ console.log('[PWA] SW scope:',r.scope); })
-    .catch(e=>console.warn('[PWA]',e));
-  window.addEventListener('beforeinstallprompt',e=>{
-    e.preventDefault(); window._pwaInstallPrompt=e;
-  });
-})();
+// window._pwaInstallPrompt=null;
+// (function(){
+//   if(!('serviceWorker' in navigator)) return;
+//   navigator.serviceWorker.register('/service-worker.js',{scope:'/'})
+//     .then(r=>{ console.log('[PWA] SW scope:',r.scope); })
+//     .catch(e=>console.warn('[PWA]',e));
+//   window.addEventListener('beforeinstallprompt',e=>{
+//     e.preventDefault(); window._pwaInstallPrompt=e;
+//   });
+// })();
 
 // ════════════════════════════════════════════════════════
 //  O. KEYBOARD SHORTCUTS GLOBAL
