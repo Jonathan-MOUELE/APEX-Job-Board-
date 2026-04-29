@@ -53,12 +53,16 @@ public sealed class AlertWorker : BackgroundService
 
         var now = DateTime.UtcNow;
 
+        var cutoffDaily = now.AddHours(-23);
+        var cutoffWeekly = now.AddDays(-6.5);
+
         var dueAlerts = await db.SearchAlerts
-            .Where(a => a.IsActive && (
-                (a.Frequency == "daily"  && (a.LastSentAt == null || a.LastSentAt < now.AddHours(-23))) ||
-                (a.Frequency == "weekly" && (a.LastSentAt == null || a.LastSentAt < now.AddDays(-6.5)))
-            ))
             .Include(a => a.User)
+            .Where(a => a.IsActive && (
+                (a.Frequency == "daily"  && (a.LastSentAt == null || a.LastSentAt < cutoffDaily)) ||
+                (a.Frequency == "weekly" && (a.LastSentAt == null || a.LastSentAt < cutoffWeekly))
+            ))
+            .OrderBy(a => a.Id)
             .Take(50)
             .ToListAsync(ct);
 

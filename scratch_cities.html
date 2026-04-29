@@ -1,0 +1,54 @@
+﻿    <section class="sec" aria-labelledby="cities-title">
+      <div class="sec-inner">
+        <div class="sec-hd">
+          <div class="sec-eye">Découvrir par ville</div>
+          <h2 class="sec-title" id="cities-title">Quelle ville pour votre prochain job ?</h2>
+        </div>
+        <div class="cities-cards" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:24px;margin-bottom:32px;">
+          
+          <div class="city-card" style="position:relative;height:240px;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="setFilter(this, 'Paris')" onmouseover="this.querySelector('img').style.transform='scale(1.1)'" onmouseout="this.querySelector('img').style.transform='scale(1)'">
+            <img src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=600&q=80" alt="Paris" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));display:flex;flex-direction:column;justify-content:flex-end;padding:24px;">
+              <h3 style="color:white;font-size:24px;margin-bottom:8px;">Paris</h3>
+              <span style="color:white;font-weight:600;display:inline-block;padding:8px 16px;background:rgba(255,255,255,0.2);border-radius:24px;width:fit-content;backdrop-filter:blur(4px);">Voir les offres</span>
+            </div>
+          </div>
+
+          <div class="city-card" style="position:relative;height:240px;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="setFilter(this, 'Lyon')" onmouseover="this.querySelector('img').style.transform='scale(1.1)'" onmouseout="this.querySelector('img').style.transform='scale(1)'">
+            <img src="https://images.unsplash.com/photo-1596236979213-90d1f4d9241b?auto=format&fit=crop&w=600&q=80" alt="Lyon" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));display:flex;flex-direction:column;justify-content:flex-end;padding:24px;">
+              <h3 style="color:white;font-size:24px;margin-bottom:8px;">Lyon</h3>
+              <span style="color:white;font-weight:600;display:inline-block;padding:8px 16px;background:rgba(255,255,255,0.2);border-radius:24px;width:fit-content;backdrop-filter:blur(4px);">Voir les offres</span>
+            </div>
+          </div>
+
+          <div class="city-card" style="position:relative;height:240px;border-radius:12px;overflow:hidden;cursor:pointer;" onclick="setFilter(this, 'Toulouse')" onmouseover="this.querySelector('img').style.transform='scale(1.1)'" onmouseout="this.querySelector('img').style.transform='scale(1)'">
+            <img src="https://images.unsplash.com/photo-1601614949514-c3619946d5c6?auto=format&fit=crop&w=600&q=80" alt="Toulouse" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;">
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));display:flex;flex-direction:column;justify-content:flex-end;padding:24px;">
+              <h3 style="color:white;font-size:24px;margin-bottom:8px;">Toulouse</h3>
+              <span style="color:white;font-weight:600;display:inline-block;padding:8px 16px;background:rgba(255,255,255,0.2);border-radius:24px;width:fit-content;backdrop-filter:blur(4px);">Voir les offres</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="border-bottom:1px solid var(--border);margin:32px 0;"></div>
+        
+        <details style="cursor:pointer;">
+          <summary style="font-weight:600;display:flex;align-items:center;gap:8px;outline:none;">
+            Voir plus de villes <i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
+          </summary>
+          <div class="quick-tags" style="margin-top:16px;">
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Marseille')">Marseille</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Nantes')">Nantes</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Bordeaux')">Bordeaux</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Rennes')">Rennes</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Lille')">Lille</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Strasbourg')">Strasbourg</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Montpellier')">Montpellier</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Nice')">Nice</a>
+            <a href="javascript:void(0)" class="qtag" onclick="setFilter(this, 'Aix-en-Provence')">Aix-en-Provence</a>
+          </div>
+        </details>
+      </div>
+    </section>

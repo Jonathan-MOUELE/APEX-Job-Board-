@@ -103,16 +103,14 @@ public class JobsController : ControllerBase
 
             // 1. France Travail (Aggressive range 0-149 for infinite scroll support)
             var ftTask = isFrance
-                ? _jobService.SearchJobsAsync(keywords, location, contract, "0-149", ct)
+                ? _jobService.SearchJobsAsync(keywords, location, contract, range, ct)
                 : Task.FromResult<IReadOnlyList<JobOffer>>([]);
 
             // 2. Adzuna (Fallback/Supplement)
             var adzTask = _adzuna.SearchAsync(keywords, location, country, ct);
 
-            // 3. Arbeitnow (Disabled for French searches to avoid "filling" with German jobs)
-            var arbTask = (!isFrance && (location?.Contains("Germany") == true || location?.Contains("Remote") == true))
-                ? _arbeitnow.SearchAsync(keywords, location, ct)
-                : Task.FromResult<List<JobOffer>>([]);
+            // 3. Arbeitnow (Fallback/Remote)
+            var arbTask = _arbeitnow.SearchAsync(keywords, location, ct);
 
             // Parallel wait with safety
             try { await ftTask; } catch (Exception ex) { _logger.LogError(ex, "[JOBS] FT failed"); }
@@ -123,18 +121,26 @@ public class JobsController : ControllerBase
             var adzJobs = adzTask.IsCompletedSuccessfully ? adzTask.Result : new List<JobOffer>();
             var arbJobs = arbTask.IsCompletedSuccessfully ? arbTask.Result : new List<JobOffer>();
 
-            // Adzuna filtering for France
+            // Adzuna/Arbeitnow filtering for France
             if (isFrance)
             {
-                adzJobs = adzJobs.Where(j => j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true
-                                        || j.Location?.Contains("74", StringComparison.OrdinalIgnoreCase) == true // region code
-                                        || string.IsNullOrWhiteSpace(j.Location)).ToList();
+                adzJobs = adzJobs.Where(j => 
+                    j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true ||
+                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true ||
+                    (location != null && j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true)
+                ).ToList();
+
+                arbJobs = arbJobs.Where(j => 
+                    j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true ||
+                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true ||
+                    (location != null && j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true)
+                ).ToList();
             }
 
             var existingKeys = jobs.Select(j => $"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}").ToHashSet();
             var newAdz = adzJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
             var newArb = arbJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
-
+            
             var allResults = jobs.Concat(newAdz).Concat(newArb).ToList();
 
             sw.Stop();

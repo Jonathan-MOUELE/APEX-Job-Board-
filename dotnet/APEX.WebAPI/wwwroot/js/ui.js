@@ -184,6 +184,25 @@ class CommandPalette {
 
 let _cmdPalette = null;
 
+window.updateCompanyStrip = function(jobs) {
+  const container = document.querySelector('.companies-strip-inner');
+  if (!container || !jobs || jobs.length === 0) return;
+  const companies = [...new Set(jobs.map(j => j.entreprise?.nom).filter(Boolean))].slice(0, 10);
+  if (companies.length === 0) return;
+  container.innerHTML = '<span class="strip-label">Ils recrutent</span>';
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;align-items:center;gap:2.5rem;overflow:hidden;flex:1;margin-left:1rem';
+  companies.forEach(name => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;opacity:0.8;white-space:nowrap;font-size:13px;font-weight:700;color:var(--muted)';
+    const logo = getCompanyLogoUrl(name);
+    if (logo) item.innerHTML = `<img src="${esc(logo)}" alt="" style="height:20px;filter:grayscale(1) brightness(0.7)"> ${esc(name)}`;
+    else item.innerHTML = esc(name);
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+};
+
 // ══════════════════════════════════════════════════════
 //  B. JOB PANEL (drawer détaillé + SEO)
 // ══════════════════════════════════════════════════════
@@ -288,8 +307,8 @@ function _appendMsg(text, isUser) {
     w.innerHTML=`<div class="cmsg-bubble">${esc(String(text))}</div>`;
   }
   box.appendChild(w); box.scrollTop=box.scrollHeight;
-  if(isUser) window._state.chatHistory.push({role:'user',content:String(text)});
-  else       window._state.chatHistory.push({role:'assistant',content:decodeUtf8Safe(String(text))});
+  if(isUser) window._state.chatHistory.push({role:'user',text:String(text)});
+  else       window._state.chatHistory.push({role:'model',text:decodeUtf8Safe(String(text))});
   if(window._state.chatHistory.length>40) window._state.chatHistory=window._state.chatHistory.slice(-40);
 }
 
@@ -358,50 +377,54 @@ window.handleChatFile = function(input) {
 // ══════════════════════════════════════════════════════
 //  D. APPLY MODAL
 // ══════════════════════════════════════════════════════
-window.openApplyModal = function(title, loc) {
-  const el=document.getElementById('modal-offer-name');
-  if(el) el.textContent=`${title||'Offre'}${loc?' · '+loc:''}`;
-  openModal('apply-modal');
-  EventBus.emit(EV.APPLY_CLICK, {title, loc});
-};
-window.closeModal = ()=>closeModal_id('apply-modal');
+window.openApplyModal = function(title, loc, url) {
+    const el = document.getElementById('modal-offer-name');
+    if(el) el.textContent = title || 'Offre';
+    if (url) {
+      window._tempApplyUrl = url;
+    } else {
+      window._tempApplyUrl = null;
+    }
+    openModal('job-panel');
+    EventBus.emit(EV.APPLY_CLICK, {title, loc});
+  };
+window.closeModal = ()=>closeModal_id('job-panel');
 
 window.submitApplication = async function() {
-  if(!isLoggedIn()){closeModal();openLoginModal();return;}
-  const name  =document.getElementById('apply-name')?.value?.trim();
-  const email =document.getElementById('apply-email')?.value?.trim();
-  const cvFile=document.getElementById('apply-cv')?.files?.[0];
-  const msg   =document.getElementById('apply-msg')?.value?.trim();
-  const errEl =document.getElementById('apply-error');
-  const btnEl =document.getElementById('apply-submit');
-  if(!name||!email){if(errEl)errEl.textContent='Nom et email requis.';return;}
-  if(errEl) errEl.textContent='';
-  if(btnEl){btnEl.disabled=true;btnEl.textContent='Envoi…';}
-  try{
-    const job=window._state.currentJob;
-    const url=job?.origineOffre?.urlOrigine||job?.url||'';
-    if(url){
-      safeOpenUrl(url);
-      showToast('Redirection vers France Travail.','info');
-    }else{
-      const fd=new FormData();
-      fd.append('jobId',   job?.id||'');
-      fd.append('jobTitle',job?.intitule||'');
-      fd.append('name',    name);
-      fd.append('email',   email);
-      fd.append('letter',  msg||'');
-      if(cvFile) fd.append('cv',cvFile);
-      const res=await fetch(window._API+'/api/applications/direct',{
-        method:'POST',credentials:'include',
-        headers:{Authorization:`Bearer ${localStorage.getItem('apex_token')||''}`},
-        body:fd,
-      });
-      if(!res.ok) throw new Error('Erreur lors de la candidature.');
-      showToast('Candidature envoyée !','success');
+    const job = window._currentJob;
+    if (!job) return;
+
+    // Détection de la source pour adapter l'entrée demandée
+    const source = job.source || (job.id?.startsWith('ft_') ? 'FranceTravail' : 'Adzuna');
+    
+    // Si l'offre nécessite une postulation sur le site d'origine
+    if (job.applyUrl || job.origineOffre?.urlOrigine) {
+        window.showToast("Redirection vers le site partenaire...", "info");
+        setTimeout(() => {
+            window.safeOpenUrl(job.applyUrl || job.origineOffre.urlOrigine);
+        }, 300); // Latence réduite au minimum
+        return;
     }
-    closeModal();
-  }catch(err){if(errEl)errEl.textContent=err.message;}
-  finally{if(btnEl){btnEl.disabled=false;btnEl.innerHTML='<i data-lucide="send"></i> Envoyer ma candidature';forceLucide(btnEl);}}
+
+    // Sinon, tentative d'envoi direct via ton backend
+    try {
+        const formData = new FormData();
+        formData.append('jobId', job.id);
+        formData.append('name', document.getElementById('apply-name').value);
+        formData.append('email', document.getElementById('apply-email').value);
+        
+        const res = await window.apiFetch('/api/applications/submit', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (res.ok) {
+            window.showToast("Candidature envoyée avec succès !", "success");
+            window.closeModal();
+        }
+    } catch (e) {
+        window.showToast("Erreur lors de l'envoi.", "error");
+    }
 };
 
 // ══════════════════════════════════════════════════════
@@ -459,3 +482,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Drawer overlay
   document.getElementById('drawer-overlay')?.addEventListener('click', closeDrawer);
 });
+
+// Sticky Hero on Scroll
+window.addEventListener('scroll', () => {
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    if (window.scrollY > 100) {
+      hero.classList.add('sticky');
+    } else {
+      hero.classList.remove('sticky');
+    }
+  }
+});
+
+
+

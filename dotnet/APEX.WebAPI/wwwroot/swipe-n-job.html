@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Swipe n' Job | APEX by AVERS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .swipe-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            z-index: 100;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+            backdrop-filter: blur(5px);
+        }
+
+        .swipe-back {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .swipe-title {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+        }
+
+        .swipe-title span {
+            color: var(--orange);
+        }
+
+        #swipe-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #swipe-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .swipe-card-section {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .card-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .card-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6) contrast(1.1);
+        }
+
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, 
+                rgba(0,0,0,0.95) 0%, 
+                rgba(0,0,0,0.4) 40%,
+                transparent 100%);
+            z-index: 1;
+        }
+
+        .card-content {
+            display: none; /* Replaced by bottom-info and side-actions */
+        }
+
+        .bottom-info {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            right: 80px;
+            padding: 30px 20px 40px;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .bottom-info > * {
+            pointer-events: auto;
+        }
+
+        .side-actions {
+            position: absolute;
+            right: 16px;
+            bottom: 120px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #fff;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .action-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid rgba(255,255,255,0.15);
+            transition: all 0.2s cubic-bezier(.4, 0, .2, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .action-item:hover .action-circle {
+            transform: scale(1.15);
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        .action-circle.btn-apply-circle {
+            background: var(--orange);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .action-label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        @media (orientation: landscape) {
+            .swipe-card-section {
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+            .bottom-info {
+                width: 60%;
+                padding: 60px;
+            }
+            .side-actions {
+                right: 40px;
+                bottom: 60px;
+            }
+        }
+
+        .empty-state {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+
+        .loader-apex {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--orange);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Sentinel for infinite scroll */
+        #infinite-sentinel {
+            height: 100px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="loader-apex"></div>
+    </div>
+
+    <header class="swipe-header">
+        <a href="index.html" class="swipe-back">
+            <i data-lucide="arrow-left"></i>
+        </a>
+        <div class="swipe-title">APEX <span>Swipe</span></div>
+        <div style="width:40px"></div> <!-- Spacer -->
+    </header>
+
+    <div id="swipe-container">
+        <!-- Cards will be injected here -->
+    </div>
+
+    <div id="infinite-sentinel"></div>
+
+    <script src="js/core.js"></script>
+    <script src="js/swipe-page.js"></script>
+    <script>
+        // Init Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>

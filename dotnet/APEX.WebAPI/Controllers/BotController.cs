@@ -80,7 +80,10 @@ public class BotController : ControllerBase
 
         try
         {
-            (string? text, System.Net.HttpStatusCode status) = _aiSettings.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase)
+            bool isCompatible = _aiSettings.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase) 
+                             || _aiSettings.Provider.Equals("deepseek", StringComparison.OrdinalIgnoreCase);
+
+            (string? text, System.Net.HttpStatusCode status) = isCompatible
                 ? await CallOpenRouterAsync(model, apiKey, systemPrompt, req, userMsg, ct)
                 : await CallGeminiAsync(model, apiKey, systemPrompt, req, userMsg, ct);
 
@@ -90,7 +93,7 @@ public class BotController : ControllerBase
             {
                 var fallbackModel = _aiSettings.ProModel ?? model;
                 _logger.LogWarning("[CHAT] Modèle principal indisponible ({Status}) — fallback {M}", (int)status, fallbackModel);
-                (text, status) = _aiSettings.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase)
+                (text, status) = isCompatible
                     ? await CallOpenRouterAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct)
                     : await CallGeminiAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct);
             }
@@ -261,12 +264,25 @@ Réponds UNIQUEMENT en JSON strict:
         }
         messages.Add(new { role = "user", content = userMsg });
 
-        var payload = JsonSerializer.Serialize(new
+        var payloadObj = new Dictionary<string, object>
         {
-            model,
-            messages,
-            max_tokens = _aiSettings.MaxOutputTokens > 0 ? _aiSettings.MaxOutputTokens : 1024
-        }, JsonOpts);
+            { "model", model },
+            { "messages", messages },
+            { "max_tokens", _aiSettings.MaxOutputTokens > 0 ? _aiSettings.MaxOutputTokens : 1024 },
+            { "stream", false }
+        };
+
+        if (_aiSettings.Thinking)
+        {
+            payloadObj["thinking"] = new { type = "enabled" };
+        }
+
+        if (!string.IsNullOrEmpty(_aiSettings.ReasoningEffort))
+        {
+            payloadObj["reasoning_effort"] = _aiSettings.ReasoningEffort;
+        }
+
+        var payload = JsonSerializer.Serialize(payloadObj, JsonOpts);
 
         var client = _httpFactory.CreateClient();
         client.Timeout = TimeSpan.FromSeconds(_aiSettings.TimeoutSeconds > 0 ? _aiSettings.TimeoutSeconds : 30);

@@ -1,27 +1,27 @@
 /**
  * APEX — core.js  v4.0  (Production / Silicon Valley Grade)
- * ─────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  * INTÉGRATIONS :
- *  · EventBus   (inspiré de developit/mitt)        — communication découplée entre modules
- *  · Sanitizer  (inspiré de cure53/DOMPurify)       — anti-XSS sur toute injection innerHTML
- *  · classNames (inspiré de lukeed/clsx)            — gestion propre des classes CSS
- *  · Telemetry  (inspiré de plausible/analytics)    — tracking privacy-first via sendBeacon
- *  · SEO Manager (logique inspirée de react-helmet) — meta tags dynamiques
- *  · Feature Flags                                  — A/B testing sans redéploiement
- *  · PWA / SW registration                          — mode hors-ligne, install prompt
- *  · Web Worker bridge                              — parsing JSON off-thread
- * ─────────────────────────────────────────────────────────
+ *   · EventBus   (inspiré de developit/mitt)        — communication découplée entre modules
+ *   · Sanitizer  (inspiré de cure53/DOMPurify)       — anti-XSS sur toute injection innerHTML
+ *   · classNames (inspiré de lukeed/clsx)            — gestion propre des classes CSS
+ *   · Telemetry  (inspiré de plausible/analytics)    — tracking privacy-first via sendBeacon
+ *   · SEO Manager (logique inspirée de react-helmet) — meta tags dynamiques
+ *   · Feature Flags                                  — A/B testing sans redéploiement
+ *   · PWA / SW registration                          — mode hors-ligne, install prompt
+ *   · Web Worker bridge                              — parsing JSON off-thread
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  */
 'use strict';
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  A. CONFIG
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window._API = 'http://localhost:5191';
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  B. STATE GLOBAL (single source of truth)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window._state = {
   jobs:         [],
   currentJob:   null,
@@ -47,9 +47,9 @@ Object.defineProperties(window, {
   _PAGE_SIZE:     {get:()=>10,configurable:true},
 });
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  C. EVENT BUS  (mitt-inspired, ultra-léger)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.EventBus = (() => {
   const _map = Object.create(null);
   return {
@@ -79,9 +79,9 @@ window.EV = Object.freeze({
   PLAN_UPGRADED:  'plan:upgraded',
 });
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  D. DOM SANITIZER  (DOMPurify-inspired, anti-XSS)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.sanitizeHTML = (function(){
   const ALLOWED = new Set(['P','BR','B','STRONG','I','EM','U','SPAN','DIV',
     'UL','OL','LI','H3','H4','A','SMALL','S']);
@@ -111,9 +111,9 @@ window.sanitizeHTML = (function(){
   };
 })();
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  E. UTILS
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.esc = function(str){
   if (str==null) return '';
   const d=document.createElement('div'); d.textContent=String(str); return d.innerHTML;
@@ -123,28 +123,28 @@ window.decodeUtf8Safe = function(str){
   if (!str||typeof str!=='string') return str||'';
   try{return decodeURIComponent(escape(str));}catch(_){}
   return str
-    .replace(/Ã©/g,'é').replace(/Ã¨/g,'è').replace(/Ã /g,'à').replace(/Ã¢/g,'â')
-    .replace(/Ã®/g,'î').replace(/Ã´/g,'ô').replace(/Ã¹/g,'ù').replace(/Ã»/g,'û')
-    .replace(/Ã§/g,'ç').replace(/Ã‰/g,'É').replace(/Ãª/g,'ê').replace(/Ã¼/g,'ü')
-    .replace(/â€™/g,"'").replace(/â€"/g,'–').replace(/Ã¢â€šÂ¬/g,'€').replace(/â‚¬/g,'€')
-    .replace(/Â°/g,'°').replace(/Â«/g,'«').replace(/Â»/g,'»');
+    .replace(/Ãƒ ©/g,'é').replace(/Ãƒ ¨/g,'è').replace(/Ãƒ /g,'Ã ').replace(/Ãƒ ¢/g,'â')
+    .replace(/Ãƒ ®/g,'î').replace(/Ãƒ ´/g,'ô').replace(/Ãƒ ¹/g,'ù').replace(/Ãƒ»/g,'û')
+    .replace(/Ãƒ §/g,'ç').replace(/Ãƒâ€°/g,'É').replace(/Ãƒ ª/g,'ê').replace(/Ãƒ ¼/g,'Ã¼')
+    .replace(/ââ‚¬â„¢/g,"'").replace(/ââ‚¬"/g,'–').replace(/Ãƒ ¢ââ‚¬Å¡Â ¬/g,'â‚¬').replace(/ââ€š ¬/g,'â‚¬')
+    .replace(/Â °/g,' °').replace(/Â«/g,'«').replace(/Â»/g,'»');
 };
 
 window.formatSalary = function(label){
   if (!label) return '';
   const s=decodeUtf8Safe(label);
-  const m=s.match(/(\d[\d\s]*)[\s\S]*?[Ee]uros?\s*[àa]\s*(\d[\d\s]*)/i);
+  const m=s.match(/(\d[\d\s]*)[\s\S]*?[Ee]uros?\s*[Ã a]\s*(\d[\d\s]*)/i);
   if (m){
     const min=parseInt(m[1].replace(/\s/g,'')),max=parseInt(m[2].replace(/\s/g,''));
-    if (!isNaN(min)&&!isNaN(max)) return `${min.toLocaleString('fr-FR')} – ${max.toLocaleString('fr-FR')} €/${/mois/i.test(s)?'mois':'an'}`;
+    if (!isNaN(min)&&!isNaN(max)) return `${min.toLocaleString('fr-FR')} – ${max.toLocaleString('fr-FR')} â‚¬/${/mois/i.test(s)?'mois':'an'}`;
   }
-  return s.replace(/Euros?/gi,'€').replace(/â‚¬/g,'€').trim();
+  return s.replace(/Euros?/gi,'â‚¬').replace(/ââ€š ¬/g,'â‚¬').trim();
 };
 
 window.cleanDesc = function(raw,max=180){
   if (!raw) return '';
   const s=decodeUtf8Safe(raw).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-  return s.length>max?s.slice(0,max)+'…':s;
+  return s.length>max?s.slice(0,max)+'â€¦':s;
 };
 
 /** Formatage date relative "il y a 2h" (dayjs-inspired) */
@@ -166,9 +166,9 @@ window.cx = (...args) => args.filter(Boolean).flat().join(' ').trim();
 
 window.scrollToTop     = ()=>window.scrollTo({top:0,behavior:'smooth'});
 window.scrollToResults = ()=>{
-  document.getElementById('search-results')?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('offres')?.scrollIntoView({behavior:'smooth',block:'start'});
 };
-window.safeOpenUrl = url=>{if(url&&/^https?:\/\//.test(url))window.open(url,'_blank','noopener,noreferrer');};
+window.safeOpenUrl = url=>{if(url)window.open(url,'_blank','noopener,noreferrer');};
 
 window.forceLucide = function(node){
   if (!window.lucide) return;
@@ -192,9 +192,9 @@ window.toggleFontSize = ()=>{
   localStorage.setItem('apex_font_large',String(document.body.classList.contains('large-text')));
 };
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  F. TOAST  (animé, Sweetalert2-inspired)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.showToast = function(msg, type='info', duration=3500){
   document.getElementById('apex-toast-el')?.remove();
   const C={success:{c:'#22c55e',i:'check-circle'},warn:{c:'#f59e0b',i:'alert-triangle'},info:{c:'#f97316',i:'info'},error:{c:'#ef4444',i:'x-circle'}};
@@ -219,18 +219,18 @@ window.showToast = function(msg, type='info', duration=3500){
   t.addEventListener('click',()=>{clearTimeout(timer);dismiss();},{once:true});
 };
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  G. FEATURE FLAGS  (A/B Testing)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.FLAGS = (()=>{
   const DEF={swipe_vertical:true,cmd_palette:true,salary_inline:true,kanban_suivi:true,pwa_prompt:true,new_apply_btn:'orange'};
   let OV={}; try{OV=JSON.parse(localStorage.getItem('apex_flags')||'{}');}catch(_){}
   return{get:k=>k in OV?OV[k]:DEF[k],set(k,v){OV[k]=v;localStorage.setItem('apex_flags',JSON.stringify(OV));},all:()=>({...DEF,...OV})};
 })();
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  H. TELEMETRY  (privacy-first, sendBeacon)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.telemetry = (()=>{
   const Q=[]; let flushing=false;
   const flush=()=>{
@@ -250,9 +250,9 @@ window.telemetry = (()=>{
 })();
 window.addEventListener('pagehide',()=>telemetry.flush());
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  I. SEO MANAGER  (react-helmet inspired)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.SEO = (()=>{
   const ORIG={title:document.title};
   const meta=(sel,attr,val)=>{
@@ -272,7 +272,7 @@ window.SEO = (()=>{
       try{const u=new URL(location.href);u.searchParams.set('job',j.id||'');history.replaceState({jobId:j.id},t,u.toString());}catch(_){}
     },
     setSearch(q,l){
-      const t=q?`${q}${l?' à '+l:''} — Offres APEX`:'APEX — Trouvez votre emploi';
+      const t=q?`${q}${l?' Ã  '+l:''} — Offres APEX`:'APEX — Trouvez votre emploi';
       document.title=t;
       try{const u=new URL(location.href);if(q)u.searchParams.set('q',q);else u.searchParams.delete('q');if(l)u.searchParams.set('l',l);else u.searchParams.delete('l');u.searchParams.delete('job');history.replaceState({q,l},t,u.toString());}catch(_){}
     },
@@ -280,9 +280,9 @@ window.SEO = (()=>{
   };
 })();
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  J. THÈME
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.initTheme = function(){
   const saved=localStorage.getItem('apex_theme')||localStorage.getItem('apex-theme');
   const dark=saved?saved==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -302,9 +302,9 @@ function _updateThemeIcon(dark){
   forceLucide(icon.closest('button')||icon.parentElement);
 }
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  K. PANELS / MODALS
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window._openModals = new Set();
 
 window.showBackdrop = ()=>{ const b=document.getElementById('backdrop'); if(b){b.style.display='block';document.body.style.overflow='hidden';} };
@@ -346,9 +346,9 @@ window.toggleMobileMenu = function(){
 };
 window.closeMobileMenu = ()=>{ const m=document.getElementById('mobile-nav-menu'); if(m)m.style.display='none'; document.body.style.overflow=''; };
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  L. WEB WORKER BRIDGE  (off-thread data processing)
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.DataWorker = (()=>{
   let W=null, id=0;
   const P=new Map();
@@ -382,9 +382,9 @@ window._processJobsSync = function(raw){
   }));
 };
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  M. INTERSECTION OBSERVER HELPER
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 window.createSentinel = function(containerEl, onIntersect, margin='200px'){
   const s=document.createElement('div');
   s.setAttribute('aria-hidden','true');
@@ -395,9 +395,9 @@ window.createSentinel = function(containerEl, onIntersect, margin='200px'){
   return {sentinel:s,observer:obs,disconnect(){obs.unobserve(s);s.remove();}};
 };
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  N. PWA
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // window._pwaInstallPrompt=null;
 // (function(){
 //   if(!('serviceWorker' in navigator)) return;
@@ -409,9 +409,9 @@ window.createSentinel = function(containerEl, onIntersect, margin='200px'){
 //   });
 // })();
 
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  O. KEYBOARD SHORTCUTS GLOBAL
-// ════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 document.addEventListener('DOMContentLoaded',()=>{
   initTheme();
   // Lucide retry
@@ -439,3 +439,4 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   EventBus.emit('app:loaded',{ts:Date.now()});
 });
+

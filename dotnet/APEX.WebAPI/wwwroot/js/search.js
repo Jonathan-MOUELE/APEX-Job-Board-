@@ -402,35 +402,36 @@ window.buildJobCard = function(job, idx) {
 // ══════════════════════════════════════════════════════
 //  H. RENDER PAGE + PAGINATION
 // ══════════════════════════════════════════════════════
-window.renderPage = function(reset=false) {
-  let jobs = [...window._state.jobs];
-  if(window._state.filter){
-    const f=window._state.filter.toUpperCase();
-    jobs=jobs.filter(j=>(j.typeContrat||'').toUpperCase().includes(f)||(j.typeContratLibelle||'').toUpperCase().includes(f));
-  }
-  const sub=document.getElementById('results-subtitle');
-  if(sub&&!sub.textContent.includes('cours')){
-    const n=jobs.length;
-    sub.textContent=`${n.toLocaleString('fr-FR')} offre${n!==1?'s':''}`;
-  }
-  if(!jobs.length){
-    document.getElementById('jobs-grid')?.replaceChildren();
-    document.getElementById('empty-state')?.classList.remove('hidden');
-    return;
-  }
-  document.getElementById('empty-state')?.classList.add('hidden');
-  const start=(window._state.page-1)*window._PAGE_SIZE;
-  const slice=jobs.slice(start,start+window._PAGE_SIZE);
-  const grid=document.getElementById('jobs-grid'); if(!grid) return;
-  if(reset) grid.innerHTML='';
-  slice.forEach((job,i)=>{
-    const card=buildJobCard(job,start+i);
-    card.style.animation='_fadeUp .25s ease both';
-    card.style.animationDelay=Math.min(i*0.04,0.25)+'s';
-    grid.appendChild(card);
-  });
-  forceLucide(grid);
-  renderPagination(jobs.length);
+window.renderPage = function(reset = false) {
+    let jobs = [...window._state.jobs];
+    if (window._state.filter) {
+        const f = window._state.filter.toUpperCase();
+        jobs = jobs.filter(j => (j.typeContrat || '').toUpperCase().includes(f) || (j.typeContratLibelle || '').toUpperCase().includes(f));
+    }
+    const sub = document.getElementById('results-subtitle');
+    if (sub && !sub.textContent.includes('cours')) {
+        const n = jobs.length;
+        sub.textContent = `${n.toLocaleString('fr-FR')} offre${n !== 1 ? 's' : ''}`;
+    }
+    if (!jobs.length) {
+        document.getElementById('jobs-grid')?.replaceChildren();
+        document.getElementById('empty-state')?.classList.remove('hidden');
+        return;
+    }
+    document.getElementById('empty-state')?.classList.add('hidden');
+    const start = (window._state.page - 1) * window._PAGE_SIZE;
+    const slice = jobs.slice(start, start + window._PAGE_SIZE);
+    const grid = document.getElementById('jobs-grid');
+    if (!grid) return;
+    if (reset) grid.innerHTML = '';
+    slice.forEach((job, i) => {
+        const card = buildJobCard(job, start + i);
+        card.style.animation = '_fadeUp .25s ease both';
+        card.style.animationDelay = Math.min(i * 0.04, 0.25) + 's';
+        grid.appendChild(card);
+    });
+    forceLucide(grid);
+    renderPagination(jobs.length);
 };
 
 window.gotoPage = function(p){
@@ -519,6 +520,7 @@ window.renderFeatured = async function(){
     if(!jobs.length){ c.innerHTML='<p style="color:var(--muted);text-align:center;padding:1rem">Aucune offre disponible.</p>'; return; }
     jobs.slice(0,4).forEach((job,i)=>{ const card=buildJobCard(job,i); c.appendChild(card); });
     forceLucide(c);
+    if(window.updateCompanyStrip) window.updateCompanyStrip(jobs);
   }catch(_){ c.innerHTML='<p style="color:var(--muted);text-align:center;padding:1rem">Serveur non démarré.</p>'; }
 };
 
@@ -584,11 +586,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(q){const el=document.getElementById('sq-job');if(el)el.value=q;}
     if(l){const el=document.getElementById('sq-city');if(el)el.value=l;}
     if(q||l) setTimeout(performSearch,600);
-    // else     setTimeout(renderFeatured,800);
-  }catch(_){ /* setTimeout(renderFeatured,800); */ }
+    else     setTimeout(renderFeatured,800);
+  }catch(_){ setTimeout(renderFeatured,800); }
 
   // EventBus listeners
   EventBus.on(EV.FILTER_CHANGE, ()=>{
     document.getElementById('jobs-grid')?.scrollIntoView({behavior:'smooth',block:'start'});
   });
+});
+window.handleAutocomplete = function(e, type) {
+  const val = e.target.value.toLowerCase();
+  const box = document.getElementById('autocomplete-' + type);
+  if (!val) {
+    box.style.display = 'none';
+    return;
+  }
+  
+  let suggestions = [];
+  if (type === 'job') {
+    suggestions = SUGGESTIONS.filter(s => s.toLowerCase().includes(val)).slice(0, 5);
+  } else if (type === 'city') {
+    const cities = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Bordeaux', 'Nantes', 'Lille', 'Rennes', 'Strasbourg', 'Montpellier'];
+    suggestions = cities.filter(s => s.toLowerCase().includes(val)).slice(0, 5);
+  }
+  
+  if (suggestions.length === 0) {
+    box.style.display = 'none';
+    return;
+  }
+  
+  box.innerHTML = suggestions.map(s => `<div class="autocomplete-item" onclick="selectAutocomplete('${type}', '${s.replace(/'/g, "\\'")}');">${s}</div>`).join('');
+  box.style.display = 'block';
+};
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-field')) {
+    const jobBox = document.getElementById('autocomplete-job');
+    if (jobBox) jobBox.style.display = 'none';
+    const cityBox = document.getElementById('autocomplete-city');
+    if (cityBox) cityBox.style.display = 'none';
+  }
 });

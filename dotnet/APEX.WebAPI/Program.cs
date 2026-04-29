@@ -4,6 +4,7 @@
 // ║  exception handler, health check, static files              ║
 // ╚══════════════════════════════════════════════════════════════╝
 
+using System.Text;
 using System.Threading.RateLimiting;
 using APEX.Agents;
 using APEX.Core;
@@ -14,10 +15,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using System.Text.Json;
 
 // ── 1. Configuration (env vars FIRST) ──────────────────────────
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables(); // Priorité absolue
 builder.WebHost.ConfigureKestrel(o => o.AddServerHeader = false);

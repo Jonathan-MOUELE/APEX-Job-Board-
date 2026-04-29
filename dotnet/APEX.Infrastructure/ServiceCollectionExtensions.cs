@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
     {
         var connStr = config.GetConnectionString("ApexDb");
         services.AddDbContext<ApexDbContext>(opts =>
-            opts.UseSqlServer(connStr));
+            opts.UseSqlite(connStr));
         return services;
     }
 

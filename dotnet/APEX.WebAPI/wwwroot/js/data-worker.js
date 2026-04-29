@@ -8,16 +8,16 @@
  * Réponse       : postMessage({id, result: processedArray})
  */
 
-/** Décode les strings UTF-8 corrompues (Ã© → é etc.) */
+/** Décode les strings UTF-8 corrompues (é → é etc.) */
 function decodeUtf8Safe(str) {
   if (!str || typeof str !== 'string') return str || '';
   try { return decodeURIComponent(escape(str)); } catch(_) {}
   return str
-    .replace(/Ã©/g,'é').replace(/Ã¨/g,'è').replace(/Ã /g,'à').replace(/Ã¢/g,'â')
-    .replace(/Ã®/g,'î').replace(/Ã´/g,'ô').replace(/Ã¹/g,'ù').replace(/Ã»/g,'û')
-    .replace(/Ã§/g,'ç').replace(/Ã‰/g,'É').replace(/Ãª/g,'ê').replace(/Ã¼/g,'ü')
-    .replace(/â€™/g,"'").replace(/â€"/g,'–').replace(/Ã¢â€šÂ¬/g,'€').replace(/â‚¬/g,'€')
-    .replace(/Â°/g,'°').replace(/Â«/g,'«').replace(/Â»/g,'»');
+    .replace(/é/g,'é').replace(/è/g,'è').replace(/Ï/g,'à').replace(/â/g,'â')
+    .replace(/î/g,'î').replace(/ô/g,'ô').replace(/ù/g,'ù').replace(/û/g,'û')
+    .replace(/ç/g,'ç').replace(/É/g,'É').replace(/ê/g,'ê').replace(/Ã¼/g,'ü')
+    .replace(/'/g,"'").replace(/â€"/g,'–').replace(/ââ€š ¬/g,'€').replace(/â‚¬/g,'€')
+    .replace(/ °/g,'°').replace(/«/g,'«').replace(/»/g,'»');
 }
 
 /** Formate le salaire en chaîne lisible */
