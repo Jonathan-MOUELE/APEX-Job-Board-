@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -22,7 +22,7 @@
     </script>
     <style>
         /* ================================
-   DESIGN SYSTEM — APEX v2
+   DESIGN SYSTEM —APEX v2
 ================================ */
         @keyframes spin {
             to {
@@ -212,6 +212,7 @@
             position: relative;
             display: inline-block;
         }
+
         .city-dropdown {
             display: none;
             position: absolute;
@@ -226,9 +227,11 @@
             min-width: 150px;
             z-index: 100;
         }
+
         .city-trigger:hover .city-dropdown {
             display: block;
         }
+
         .city-dropdown a {
             display: block;
             padding: 8px 16px;
@@ -237,8 +240,9 @@
             font-size: 14px;
             transition: background 0.15s, color 0.15s;
         }
+
         .city-dropdown a:hover {
-            background: rgba(255,102,0,0.1);
+            background: rgba(255, 102, 0, 0.1);
             color: var(--orange);
         }
 
@@ -1304,15 +1308,21 @@
         }
 
         @media (max-width: 1200px) {
-            .cities-gallery-grid { grid-template-columns: repeat(6, 1fr); }
+            .cities-gallery-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
         @media (max-width: 900px) {
-            .cities-gallery-grid { grid-template-columns: repeat(4, 1fr); }
+            .cities-gallery-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
-            .cities-gallery-grid { grid-template-columns: repeat(4, 1fr); }
+            .cities-gallery-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
         .city-card-gallery {
@@ -2886,16 +2896,19 @@
                 box-shadow: none !important;
             }
         }
+
         .city-card-gallery:hover .city-gallery-img {
             transform: scale(1.08);
             filter: brightness(1.1);
         }
+
         .city-card-gallery:hover .city-gallery-view {
             opacity: 1;
             transform: translateX(6px);
         }
+
         .city-card-gallery:hover .city-gallery-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 60%);
         }
     </style>
 </head>
@@ -3162,7 +3175,8 @@
         <section id="offres" class="sec" style="display:none; padding-top:20px; background:var(--bg);">
             <div class="sec-inner">
                 <div id="search-results">
-                    <div style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--border); padding-bottom:16px;">
+                    <div
+                        style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--border); padding-bottom:16px;">
                         <div>
                             <h2 class="sec-title" style="margin-bottom:4px; font-size:1.8rem">Opportunités</h2>
                             <p id="results-subtitle" style="font-size:14px; color:var(--muted)">Recherche en cours…</p>
@@ -3172,9 +3186,11 @@
                         <!-- Results will be injected here by search.js -->
                     </div>
                     <div id="empty-state" class="hidden" style="text-align:center; padding:60px;">
-                        <i data-lucide="frown" style="width:48px; height:48px; color:var(--muted); margin-bottom:16px;"></i>
+                        <i data-lucide="frown"
+                            style="width:48px; height:48px; color:var(--muted); margin-bottom:16px;"></i>
                         <h3>Aucune offre trouvée</h3>
-                        <p style="color:var(--muted)">Essayez d'élargir vos critères de recherche ou de changer de ville.</p>
+                        <p style="color:var(--muted)">Essayez d'élargir vos critères de recherche ou de changer de
+                            ville.</p>
                     </div>
                     <div id="pagination" style="margin-top:40px;"></div>
                 </div>
@@ -3601,7 +3617,7 @@
                         Comptabilité</a>
                 </div>
                 <div id="tab-interim" class="contract-chips" style="display:none">
-                    </div>
+                </div>
                 <div
                     style="text-align:center;margin-top:32px;padding:20px;border-radius:12px;background:var(--bg-card);border:1px dashed var(--border)">
                     <p style="font-size:15px;color:var(--muted);margin:0 0 12px">Vous pouvez aussi soutenir APEX
@@ -3720,7 +3736,9 @@
                 <!-- The City Gallery: Premium métropoles françaises -->
                 <div class="cities-gallery-grid">
                     <button class="city-card-gallery" onclick="searchChip('','Paris'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=500&q=80')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=500&q=80')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Paris</div>
@@ -3728,7 +3746,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Marseille'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1739353190153-f857475cf242?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1739353190153-f857475cf242?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Marseille</div>
@@ -3736,7 +3756,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Lyon'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1597692289746-070a015e0714?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1597692289746-070a015e0714?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Lyon</div>
@@ -3744,7 +3766,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Toulouse'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1596431102927-4c7b2cc8e25d?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1596431102927-4c7b2cc8e25d?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Toulouse</div>
@@ -3752,7 +3776,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Nice'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1533619043845-dfc67752b017?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1533619043845-dfc67752b017?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Nice</div>
@@ -3760,7 +3786,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Nantes'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1572944067345-3162df30b427?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1572944067345-3162df30b427?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Nantes</div>
@@ -3768,7 +3796,9 @@
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Bordeaux'); return false;">
-                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1493564738392-d148cfbd6eda?w=500&q=60')"></div>
+                        <div class="city-gallery-img"
+                            style="background-image:url('https://images.unsplash.com/photo-1493564738392-d148cfbd6eda?w=500&q=60')">
+                        </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Bordeaux</div>
@@ -3783,7 +3813,7 @@
                             <div class="city-gallery-view">Explorer</div>
                         </div>
                     </button>
-            </div>
+                </div>
         </section>
 
         <!-- ================================
@@ -3814,17 +3844,26 @@
                     <h2 class="sec-title">Questions fréquentes</h2>
                 </div>
                 <div class="faq-grid" style="max-width:800px;margin:0 auto; display: grid; gap: 1.5rem;">
-                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">APEX est-il gratuit ?</h3>
-                        <p style="color: var(--muted);">Oui, toutes les fonctionnalités de recherche et d'IA sont gratuites pour les candidats.</p>
+                    <div class="faq-item"
+                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">APEX est-il gratuit
+                            ?</h3>
+                        <p style="color: var(--muted);">Oui, toutes les fonctionnalités de recherche et d'IA sont
+                            gratuites pour les candidats.</p>
                     </div>
-                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">D'où proviennent les offres ?</h3>
-                        <p style="color: var(--muted);">Les offres sont synchronisées en temps réel avec France Travail (ex-Pôle Emploi) et d'autres partenaires officiels.</p>
+                    <div class="faq-item"
+                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">D'où proviennent les
+                            offres ?</h3>
+                        <p style="color: var(--muted);">Les offres sont synchronisées en temps réel avec France Travail
+                            (ex-Pôle Emploi) et d'autres partenaires officiels.</p>
                     </div>
-                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">Comment fonctionne l'IA ?</h3>
-                        <p style="color: var(--muted);">Notre IA analyse votre CV et les offres pour vous donner des conseils personnalisés et mesurer votre compatibilité.</p>
+                    <div class="faq-item"
+                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">Comment fonctionne
+                            l'IA ?</h3>
+                        <p style="color: var(--muted);">Notre IA analyse votre CV et les offres pour vous donner des
+                            conseils personnalisés et mesurer votre compatibilité.</p>
                     </div>
                 </div>
             </div>
@@ -3941,8 +3980,7 @@
         <div class="chat-input-row">
             <textarea class="chat-inp" id="chat-inp" placeholder="Posez votre question…" onkeydown="chatKey(event)"
                 aria-label="Message pour APEX"></textarea>
-            <button class="chat-send" onclick="sendMsg()" aria-label="Envoyer"><i
-                    data-lucide="send"></i></button>
+            <button class="chat-send" onclick="sendMsg()" aria-label="Envoyer"><i data-lucide="send"></i></button>
         </div>
     </div>
 
@@ -4006,8 +4044,10 @@
                 <div class="form-group">
                     <label class="form-label">Salaire Brut</label>
                     <div style="position:relative">
-                        <input type="text" id="sc-brut" class="form-input" placeholder="Ex: 45000" oninput="calcSalary()" style="padding-right:40px">
-                        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700">€</span>
+                        <input type="text" id="sc-brut" class="form-input" placeholder="Ex: 45000"
+                            oninput="calcSalary()" style="padding-right:40px">
+                        <span
+                            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700">€</span>
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -4026,10 +4066,14 @@
                         </select>
                     </div>
                 </div>
-                
-                <div id="sc-result" style="background:var(--orange-light);border:1px dashed var(--orange);border-radius:12px;padding:20px;text-align:center;display:none;animation:fadeUp 0.3s ease">
-                    <div style="font-size:12px;color:var(--orange);font-weight:700;text-transform:uppercase;margin-bottom:4px">Estimation Net à payer</div>
-                    <div id="sc-net-val" style="font-size:32px;font-weight:800;color:var(--orange);letter-spacing:-1px">0 €</div>
+
+                <div id="sc-result"
+                    style="background:var(--orange-light);border:1px dashed var(--orange);border-radius:12px;padding:20px;text-align:center;display:none;animation:fadeUp 0.3s ease">
+                    <div
+                        style="font-size:12px;color:var(--orange);font-weight:700;text-transform:uppercase;margin-bottom:4px">
+                        Estimation Net à payer</div>
+                    <div id="sc-net-val" style="font-size:32px;font-weight:800;color:var(--orange);letter-spacing:-1px">
+                        0 €</div>
                     <div id="sc-details" style="font-size:12px;color:var(--muted);margin-top:4px">Soit 0 € / mois</div>
                 </div>
             </div>
