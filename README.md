@@ -36,7 +36,7 @@ The job market is a game — and you need a system to play it. Job boards are CV
 - **Swipe** through jobs with a Tinder-like "Swipe n' Job" interface.
 - **Draft** targeted applications and calibrated follow-ups.
 
-> *"No feelings, just data. High performance, zero noise."*
+> *"Find your following job"*
 
 ### [FR]
 Les job boards sont des cimetières à CV. Les recruteurs ghostent. Le marché est un jeu — et il faut un système pour le jouer.
@@ -46,7 +46,7 @@ Les job boards sont des cimetières à CV. Les recruteurs ghostent. Le marché e
 - **Rédiger** des candidatures ciblées et des relances calibrées.
 - **Décider** GO ou NO-GO — sans émotion, avec de la data.
 
-> *"Pas de sentiment, que de la data. La performance avant tout."*
+> *"Trouvez votre prochain emploi."*
 
 ---
 
