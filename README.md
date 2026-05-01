@@ -1,66 +1,47 @@
 <div align="center">
 
-# ▲ APEX
+# ▲ APEX Job Board
 
-### **Automated Placement & Experience**
+### **Intelligent Opportunity Acquisition**
 
-*More than a tracker. An AI representation agent.*
-*Plus qu'un tracker. Un agent de représentation.*
+*Plus qu'un simple job board. Une expérience de recrutement augmentée.*
+*More than just a job board. An augmented recruitment experience.*
 
 ---
 
-### [EN] Advanced Career Acquisition Pipeline
-APEX is an integrated ecosystem of autonomous AI agents designed to source, analyze, and manage professional opportunities. It transforms the job search from a passive activity into an active, data-driven acquisition strategy.
+### [FR] En bref
+APEX Job Board est une plateforme intelligente conçue pour simplifier et accélérer votre recherche d'emploi. En agrégeant directement les offres de **France Travail**, APEX utilise des agents IA pour analyser, scorer et vous présenter les meilleures opportunités selon votre profil réel. L'objectif est de transformer une recherche souvent longue en une expérience fluide et efficace.
 
-### [FR] Pipeline d'Acquisition de Carrière Avancé
-APEX est un écosystème intégré d'agents IA autonomes conçu pour sourcer, analyser et piloter vos opportunités professionnelles. Il transforme la recherche d'emploi d'une activité passive en une véritable stratégie d'acquisition basée sur la donnée.
+### [EN] At a glance
+APEX Job Board is a smart platform designed to simplify and accelerate your job search. By aggregating offers directly from **France Travail**, APEX uses AI agents to analyze, score, and present the best opportunities tailored to your actual profile. The goal is to turn a tedious search into a fluid and efficient experience.
 
 </div>
 
 ---
 
-## Core Philosophy
+## Fonctionnalités Clés / Key Features
 
-### [EN]
-The modern job market requires a systematic approach. Traditional recruitment platforms often lack the efficiency needed for precise talent-to-opportunity matching. 
-**APEX** leverages automation to:
-- **Aggregate** high-quality opportunities via multi-API integration (France Travail, Adzuna, Arbeitnow).
-- **Evaluate** job descriptions against candidate profiles using cognitive scoring engines.
-- **Optimize** the browsing experience through a high-performance "Swipe n' Job" interface.
-- **Automate** the generation of targeted communication and follow-up protocols.
-
-> *"Precision matching driven by data. High performance, minimized friction."*
-
-### [FR]
-Le marché de l'emploi moderne exige une approche systématique. Les plateformes traditionnelles échouent souvent à créer une mise en relation efficace entre talent et opportunité.
-**APEX** utilise l'automatisation pour :
-- **Agréger** des opportunités via une intégration multi-API (France Travail, Adzuna, Arbeitnow).
-- **Évaluer** la pertinence des offres grâce à un moteur de scoring cognitif.
-- **Optimiser** l'exploration via une interface "Swipe n' Job" haute performance.
-- **Automatiser** la génération de communications ciblées et de protocoles de relance.
-
-> *"Un matching de précision piloté par la data. La performance au service de l'acquisition."*
+- **Swipe n' Job** : Explorez les offres avec une interface fluide et intuitive (style Tinder), optimisée pour une navigation ultra-rapide.
+- **IA Analyst** : Un moteur de scoring cognitif qui évalue en temps réel si une offre correspond précisément à vos compétences techniques et soft skills.
+- **Chatbot Assistant** : Un assistant intelligent intégré pour vous accompagner dans votre navigation et répondre à vos questions sur les offres.
+- **Intégration France Travail** : Sourcing direct et automatisé via les APIs officielles pour garantir des offres fraîches et pertinentes.
 
 ---
 
-## Technical Specifications
-
-- **Swipe n' Job**: A premium, full-screen interface optimized for rapid opportunity assessment.
-- **AI Analyst**: Real-time cognitive engine providing match scores based on technical and soft skill analysis.
-- **API Orchestration**: Unified access to diverse job data sources.
-- **Autonomous Operations**: Background workers ensuring continuous monitoring of professional listings.
+## Liens & Références / Links & References
+- [Interface Contextuelle / Contextual UI](http://localhost/cv/dev_alt/h.html)
 
 ---
 
-## Infrastructure
+## Stack Technique / Technical Stack
 
-| Layer | Implementation |
+| Couche / Layer | Technologie / Technology |
 |-----------|-------------|
 | **Core Engine** | .NET 9 (C#) / Python 3.10 |
 | **Frontend** | Vanilla JavaScript / CSS (High-Performance UI) |
 | **Persistence** | Entity Framework / SQLite / SQL Server |
-| **Intelligence** | Claude 3.5 / Gemini 1.5 Integration |
-| **Environment** | XAMPP / Local / Cloud Deployable |
+| **IA / AI** | Claude 3.5 / Gemini 1.5 Integration |
+| **Sourcing** | France Travail API |
 
 ---
 
@@ -68,6 +49,6 @@ Le marché de l'emploi moderne exige une approche systématique. Les plateformes
 
 **Developed by Jonathan**
 
-*APEX Engine v1.0 — "Don't just search for a job. Acquire it."*
+*APEX Job Board — "On ne cherche pas un emploi, on l'acquiert."*
 
 </div>
