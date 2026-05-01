@@ -269,7 +269,7 @@ public sealed class FranceTravailClient(
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(8));
+            cts.CancelAfter(TimeSpan.FromSeconds(2.5));
             response = await client.GetAsync(url, cts.Token);
         }
         catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)

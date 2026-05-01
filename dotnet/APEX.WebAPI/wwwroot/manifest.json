@@ -1,0 +1,16 @@
+{
+  "name": "APEX — Trouvez votre emploi",
+  "short_name": "APEX",
+  "description": "Le job board intelligent par AVERS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f97316",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

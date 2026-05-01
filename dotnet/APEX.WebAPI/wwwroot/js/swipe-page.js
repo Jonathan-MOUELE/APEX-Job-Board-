@@ -14,6 +14,7 @@ class SwipeStandalone {
         this.query = new URLSearchParams(window.location.search).get('q') || 'développeur';
         
         this.init();
+        this.setupKeyboard();
     }
 
     async init() {
@@ -64,6 +65,7 @@ class SwipeStandalone {
             this.page++;
         } catch (err) {
             console.error('Swipe Load Error:', err);
+            if (this.jobs.length === 0) this.renderEmpty();
         } finally {
             this.loading = false;
         }
@@ -78,6 +80,25 @@ class SwipeStandalone {
         }, { rootMargin: '400px' });
         
         if (sentinel) observer.observe(sentinel);
+    }
+
+    setupKeyboard() {
+        window.addEventListener('keydown', (e) => {
+            const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                if (isLandscape) {
+                    this.container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
+                } else {
+                    this.container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+                }
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                if (isLandscape) {
+                    this.container.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
+                } else {
+                    this.container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+                }
+            }
+        });
     }
 
     buildCard(job, globalIdx) {

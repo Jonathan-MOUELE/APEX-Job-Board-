@@ -589,6 +589,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
     else     setTimeout(renderFeatured,800);
   }catch(_){ setTimeout(renderFeatured,800); }
 
+  // Animated Placeholder
+  const keywords = ['Développeur React', 'Serveur', 'Infirmier', 'Commercial', 'Comptable', 'Vendeur', 'Alternance IT', 'Stage Marketing'];
+  let kIdx = 0;
+  const sqJob = document.getElementById('sq-job');
+  if (sqJob) {
+    setInterval(() => {
+      sqJob.placeholder = `Ex: ${keywords[kIdx]}`;
+      kIdx = (kIdx + 1) % keywords.length;
+    }, 3500);
+  }
+
   // EventBus listeners
   EventBus.on(EV.FILTER_CHANGE, ()=>{
     document.getElementById('jobs-grid')?.scrollIntoView({behavior:'smooth',block:'start'});

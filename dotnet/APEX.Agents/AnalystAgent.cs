@@ -300,38 +300,94 @@ public sealed class AnalystAgent(
             generationConfig = new { temperature = 0.6, maxOutputTokens = _opts.MaxOutputTokens }
         };
 
-        // Flash-first pour la vitesse (< 1s) — Pro en fallback si Flash échoue ou quota épuisé
-        using var client = httpFactory.CreateClient();
-        var flashUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{_opts.FlashModel}:generateContent?key={_opts.ApiKey}";
-        var proUrl   = $"https://generativelanguage.googleapis.com/v1beta/models/{_opts.ProModel}:generateContent?key={_opts.ApiKey}";
-        logger.LogInformation("[ANALYST] Appel Gemini FlashModel ({Model})", _opts.FlashModel);
+        // Choix du provider selon la config
+        bool isCompatible = _opts.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase) 
+                         || _opts.Provider.Equals("deepseek", StringComparison.OrdinalIgnoreCase);
 
-        var resp = await client.PostAsJsonAsync(flashUrl, body, ct);
+        using var client = httpFactory.CreateClient();
+        client.Timeout = TimeSpan.FromSeconds(_opts.TimeoutSeconds > 0 ? _opts.TimeoutSeconds : 30);
+
+        string text;
+        if (isCompatible)
+        {
+            text = await CallOpenAICompatibleAsync(client, _opts.FlashModel, prompt, ct);
+        }
+        else
+        {
+            text = await CallGeminiAsync(client, _opts.FlashModel, prompt, ct);
+        }
+
+        // Valider que la réponse ne contient pas de mots-clés système
+        if (InjectionPattern.IsMatch(text))
+        {
+            logger.LogWarning("[SECURITY] IA response flagged for injection keywords.");
+            throw new Exception("IA response flagged.");
+        }
+
+        return text.Trim();
+    }
+
+    private async Task<string> CallGeminiAsync(HttpClient client, string model, string prompt, CancellationToken ct)
+    {
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_opts.ApiKey}";
+        var body = new
+        {
+            contents = new[] { new { parts = new[] { new { text = prompt } } } },
+            generationConfig = new { temperature = 0.6, maxOutputTokens = _opts.MaxOutputTokens }
+        };
+
+        var resp = await client.PostAsJsonAsync(url, body, ct);
         if (!resp.IsSuccessStatusCode)
         {
-            logger.LogWarning("[ANALYST] FlashModel {Flash} échoué (HTTP {Status}) — fallback ProModel {Pro}",
-                _opts.FlashModel, (int)resp.StatusCode, _opts.ProModel);
-            resp = await client.PostAsJsonAsync(proUrl, body, ct);
-            if (!resp.IsSuccessStatusCode)
-                throw new Exception($"Gemini error (both models failed): {resp.StatusCode}");
+            var err = await resp.Content.ReadAsStringAsync(ct);
+            throw new Exception($"Gemini error: {resp.StatusCode} - {err}");
         }
 
         var doc = await resp.Content.ReadFromJsonAsync<JsonDocument>(cancellationToken: ct);
-        var text = doc?.RootElement
+        return doc?.RootElement
             .GetProperty("candidates")[0]
             .GetProperty("content")
             .GetProperty("parts")[0]
             .GetProperty("text")
             .GetString() ?? throw new Exception("Empty Gemini response");
+    }
 
-        // Valider que la réponse ne contient pas de mots-clés système
-        if (InjectionPattern.IsMatch(text))
+    private async Task<string> CallOpenAICompatibleAsync(HttpClient client, string model, string prompt, CancellationToken ct)
+    {
+        var baseUrl = string.IsNullOrEmpty(_opts.BaseUrl) ? "https://api.deepseek.com" : _opts.BaseUrl;
+        var url = $"{baseUrl.TrimEnd('/')}/chat/completions";
+
+        var payloadObj = new Dictionary<string, object>
         {
-            logger.LogWarning("[SECURITY] Gemini response flagged for injection keywords.");
-            throw new Exception("Gemini response flagged.");
+            { "model", model },
+            { "messages", new[] { 
+                new { role = "system", content = "Tu es APEX, conseiller carrière direct." },
+                new { role = "user", content = prompt } 
+            }},
+            { "max_tokens", _opts.MaxOutputTokens },
+            { "temperature", 0.6 }
+        };
+
+        if (_opts.Thinking && model.Contains("reasoner"))
+        {
+            payloadObj["thinking"] = new { type = "enabled" };
         }
 
-        return text.Trim();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _opts.ApiKey);
+        
+        var resp = await client.PostAsJsonAsync(url, payloadObj, ct);
+        if (!resp.IsSuccessStatusCode)
+        {
+            var err = await resp.Content.ReadAsStringAsync(ct);
+            throw new Exception($"OpenAI-Compatible error: {resp.StatusCode} - {err}");
+        }
+
+        var doc = await resp.Content.ReadFromJsonAsync<JsonDocument>(cancellationToken: ct);
+        return doc?.RootElement
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
+            .GetString() ?? throw new Exception("Empty OpenAI response");
     }
 
     // ═══════════════════════════════════════════════════════

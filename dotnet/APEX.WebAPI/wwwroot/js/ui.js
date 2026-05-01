@@ -338,7 +338,11 @@ async function _doChat(msg) {
       body:JSON.stringify({message:msg.slice(0,500), history:window._state.chatHistory.slice(-20)}),
     });
     clearTimeout(to); document.getElementById(typId)?.remove();
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    if(!res.ok) {
+        const errText = await res.text();
+        console.error('[BOT]', res.status, errText);
+        throw new Error(`HTTP ${res.status}`);
+    }
     const d=await res.json().catch(()=>({}));
     const reply=d.reply||d.message||d.content||d.text||"Je n'ai pas compris.";
     _appendMsg(reply, false);
@@ -432,30 +436,88 @@ window.submitApplication = async function() {
 // ══════════════════════════════════════════════════════
 window.openSalaryCalcModal  = ()=>openModal('salary-calc-modal');
 window.closeSalaryCalcModal = ()=>closeModal_id('salary-calc-modal');
-window.openSalaryModal      = ()=>openModal('salary-modal');
+window.openSalaryModal      = ()=>{ openModal('salary-modal'); loadSalaries(); };
 window.closeSalaryModal     = ()=>closeModal_id('salary-modal');
 window.openCitiesOverlay    = ()=>openModal('cities-overlay');
 window.closeCitiesOverlay   = ()=>closeModal_id('cities-overlay');
 
+window.loadSalaries = function() {
+    const rows = document.getElementById('salary-rows');
+    if (!rows || rows.children.length > 0) return;
+    
+    const data = [
+        { cat: 'Tech / IT', j: '3 200 €', c: '4 800 €', s: '6 500 €' },
+        { cat: 'Santé / Médical', j: '2 400 €', c: '3 500 €', s: '5 200 €' },
+        { cat: 'BTP / Travaux', j: '2 100 €', c: '3 200 €', s: '4 800 €' },
+        { cat: 'Finance / Banque', j: '2 800 €', c: '4 200 €', s: '6 000 €' },
+        { cat: 'Commerce / Retail', j: '1 900 €', c: '2 600 €', s: '4 000 €' },
+        { cat: 'Logistique / Trans', j: '1 800 €', c: '2 400 €', s: '3 500 €' },
+        { cat: 'Industrie / Prod', j: '2 000 €', c: '3 100 €', s: '4 500 €' },
+        { cat: 'Restauration / Hôt.', j: '1 750 €', c: '2 200 €', s: '3 200 €' },
+        { cat: 'Com / Marketing', j: '2 200 €', c: '3 400 €', s: '5 000 €' }
+    ];
+
+    rows.innerHTML = data.map(d => `
+        <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:8px;padding:12px 4px;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
+            <span style="font-weight:700">${d.cat}</span>
+            <span style="color:var(--muted)">${d.j}</span>
+            <span style="color:var(--orange);font-weight:700">${d.c}</span>
+            <span style="color:var(--text)">${d.s}</span>
+        </div>
+    `).join('');
+};
+
 window.calcSalary = function() {
-  // Clamp value to avoid overflow
   const inp=document.getElementById('sc-brut');
   if(!inp) return;
-  let raw=parseFloat(inp.value?.replace(/[^\d.]/g,'')||0);
-  if(raw>999999){raw=999999;inp.value='999999';}
-  const res=document.getElementById('sc-result'); if(!res) return;
-  if(!raw){res.classList.remove('show');return;}
-  const period=document.getElementById('sc-period')?.value||'annual';
-  const statut=document.getElementById('sc-statut')?.value||'non-cadre';
-  const brutA=period==='monthly'?raw*12:raw;
-  const brutM=brutA/12;
-  const rate=statut==='cadre'?.75:.78;
-  const fmt=v=>v.toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('sc-net-m', fmt(brutM*rate));  set('sc-brut-m',fmt(brutM));
-  set('sc-net-a', fmt(brutA*rate));  set('sc-brut-a',fmt(brutA));
-  set('sc-note',  statut==='cadre'?'Taux ~25% (cadre)':'Taux ~22% (non-cadre)');
-  res.classList.add('show');
+  
+  let valStr = inp.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+  let raw = parseFloat(valStr);
+  
+  const res = document.getElementById('sc-result');
+  if(!res) return;
+
+  if (isNaN(raw) || raw <= 0) {
+      res.style.display = 'none';
+      return;
+  }
+  
+  if (raw > 2000000) { raw = 2000000; inp.value = '2 000 000'; }
+  
+  const period = document.getElementById('sc-period')?.value || 'annual';
+  const statut = document.getElementById('sc-statut')?.value || 'non-cadre';
+  const rate = statut === 'cadre' ? 0.75 : 0.78;
+  
+  const brutA = period === 'monthly' ? raw * 12 : raw;
+  const netA = brutA * rate;
+  const netM = netA / 12;
+  
+  const fmt = v => v.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  
+  const netValEl = document.getElementById('sc-net-val');
+  const detailsEl = document.getElementById('sc-details');
+  
+  if (netValEl) netValEl.textContent = fmt(period === 'monthly' ? netM : netA);
+  if (detailsEl) detailsEl.textContent = `Soit ${fmt(period === 'monthly' ? netA : netM)} / ${period === 'monthly' ? 'an' : 'mois'}`;
+  
+  res.style.display = 'block';
+};
+
+window.triggerCitySearch = function(cityName) {
+    const jobInp = document.getElementById('sq-job');
+    const cityInp = document.getElementById('sq-city');
+    if (cityInp) cityInp.value = cityName;
+    
+    // Si le champ métier est vide, on met un défaut pour que la recherche soit utile
+    if (jobInp && !jobInp.value) {
+        jobInp.value = "Emploi";
+    }
+    
+    // On scroll vers la section offres et on lance
+    document.getElementById('offres')?.scrollIntoView({ behavior: 'smooth' });
+    if (window.handleSearch) {
+        window.handleSearch();
+    }
 };
 
 // ══════════════════════════════════════════════════════

@@ -56,15 +56,24 @@ public sealed class AlertWorker : BackgroundService
         var cutoffDaily = now.AddHours(-23);
         var cutoffWeekly = now.AddDays(-6.5);
 
-        var dueAlerts = await db.SearchAlerts
-            .Include(a => a.User)
-            .Where(a => a.IsActive && (
-                (a.Frequency == "daily"  && (a.LastSentAt == null || a.LastSentAt < cutoffDaily)) ||
-                (a.Frequency == "weekly" && (a.LastSentAt == null || a.LastSentAt < cutoffWeekly))
-            ))
-            .OrderBy(a => a.Id)
-            .Take(50)
-            .ToListAsync(ct);
+        List<APEX.Core.Entities.SearchAlert> dueAlerts;
+        try
+        {
+            dueAlerts = await db.SearchAlerts
+                .Include(a => a.User)
+                .Where(a => a.IsActive && (
+                    (a.Frequency == "daily" && (a.LastSentAt == null || a.LastSentAt < cutoffDaily)) ||
+                    (a.Frequency == "weekly" && (a.LastSentAt == null || a.LastSentAt < cutoffWeekly))
+                ))
+                .OrderBy(a => a.Id)
+                .Take(50)
+                .ToListAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("[ALERTS] Erreur base de données — migration en attente ? {Msg}", ex.Message);
+            return;
+        }
 
         if (dueAlerts.Count == 0)
         {

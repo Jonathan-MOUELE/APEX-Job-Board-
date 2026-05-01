@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Caching.Memory;
 
 using APEX.Infrastructure.ExternalApis;
 
@@ -43,6 +44,7 @@ public class JobsController : ControllerBase
     private readonly ArbeitnowClient _arbeitnow;
     private readonly AdzunaClient _adzuna;
     private readonly MuseClient _muse;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<JobsController> _logger;
 
     public JobsController(
@@ -54,6 +56,7 @@ public class JobsController : ControllerBase
         ArbeitnowClient arbeitnow,
         AdzunaClient adzuna,
         MuseClient muse,
+        IMemoryCache cache,
         ILogger<JobsController> logger)
     {
         _jobService = jobService;
@@ -64,6 +67,7 @@ public class JobsController : ControllerBase
         _arbeitnow = arbeitnow;
         _adzuna = adzuna;
         _muse = muse;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -83,18 +87,36 @@ public class JobsController : ControllerBase
         CancellationToken ct = default)
     {
         // Accept both "keyword" (JS shorthand) and "keywords" (controller canonical)
-        // "keyword" always wins when provided
         if (!string.IsNullOrWhiteSpace(keyword)) keywords = keyword;
-        if (string.IsNullOrWhiteSpace(keywords) && string.IsNullOrWhiteSpace(location) && string.IsNullOrWhiteSpace(contract))
-            keywords = "développeur";
+        
+        if (string.IsNullOrWhiteSpace(keywords))
+        {
+            // Default to 'développeur' only if absolutely no filters, else 'emploi' to be broad
+            if (string.IsNullOrWhiteSpace(location) && string.IsNullOrWhiteSpace(contract))
+                keywords = "développeur";
+            else
+                keywords = "emploi";
+        }
+
         var userId = TryGetUserId();
         var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        // Default keyword to avoid empty results
+        if (string.IsNullOrWhiteSpace(keywords)) keywords = "Emploi";
 
         keywords = Regex.Replace(keywords, @"[<>""';\\]", "").Trim();
         if (keywords.Length > 128) keywords = keywords[..128];
 
+        // 0. Cache Check
+        string cacheKey = $"search_{keywords.ToLowerInvariant()}_{location?.ToLowerInvariant()}_{contract}_{country}_{range}";
+        if (_cache.TryGetValue(cacheKey, out List<JobOffer>? cachedResults))
+        {
+            _logger.LogInformation("[CACHE] Hit for {Key}", cacheKey);
+            return Ok(cachedResults);
+        }
+
         _logger.LogInformation(
-            "[JOBS] Search: keywords={K} location={L} contract={C} country={Cnt} user={U}",
+            "[JOBS] Search (Live): keywords={K} location={L} contract={C} country={Cnt} user={U}",
             keywords, location, contract, country, userId);
 
         try
@@ -121,20 +143,23 @@ public class JobsController : ControllerBase
             var adzJobs = adzTask.IsCompletedSuccessfully ? adzTask.Result : new List<JobOffer>();
             var arbJobs = arbTask.IsCompletedSuccessfully ? arbTask.Result : new List<JobOffer>();
 
-            // Adzuna/Arbeitnow filtering for France
+            // Adzuna/Arbeitnow filtering
             if (isFrance)
             {
-                adzJobs = adzJobs.Where(j => 
-                    j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true ||
-                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true ||
-                    (location != null && j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true)
-                ).ToList();
+                // For France, we trust the country-level filter of the API.
+                // We only filter if a specific city was requested to ensure relevance.
+                if (!string.IsNullOrWhiteSpace(location))
+                {
+                    adzJobs = adzJobs.Where(j => 
+                        j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
+                        j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
+                    ).ToList();
 
-                arbJobs = arbJobs.Where(j => 
-                    j.Location?.Contains("France", StringComparison.OrdinalIgnoreCase) == true ||
-                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true ||
-                    (location != null && j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true)
-                ).ToList();
+                    arbJobs = arbJobs.Where(j => 
+                        j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
+                        j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
+                    ).ToList();
+                }
             }
 
             var existingKeys = jobs.Select(j => $"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}").ToHashSet();
@@ -142,6 +167,9 @@ public class JobsController : ControllerBase
             var newArb = arbJobs.Where(j => !existingKeys.Contains($"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}"));
             
             var allResults = jobs.Concat(newAdz).Concat(newArb).ToList();
+
+            // Cache for 10 minutes
+            _cache.Set(cacheKey, allResults, TimeSpan.FromMinutes(10));
 
             sw.Stop();
             _logger.LogInformation("[JOBS] Final Search {K} in {L}: FT:{FT}, Adzuna:{ADZ}, Arbeitnow:{AN}. Total:{T} in {Ms}ms",
@@ -385,6 +413,8 @@ public class JobsController : ControllerBase
         {
             if (jobs == null || jobs.Count == 0) return;
 
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken.None);
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
             using var scope = HttpContext.RequestServices.CreateScope();
             var scopedDb = scope.ServiceProvider.GetRequiredService<ApexDbContext>();
 

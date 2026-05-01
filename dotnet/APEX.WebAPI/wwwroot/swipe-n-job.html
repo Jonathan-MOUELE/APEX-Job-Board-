@@ -7,13 +7,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-    <link rel="stylesheet" href="style.css">
     <style>
+        :root {
+            --orange: #f97316;
+            --muted: #a1a1aa;
+        }
+
         body {
             background: #000;
             color: #fff;
             overflow: hidden;
-            height: 100vh;
+            height: 100dvh;
             margin: 0;
             padding: 0;
             font-family: 'DM Sans', sans-serif;
@@ -46,7 +50,9 @@
             justify-content: center;
             cursor: pointer;
             text-decoration: none;
+            transition: all 0.2s;
         }
+        .swipe-back:hover { background: rgba(255,255,255,0.2); }
 
         .swipe-title {
             font-weight: 800;
@@ -59,25 +65,49 @@
         }
 
         #swipe-container {
-            height: 100vh;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
 
-        #swipe-container::-webkit-scrollbar {
-            display: none;
+        #swipe-container::-webkit-scrollbar { display: none; }
+
+        /* PORTRAIT MODE (Vertical Reels) */
+        @media (orientation: portrait) {
+            #swipe-container {
+                flex-direction: column;
+                overflow-y: scroll;
+                scroll-snap-type: y mandatory;
+            }
+        }
+
+        /* LANDSCAPE MODE (Horizontal Slider) */
+        @media (orientation: landscape) {
+            #swipe-container {
+                flex-direction: row;
+                overflow-x: scroll;
+                scroll-snap-type: x mandatory;
+            }
         }
 
         .swipe-card-section {
-            height: 100vh;
+            flex: 0 0 100dvh;
+            height: 100dvh;
             width: 100vw;
             scroll-snap-align: start;
             scroll-snap-stop: always;
             position: relative;
             display: flex;
             align-items: flex-end;
+            overflow: hidden;
+        }
+
+        @media (orientation: landscape) {
+            .swipe-card-section {
+                flex: 0 0 100vw;
+            }
         }
 
         .card-bg {
@@ -91,6 +121,7 @@
             height: 100%;
             object-fit: cover;
             filter: brightness(0.6) contrast(1.1);
+            transition: transform 0.5s ease;
         }
 
         .card-overlay {
@@ -98,37 +129,73 @@
             inset: 0;
             background: linear-gradient(to top, 
                 rgba(0,0,0,0.95) 0%, 
-                rgba(0,0,0,0.4) 40%,
+                rgba(0,0,0,0.3) 50%,
                 transparent 100%);
             z-index: 1;
-        }
-
-        .card-content {
-            display: none; /* Replaced by bottom-info and side-actions */
         }
 
         .bottom-info {
             position: absolute;
             left: 0;
             bottom: 0;
-            right: 80px;
-            padding: 30px 20px 40px;
+            right: 100px;
+            padding: 40px 24px;
             z-index: 5;
             pointer-events: none;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            gap: 10px;
         }
 
-        .bottom-info > * {
-            pointer-events: auto;
+        .bottom-info > * { pointer-events: auto; }
+
+        .company-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--orange);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .job-title {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: 0;
+        }
+
+        .tag-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 4px 0;
+        }
+
+        .swipe-tag {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .job-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.5;
+            max-width: 500px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .side-actions {
             position: absolute;
-            right: 16px;
-            bottom: 120px;
+            right: 20px;
+            bottom: 60px;
             z-index: 10;
             display: flex;
             flex-direction: column;
@@ -142,80 +209,37 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            color: #fff;
             background: none;
             border: none;
             padding: 0;
+            color: #fff;
+            transition: transform 0.2s;
         }
 
+        .action-item:active { transform: scale(0.9); }
+
         .action-circle {
-            width: 52px;
-            height: 52px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1.5px solid rgba(255,255,255,0.15);
-            transition: all 0.2s cubic-bezier(.4, 0, .2, 1);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
-        .action-item:hover .action-circle {
-            transform: scale(1.15);
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.4);
-        }
-
-        .action-circle.btn-apply-circle {
+        .btn-apply-circle {
             background: var(--orange);
-            border-color: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
         }
 
         .action-label {
             font-size: 10px;
-            font-weight: 800;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        @media (orientation: landscape) {
-            .swipe-card-section {
-                justify-content: space-between;
-                align-items: flex-end;
-            }
-            .bottom-info {
-                width: 60%;
-                padding: 60px;
-            }
-            .side-actions {
-                right: 40px;
-                bottom: 60px;
-            }
-        }
-
-        .empty-state {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
-            gap: 16px;
-        }
-
-        .empty-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 24px;
-            background: rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--muted);
-            margin-bottom: 8px;
         }
 
         #loading-overlay {
@@ -226,30 +250,39 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.5s;
+            transition: opacity 0.4s;
         }
 
-        .loader-apex {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.1);
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255,255,255,0.1);
             border-top-color: var(--orange);
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 1s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Sentinel for infinite scroll */
-        #infinite-sentinel {
-            height: 100px;
-            width: 100%;
+        .controls-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(0,0,0,0.5);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            backdrop-filter: blur(4px);
+            opacity: 0.6;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <div id="loading-overlay">
-        <div class="loader-apex"></div>
+        <div class="loader"></div>
     </div>
 
     <header class="swipe-header">
@@ -257,20 +290,21 @@
             <i data-lucide="arrow-left"></i>
         </a>
         <div class="swipe-title">APEX <span>Swipe</span></div>
-        <div style="width:40px"></div> <!-- Spacer -->
+        <div style="width:40px"></div>
     </header>
 
     <div id="swipe-container">
-        <!-- Cards will be injected here -->
+        <!-- Les offres seront injectées ici -->
     </div>
 
-    <div id="infinite-sentinel"></div>
+    <div class="controls-hint">Utilisez les flèches du clavier pour naviguer</div>
 
     <script src="js/core.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/swipe-page.js"></script>
     <script>
-        // Init Lucide
         lucide.createIcons();
     </script>
 </body>
 </html>
+

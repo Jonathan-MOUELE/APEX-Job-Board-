@@ -46,7 +46,7 @@ public class AdzunaClient(
         try
         {
             var client = httpFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(5);
+            client.Timeout = TimeSpan.FromSeconds(10);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("APEX-JobBot/1.0");
 
             // Build URL: GET /{country}/search/1?app_id=&app_key=&what=&where=&results_per_page=20
@@ -63,7 +63,7 @@ public class AdzunaClient(
             logger.LogInformation("[ADZUNA] Request: {Url}", url);
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            cts.CancelAfter(TimeSpan.FromSeconds(10));
 
             var response = await client.GetAsync(url, cts.Token);
             if (!response.IsSuccessStatusCode)
@@ -72,8 +72,9 @@ public class AdzunaClient(
                 return [];
             }
 
-            var body = await response.Content.ReadAsStringAsync(ct);
-            var root = System.Text.Json.JsonSerializer.Deserialize<AdzunaResponse>(body, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var body  = System.Text.Encoding.UTF8.GetString(bytes);
+            var root  = System.Text.Json.JsonSerializer.Deserialize<AdzunaResponse>(body, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (root?.Results is null) return [];
 
             return root.Results.Select(j => new JobOffer(

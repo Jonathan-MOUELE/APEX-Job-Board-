@@ -100,18 +100,15 @@ public class BotController : ControllerBase
 
             if (text == null)
             {
-                var errMsg = status == System.Net.HttpStatusCode.TooManyRequests
-                    ? "Quota IA atteint. Réessayez dans quelques minutes ou configurez une clé OpenRouter sur openrouter.ai."
-                    : "Service IA temporairement indisponible. Réessayez dans quelques instants.";
-                return Ok(new { reply = errMsg, fallback = true });
+                return StatusCode(503, new { reply = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
             }
 
             return Ok(new { reply = text, fallback = false });
         }
         catch (Exception ex)
         {
-            _logger.LogError("[CHAT] Exception non gérée — {Msg}", ex.Message);
-            return Ok(new { reply = "Erreur technique. Réessayez.", fallback = true });
+            _logger.LogError(ex, "[BOT] Erreur interne");
+            return StatusCode(503, new { reply = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
         }
     }
 
@@ -171,7 +168,7 @@ public class BotController : ControllerBase
 
         var apiKey = _aiSettings.ApiKey;
         if (string.IsNullOrEmpty(apiKey) || apiKey.StartsWith("DEV_ONLY"))
-            return Ok(new { analysis = "Clé API Gemini non configurée.", fallback = true });
+            return StatusCode(503, new { analysis = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
 
         var userTechs = string.Join(", ", profile.Technologies.Keys.Take(20));
         var userSofts = string.Join(", ", profile.SoftSkills?.Take(10) ?? Array.Empty<string>());
@@ -224,7 +221,7 @@ Réponds UNIQUEMENT en JSON strict:
             var fakeReq2 = new ChatRequest(prompt, null);
             (string? responseText, System.Net.HttpStatusCode _) = await CallGeminiAsync(_aiSettings.FlashModel, apiKey, systemPrompt: "", fakeReq2, prompt, ct);
             if (responseText is null)
-                return Ok(new { analysis = "Analyse indisponible.", fallback = true });
+                return StatusCode(503, new { analysis = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
 
             var m = System.Text.RegularExpressions.Regex.Match(responseText, @"\{.*\}", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (!m.Success) return Ok(new { analysis = responseText, fallback = false });
@@ -234,8 +231,8 @@ Réponds UNIQUEMENT en JSON strict:
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[BOT] SkillsGap error");
-            return Ok(new { analysis = "Erreur lors de l'analyse.", fallback = true });
+            _logger.LogError(ex, "[BOT] Erreur interne");
+            return StatusCode(503, new { analysis = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
         }
     }
 

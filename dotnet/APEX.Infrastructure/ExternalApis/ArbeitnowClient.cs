@@ -17,7 +17,7 @@ public class ArbeitnowClient(IHttpClientFactory httpFactory, ILogger<ArbeitnowCl
         try
         {
             var client = httpFactory.CreateClient();
-            client.Timeout = TimeSpan.FromSeconds(3);
+            client.Timeout = TimeSpan.FromSeconds(8);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("APEX-JobBot/1.0");
 
             var url = $"{BaseUrl}?search={Uri.EscapeDataString(keywords)}";
@@ -25,7 +25,7 @@ public class ArbeitnowClient(IHttpClientFactory httpFactory, ILogger<ArbeitnowCl
                 url += $"&location={Uri.EscapeDataString(location)}";
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(3));
+            cts.CancelAfter(TimeSpan.FromSeconds(8));
 
             var response = await client.GetAsync(url, cts.Token);
             if (!response.IsSuccessStatusCode)

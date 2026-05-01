@@ -61,6 +61,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+// ── 3b. Caching & Memory ─────────────────────────────────────────
+builder.Services.AddMemoryCache();
+
 // ── 4. EF Core SQLite ────────────────────────────────────────────
 builder.Services.AddApexDatabase(builder.Configuration);
 
@@ -318,11 +321,16 @@ if (app.Environment.IsDevelopment())
     var startupLogger = devScope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        await db.Database.MigrateAsync();
+        var pending = await db.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
+        {
+            startupLogger.LogInformation("[STARTUP] Application de {Count} migration(s)...", pending.Count());
+            await db.Database.MigrateAsync();
+        }
     }
     catch (Exception ex)
     {
-        startupLogger.LogWarning(ex, "[STARTUP] Auto-migration skipped because SQL Server is unavailable.");
+        startupLogger.LogError("[STARTUP] Migration échouée — vérifiez que SQL Server Express est démarré. Erreur : {Msg}", ex.Message);
     }
 }
 
@@ -376,5 +384,8 @@ catch (Exception ex)
 {
     app.Logger.LogWarning(ex, "[STARTUP] Admin seed skipped because database is unavailable.");
 }
+
+app.MapGet("/favicon.ico", () => Results.NoContent()).ExcludeFromDescription();
+app.MapGet("/manifest.json", () => Results.File(System.IO.File.ReadAllBytes("wwwroot/manifest.json"), "application/json")).ExcludeFromDescription();
 
 app.Run();

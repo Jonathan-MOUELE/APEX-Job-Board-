@@ -208,6 +208,40 @@
             background: var(--surface2);
         }
 
+        .city-trigger {
+            position: relative;
+            display: inline-block;
+        }
+        .city-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            padding: 8px 0;
+            min-width: 150px;
+            z-index: 100;
+        }
+        .city-trigger:hover .city-dropdown {
+            display: block;
+        }
+        .city-dropdown a {
+            display: block;
+            padding: 8px 16px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .city-dropdown a:hover {
+            background: rgba(255,102,0,0.1);
+            color: var(--orange);
+        }
+
         .header-right {
             display: flex;
             align-items: center;
@@ -848,18 +882,20 @@
    JOBS LIST
 ================================ */
         .jobs-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            padding: 0 0 40px;
         }
 
         .job-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 18px 20px;
+            border-radius: 16px;
+            padding: 24px;
             display: flex;
-            align-items: center;
+            align-items: stretch;
+            flex-direction: column;
             gap: 16px;
             transition: border-color 0.15s, box-shadow 0.15s;
             cursor: pointer;
@@ -1152,28 +1188,7 @@
             color: var(--muted);
         }
 
-        /* ================================
-   PRICING
-================================ */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            align-items: start;
-        }
 
-        .pélan-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px 20px;
-            position: relative;
-        }
-
-        .pélan-card.featured {
-            border-color: var(--orange);
-            border-width: 2px;
-        }
 
         .pélan-badge {
             position: absolute;
@@ -1283,33 +1298,27 @@
 ================================ */
         .cities-gallery-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 12px;
             margin-bottom: 24px;
         }
 
-        @media (max-width: 1024px) {
-            .cities-gallery-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+        @media (max-width: 1200px) {
+            .cities-gallery-grid { grid-template-columns: repeat(6, 1fr); }
         }
 
-        @media (max-width: 768px) {
-            .cities-gallery-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @media (max-width: 900px) {
+            .cities-gallery-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
-        @media (max-width: 480px) {
-            .cities-gallery-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @media (max-width: 600px) {
+            .cities-gallery-grid { grid-template-columns: repeat(4, 1fr); }
         }
 
         .city-card-gallery {
             position: relative;
-            height: 220px;
-            border-radius: 16px;
+            height: 160px;
+            border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.35s cubic-bezier(.4, 0, .2, 1),
@@ -2908,7 +2917,18 @@
             <a href="#offres" class="nav-link">Offres</a>
             <a href="entreprises.html" class="nav-link">Entreprises</a>
             <a href="swipe-n-job.html" class="nav-link" style="color:var(--orange);font-weight:700">Swipe n' Job</a>
-            <a href="#villes-premium" class="nav-link">Villes</a>
+            <div class="city-trigger">
+                <a href="#villes-premium" class="nav-link">Villes</a>
+                <div class="city-dropdown">
+                    <a href="#" onclick="triggerCitySearch('Paris');return false;">Paris</a>
+                    <a href="#" onclick="triggerCitySearch('Lyon');return false;">Lyon</a>
+                    <a href="#" onclick="triggerCitySearch('Marseille');return false;">Marseille</a>
+                    <a href="#" onclick="triggerCitySearch('Bordeaux');return false;">Bordeaux</a>
+                    <a href="#" onclick="triggerCitySearch('Nantes');return false;">Nantes</a>
+                    <a href="#" onclick="triggerCitySearch('Toulouse');return false;">Toulouse</a>
+                    <a href="#" onclick="triggerCitySearch('Lille');return false;">Lille</a>
+                </div>
+            </div>
             <a href="#outils" class="nav-link">Outils</a>
             <a href="#conseils" class="nav-link">Conseils</a>
         </nav>
@@ -3581,100 +3601,7 @@
                         Comptabilité</a>
                 </div>
                 <div id="tab-interim" class="contract-chips" style="display:none">
-                    <a href="#" class="cchip" onclick="return searchChip('','Paris','MIS')">Intérim Paris</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Lyon','MIS')">Intérim Lyon</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Toulouse','MIS')">Intérim Toulouse</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Marseille','MIS')">Intérim Marseille</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Nantes','MIS')">Intérim Nantes</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Bordeaux','MIS')">Intérim Bordeaux</a>
-                    <a href="#" class="cchip" onclick="return searchChip('','Reims','MIS')">Intérim Reims</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================================
-     TARIFS
-================================ -->
-        <section class="sec sec-alt" id="tarifs" aria-labelledby="pricing-title">
-            <div class="sec-inner">
-                <div class="sec-hd" style="text-align:center">
-                    <div class="sec-eye">Soutenez le projet</div>
-                    <h2 class="sec-title" id="pricing-title">APEX est gratuit — soutenez son développement</h2>
-                    <p class="sec-sub">Pas de surprises, pas de carte requise pour démarrer. Les formules payantes
-                        financent les
-                        serveurs et l'IA.</p>
-                </div>
-                <div class="pricing-grid">
-                    <div class="pélan-card">
-                        <div class="pélan-name">Gratuit</div>
-                        <div class="pélan-price">0 <small>€</small></div>
-                        <div class="pélan-period">Pour toujours</div>
-                        <div class="pélan-feats">
-                            <div class="pélan-feat"><i data-lucide="check"></i> Recherche d'offres</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Alertes emploi</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Accès aux articles</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> Candidature directe</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> Analyse IA</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> Suivi candidatures</div>
-                        </div>
-                        <button class="pélan-btn">Commencer</button>
                     </div>
-                    <div class="pélan-card">
-                        <div class="pélan-badge" style="background:var(--success);color:#fff">Lancement</div>
-                        <div class="pélan-name">Essentiel</div>
-                        <div class="pélan-price" style="display:flex;align-items:center;gap:8px">
-                            <span style="text-decoration:line-through;color:var(--muted);font-size:16px">4,99€</span>
-                            2,99 <small>€</small>
-                        </div>
-                        <div class="pélan-period">par mois</div>
-                        <div class="pélan-feats">
-                            <div class="pélan-feat"><i data-lucide="check"></i> Tout du pélan Gratuit</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Candidature directe</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Suivi des candidatures</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Analyse IA basique</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> Coach entretien IA</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> CV builder avancé</div>
-                        </div>
-                        <button class="pélan-btn" onclick="APEX.checkout('essentiel')">Choisir Essentiel</button>
-                    </div>
-                    <div class="pélan-card featured">
-                        <div class="pélan-badge">Lancement Pro</div>
-                        <div class="pélan-name">Pro</div>
-                        <div class="pélan-price" style="display:flex;align-items:center;gap:8px">
-                            <span style="text-decoration:line-through;color:var(--muted);font-size:16px">8,99€</span>
-                            5,99 <small>€</small>
-                        </div>
-                        <div class="pélan-period">par mois</div>
-                        <div class="pélan-feats">
-                            <div class="pélan-feat"><i data-lucide="check"></i> Tout du pélan Essentiel</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Coach entretien IA</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> CV & lettre builder</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Analyse IA avancée</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Reélances automatiques</div>
-                            <div class="pélan-feat off"><i data-lucide="x"></i> Agent IA autonome</div>
-                        </div>
-                        <button class="pélan-btn" onclick="APEX.checkout('pro')">Passer Pro</button>
-                    </div>
-                    <div class="pélan-card">
-                        <div class="pélan-name">Ultra <span
-                                style="font-size:11px;background:var(--blue-light);color:var(--blue);padding:2px 6px;border-radius:4px;margin-left:4px;">Lancement</span>
-                        </div>
-                        <div class="pélan-price" style="display:flex;align-items:center;gap:8px">
-                            <span style="text-decoration:line-through;color:var(--muted);font-size:16px">11,99€</span>
-                            9,99 <small>€</small>
-                        </div>
-                        <div class="pélan-period">par mois</div>
-                        <div class="pélan-feats">
-                            <div class="pélan-feat"><i data-lucide="check"></i> Tout du pélan Pro</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Agent IA autonome</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Candidatures automatisées</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Support prioritaire</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Accès bêta anticipé</div>
-                            <div class="pélan-feat"><i data-lucide="check"></i> Accompagnement personnalisé</div>
-                        </div>
-                        <button class="pélan-btn" onclick="APEX.checkout('ultra')">Rejoindre la bêta</button>
-                    </div>
-                </div>
                 <div
                     style="text-align:center;margin-top:32px;padding:20px;border-radius:12px;background:var(--bg-card);border:1px dashed var(--border)">
                     <p style="font-size:15px;color:var(--muted);margin:0 0 12px">Vous pouvez aussi soutenir APEX
@@ -3792,52 +3719,70 @@
 
                 <!-- The City Gallery: Premium métropoles françaises -->
                 <div class="cities-gallery-grid">
-
                     <button class="city-card-gallery" onclick="searchChip('','Paris'); return false;">
-                        <div class="city-gallery-img"
-                            style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1000&q=80')">
-                        </div>
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=500&q=80')"></div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Paris</div>
-                            <div class="city-gallery-view">Voir les offres →</div>
+                            <div class="city-gallery-view">→</div>
                         </div>
                     </button>
-
                     <button class="city-card-gallery" onclick="searchChip('','Marseille'); return false;">
-                        <div class="city-gallery-img"
-                            style="background-image:url('https://images.unsplash.com/photo-1739353190153-f857475cf242?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8bWFyc2VpbGxlfGVufDB8fDB8fHww')">
-                        </div>
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1739353190153-f857475cf242?w=500&q=60')"></div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Marseille</div>
-                            <div class="city-gallery-view">Voir les offres →</div>
+                            <div class="city-gallery-view">→</div>
                         </div>
                     </button>
-
-                    <button class="city-card-gallery" onclick="searchChip('','Bordeaux'); return false;">
-                        <div class="city-gallery-img"
-                            style="background-image:url('https://images.unsplash.com/photo-1493564738392-d148cfbd6eda?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Ym9yZGVhdXh8ZW58MHx8MHx8fDA%3D')">
-                        </div>
-                        <div class="city-gallery-overlay"></div>
-                        <div class="city-gallery-content">
-                            <div class="city-gallery-name">Bordeaux</div>
-                            <div class="city-gallery-view">Voir les offres →</div>
-                        </div>
-                    </button>
-
                     <button class="city-card-gallery" onclick="searchChip('','Lyon'); return false;">
-                        <div class="city-gallery-img"
-                            style="background-image:url('https://images.unsplash.com/photo-1597692289746-070a015e0714?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bHlvbnxlbnwwfHwwfHx8MA%3D%3D')">
-                        </div>
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1597692289746-070a015e0714?w=500&q=60')"></div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Lyon</div>
-                            <div class="city-gallery-view">Voir les offres →</div>
+                            <div class="city-gallery-view">→</div>
                         </div>
                     </button>
-
-                </div>
+                    <button class="city-card-gallery" onclick="searchChip('','Toulouse'); return false;">
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1596431102927-4c7b2cc8e25d?w=500&q=60')"></div>
+                        <div class="city-gallery-overlay"></div>
+                        <div class="city-gallery-content">
+                            <div class="city-gallery-name">Toulouse</div>
+                            <div class="city-gallery-view">→</div>
+                        </div>
+                    </button>
+                    <button class="city-card-gallery" onclick="searchChip('','Nice'); return false;">
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1533619043845-dfc67752b017?w=500&q=60')"></div>
+                        <div class="city-gallery-overlay"></div>
+                        <div class="city-gallery-content">
+                            <div class="city-gallery-name">Nice</div>
+                            <div class="city-gallery-view">→</div>
+                        </div>
+                    </button>
+                    <button class="city-card-gallery" onclick="searchChip('','Nantes'); return false;">
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1572944067345-3162df30b427?w=500&q=60')"></div>
+                        <div class="city-gallery-overlay"></div>
+                        <div class="city-gallery-content">
+                            <div class="city-gallery-name">Nantes</div>
+                            <div class="city-gallery-view">→</div>
+                        </div>
+                    </button>
+                    <button class="city-card-gallery" onclick="searchChip('','Bordeaux'); return false;">
+                        <div class="city-gallery-img" style="background-image:url('https://images.unsplash.com/photo-1493564738392-d148cfbd6eda?w=500&q=60')"></div>
+                        <div class="city-gallery-overlay"></div>
+                        <div class="city-gallery-content">
+                            <div class="city-gallery-name">Bordeaux</div>
+                            <div class="city-gallery-view">→</div>
+                        </div>
+                    </button>
+                    <button class="city-card-gallery" onclick="fastSearch('Toutes les villes'); return false;">
+                        <div class="city-gallery-img" style="background: var(--orange);"></div>
+                        <div class="city-gallery-overlay"></div>
+                        <div class="city-gallery-content">
+                            <div class="city-gallery-name">Toutes les villes</div>
+                            <div class="city-gallery-view">Explorer</div>
+                        </div>
+                    </button>
             </div>
         </section>
 
@@ -3859,6 +3804,32 @@
                 </div>
             </div>
         </section>
+        <!-- ================================
+     FAQ
+================================ -->
+        <section class="sec sec-alt" id="faq">
+            <div class="sec-inner">
+                <div class="sec-hd" style="text-align:center">
+                    <div class="sec-eye">FAQ</div>
+                    <h2 class="sec-title">Questions fréquentes</h2>
+                </div>
+                <div class="faq-grid" style="max-width:800px;margin:0 auto; display: grid; gap: 1.5rem;">
+                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">APEX est-il gratuit ?</h3>
+                        <p style="color: var(--muted);">Oui, toutes les fonctionnalités de recherche et d'IA sont gratuites pour les candidats.</p>
+                    </div>
+                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">D'où proviennent les offres ?</h3>
+                        <p style="color: var(--muted);">Les offres sont synchronisées en temps réel avec France Travail (ex-Pôle Emploi) et d'autres partenaires officiels.</p>
+                    </div>
+                    <div class="faq-item" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">Comment fonctionne l'IA ?</h3>
+                        <p style="color: var(--muted);">Notre IA analyse votre CV et les offres pour vous donner des conseils personnalisés et mesurer votre compatibilité.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- ================================
@@ -4015,6 +3986,52 @@
                 <button class="btn-solid" onclick="submitApplication()" type="button"><i data-lucide="send"></i> Envoyer
                     ma
                     candidature</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================
+     MODAL CALCULATEUR DE SALAIRE
+================================ -->
+    <div class="modal-overlay" id="salary-calc-modal" role="dialog" aria-modal="true" aria-labelledby="sc-title">
+        <div class="modal" style="max-width:440px">
+            <div class="modal-hd">
+                <div>
+                    <div class="modal-title" id="sc-title">Calculateur Brut / Net</div>
+                    <div class="modal-sub">Simulation rapide (cotisations moyennes 2025)</div>
+                </div>
+                <button class="modal-close" onclick="closeSalaryCalcModal()"><i data-lucide="x"></i></button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+                <div class="form-group">
+                    <label class="form-label">Salaire Brut</label>
+                    <div style="position:relative">
+                        <input type="text" id="sc-brut" class="form-input" placeholder="Ex: 45000" oninput="calcSalary()" style="padding-right:40px">
+                        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700">€</span>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div class="form-group">
+                        <label class="form-label">Période</label>
+                        <select id="sc-period" class="form-input" onchange="calcSalary()" style="padding:0 8px">
+                            <option value="annual">Annuel</option>
+                            <option value="monthly">Mensuel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Statut</label>
+                        <select id="sc-statut" class="form-input" onchange="calcSalary()" style="padding:0 8px">
+                            <option value="non-cadre">Non-cadre (22%)</option>
+                            <option value="cadre">Cadre (25%)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="sc-result" style="background:var(--orange-light);border:1px dashed var(--orange);border-radius:12px;padding:20px;text-align:center;display:none;animation:fadeUp 0.3s ease">
+                    <div style="font-size:12px;color:var(--orange);font-weight:700;text-transform:uppercase;margin-bottom:4px">Estimation Net à payer</div>
+                    <div id="sc-net-val" style="font-size:32px;font-weight:800;color:var(--orange);letter-spacing:-1px">0 €</div>
+                    <div id="sc-details" style="font-size:12px;color:var(--muted);margin-top:4px">Soit 0 € / mois</div>
+                </div>
             </div>
         </div>
     </div>
