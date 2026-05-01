@@ -7,73 +7,66 @@
 *More than a tracker. An AI representation agent.*
 *Plus qu'un tracker. Un agent de représentation.*
 
-![.NET](https://img.shields.io/badge/.NET-9.0-512bd4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Status](https://img.shields.io/badge/Status-MVP-blueviolet?style=for-the-badge)
-![Agents](https://img.shields.io/badge/Agents-3_Active-00d4aa?style=for-the-badge)
-
 ---
 
-### 🇺🇸 [EN] **APEX doesn't just track your applications. It pilots them.**
-An ecosystem of autonomous AI agents that source, analyze, and follow up for you.
-Stop looking for jobs — let your agent acquire the right ones.
+### [EN] Advanced Career Acquisition Pipeline
+APEX is an integrated ecosystem of autonomous AI agents designed to source, analyze, and manage professional opportunities. It transforms the job search from a passive activity into an active, data-driven acquisition strategy.
 
-### 🇫🇷 [FR] **APEX ne suit pas tes candidatures. Il les pilote.**
-Un écosystème d'agents IA autonomes qui source, analyse et relance pour toi.
-Tu ne cherches plus un job — ton agent te trouve les bons.
+### [FR] Pipeline d'Acquisition de Carrière Avancé
+APEX est un écosystème intégré d'agents IA autonomes conçu pour sourcer, analyser et piloter vos opportunités professionnelles. Il transforme la recherche d'emploi d'une activité passive en une véritable stratégie d'acquisition basée sur la donnée.
 
 </div>
 
 ---
 
-## 🚀 Concept
+## Core Philosophy
 
 ### [EN]
-The job market is a game — and you need a system to play it. Job boards are CV cemeteries. Recruiters ghost. 
-**APEX** is a framework designed to:
-- **Source** relevant offers automatically across multiple APIs (France Travail, Adzuna, Arbeitnow).
-- **Score** every offer against your real profile (tech + soft skills) using AI.
-- **Swipe** through jobs with a Tinder-like "Swipe n' Job" interface.
-- **Draft** targeted applications and calibrated follow-ups.
+The modern job market requires a systematic approach. Traditional recruitment platforms often lack the efficiency needed for precise talent-to-opportunity matching. 
+**APEX** leverages automation to:
+- **Aggregate** high-quality opportunities via multi-API integration (France Travail, Adzuna, Arbeitnow).
+- **Evaluate** job descriptions against candidate profiles using cognitive scoring engines.
+- **Optimize** the browsing experience through a high-performance "Swipe n' Job" interface.
+- **Automate** the generation of targeted communication and follow-up protocols.
 
-> *"No feelings, just data. High performance, zero noise."*
+> *"Precision matching driven by data. High performance, minimized friction."*
 
 ### [FR]
-Les job boards sont des cimetières à CV. Les recruteurs ghostent. Le marché est un jeu — et il faut un système pour le jouer.
-**APEX** est un framework d'agents conçu pour :
-- **Sourcer** les offres pertinentes automatiquement.
-- **Scorer** chaque offre vs ton profil réel (techs + soft skills).
-- **Rédiger** des candidatures ciblées et des relances calibrées.
-- **Décider** GO ou NO-GO — sans émotion, avec de la data.
+Le marché de l'emploi moderne exige une approche systématique. Les plateformes traditionnelles échouent souvent à créer une mise en relation efficace entre talent et opportunité.
+**APEX** utilise l'automatisation pour :
+- **Agréger** des opportunités via une intégration multi-API (France Travail, Adzuna, Arbeitnow).
+- **Évaluer** la pertinence des offres grâce à un moteur de scoring cognitif.
+- **Optimiser** l'exploration via une interface "Swipe n' Job" haute performance.
+- **Automatiser** la génération de communications ciblées et de protocoles de relance.
 
-> *"Pas de sentiment, que de la data. La performance avant tout."*
-
----
-
-## 🏗 Key Features
-
-- **Swipe n' Job**: A premium, full-screen mobile-ready interface to browse jobs at lightning speed.
-- **AI Analyst**: Real-time matching score based on cognitive analysis of job descriptions.
-- **Multi-API Integration**: Unified search across major job providers.
-- **Autonomous Agents**: Background workers tracking new opportunities 24/7.
+> *"Un matching de précision piloté par la data. La performance au service de l'acquisition."*
 
 ---
 
-## 🛠 Tech Stack
+## Technical Specifications
 
-| Component | Technology |
+- **Swipe n' Job**: A premium, full-screen interface optimized for rapid opportunity assessment.
+- **AI Analyst**: Real-time cognitive engine providing match scores based on technical and soft skill analysis.
+- **API Orchestration**: Unified access to diverse job data sources.
+- **Autonomous Operations**: Background workers ensuring continuous monitoring of professional listings.
+
+---
+
+## Infrastructure
+
+| Layer | Implementation |
 |-----------|-------------|
 | **Core Engine** | .NET 9 (C#) / Python 3.10 |
-| **Frontend** | Vanilla JS / CSS (Cyberpunk/Premium UI) |
-| **Data** | Entity Framework / SQLite / SQL Server |
-| **IA** | Claude 3.5 / Gemini 1.5 Integration |
-| **Deployment** | XAMPP / Local Server / Cloud Ready |
+| **Frontend** | Vanilla JavaScript / CSS (High-Performance UI) |
+| **Persistence** | Entity Framework / SQLite / SQL Server |
+| **Intelligence** | Claude 3.5 / Gemini 1.5 Integration |
+| **Environment** | XAMPP / Local / Cloud Deployable |
 
 ---
 
 <div align="center">
 
-**Built by Jonathan** — *BTS SIO, High-Performance Mentality.*
+**Developed by Jonathan**
 
 *APEX Engine v1.0 — "Don't just search for a job. Acquire it."*
 
