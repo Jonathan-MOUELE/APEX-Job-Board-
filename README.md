@@ -40,7 +40,7 @@ APEX Job Board is a smart platform designed to simplify and accelerate your job 
 | **Core Engine** | .NET 9 (C#) / Python 3.10 |
 | **Frontend** | Vanilla JavaScript / CSS (High-Performance UI) |
 | **Persistence** | Entity Framework / SQLite / SQL Server |
-| **IA / AI** | Claude 3.5 / Gemini 1.5 Integration |
+| **IA / AI** |Gemini 3 Integration/Deepseek 4|
 | **Sourcing** | France Travail API |
 
 ---
