@@ -226,12 +226,14 @@ public sealed class FranceTravailClient(
                 logger.LogInformation("[FT] 📍 Code département direct: '{City}'", cityNorm);
                 qs.Append("&departement=").Append(cityNorm.ToUpperInvariant());
             }
-            // 3. Try hardcoded INSEE
+            // 3. Try hardcoded INSEE — use departement for large cities with arrondissements
             else if (InseeHardcoded.TryGetValue(cityNorm, out var hardcodedInsee))
             {
                 logger.LogInformation("[FT] 📍 Mapping commune hardcodé: '{City}' → {Code}", cityNorm, hardcodedInsee);
-                qs.Append("&commune=").Append(hardcodedInsee);
-                qs.Append("&rayon=").Append(_opts.DefaultRadiusKm);
+                // Extract departement from INSEE code (first 2 or 3 digits)
+                var dept = hardcodedInsee.Length >= 2 ? hardcodedInsee[..2] : hardcodedInsee;
+                if (dept == "97" && hardcodedInsee.Length >= 3) dept = hardcodedInsee[..3]; // DOM-TOM
+                qs.Append("&departement=").Append(dept);
             }
             // 4. Try geo.api.gouv.fr dynamic INSEE lookup
             else

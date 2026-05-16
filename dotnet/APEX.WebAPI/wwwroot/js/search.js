@@ -201,6 +201,16 @@ window.searchChip = function(kw, city, contract) {
 
 window.fastSearch = kw => triggerSearch(kw);
 
+window.closeSearchDropdown = function() {
+    document.getElementById('search-dropdown-results')?.classList.remove('active');
+};
+
+window.scrollToFullResults = function() {
+    closeSearchDropdown();
+    document.getElementById('offres')?.scrollIntoView({ behavior: 'smooth' });
+};
+
+
 // ══════════════════════════════════════════════════════
 //  E. MAIN SEARCH  (avec DataWorker + ProgressBar)
 // ══════════════════════════════════════════════════════
@@ -223,10 +233,15 @@ window.performSearch = async function() {
   const sub = document.getElementById('results-subtitle');
   if(sub) sub.textContent='Recherche en cours…';
 
+  // Show dropdown
+  const dropdown = document.getElementById('search-dropdown-results');
+  if(dropdown) dropdown.classList.add('active');
+
   showSkeletons();
   ProgressBar.start();
   window._state.isLoading=true;
   EventBus.emit(EV.SEARCH_START, {query:kw, location:loc});
+
 
   try{
     const params = new URLSearchParams();
@@ -247,6 +262,21 @@ window.performSearch = async function() {
     window._state.jobs = jobs;
     window._state.page = 1;
 
+    const dropdownList = document.getElementById('dropdown-jobs-list');
+    if (dropdownList) {
+        dropdownList.innerHTML = '';
+        if (jobs.length === 0) {
+            dropdownList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Aucun résultat trouvé</div>';
+        } else {
+            jobs.slice(0, 5).forEach((job, i) => {
+                const card = buildJobCard(job, i);
+                dropdownList.appendChild(card);
+            });
+            forceLucide(dropdownList);
+        }
+    }
+
+
     if(sub){
       const n=jobs.length;
       sub.textContent=`${n.toLocaleString('fr-FR')} offre${n!==1?'s':''} trouvée${n!==1?'s':''}${kw?' pour « '+kw+' »':''}`;
@@ -255,6 +285,7 @@ window.performSearch = async function() {
     SEO.setSearch(kw, loc);
 
     renderPage(true);
+
 
     // Init infinite scroll
     _feed?.destroy();
@@ -265,7 +296,12 @@ window.performSearch = async function() {
     EventBus.emit(EV.SEARCH_DONE, {query:kw, count:jobs.length});
     telemetry.track('search', {q:kw, l:loc, count:jobs.length});
 
-    setTimeout(()=>scrollToResults(), 100);
+    setTimeout(()=> {
+        if (!dropdown || !dropdown.classList.contains('active')) {
+            scrollToResults();
+        }
+    }, 100);
+
 
   }catch(err){
     ProgressBar.error();
@@ -283,7 +319,16 @@ window.performSearch = async function() {
       forceLucide(div);
     }
     if(sub) sub.textContent='Erreur de connexion';
+    const dropdownListErr = document.getElementById('dropdown-jobs-list');
+    if (dropdownListErr) {
+        dropdownListErr.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)">
+            <i data-lucide="wifi-off" style="width:24px;height:24px;margin-bottom:8px;display:block;margin:0 auto 8px"></i>
+            <p>Chargement impossible. Réessayez.</p>
+        </div>`;
+        forceLucide(dropdownListErr);
+    }
     EventBus.emit(EV.SEARCH_ERROR, {error:err.message});
+
   }finally{
     window._state.isLoading=false;
   }
@@ -333,61 +378,64 @@ window.buildJobCard = function(job, idx) {
 
   // Logo avec lazy loading natif + fallback initiales
   const logoHtml = logo ? `
-    <div style="position:relative;width:46px;height:46px;flex-shrink:0">
+    <div style="position:relative;width:50px;height:50px;flex-shrink:0">
       <img loading="lazy" src="${esc(logo)}" alt="${esc(company)}"
-        style="width:46px;height:46px;border-radius:10px;object-fit:contain;border:1px solid var(--border);
+        style="width:50px;height:50px;border-radius:12px;object-fit:contain;border:1px solid var(--border);
                background:var(--surface2);transition:transform .3s ease"
         onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div style="display:none;width:46px;height:46px;border-radius:10px;background:${color}20;color:${color};
-        font-weight:800;font-size:13px;align-items:center;justify-content:center;border:1px solid ${color}20">${esc(init)}</div>
+      <div style="display:none;width:50px;height:50px;border-radius:12px;background:${color}15;color:${color};
+        font-weight:800;font-size:14px;align-items:center;justify-content:center;border:1px solid ${color}30">${esc(init)}</div>
     </div>` : `
-    <div style="width:46px;height:46px;border-radius:10px;background:${color}20;color:${color};
-      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
-      border:1px solid ${color}20;flex-shrink:0">${esc(init)}</div>`;
+    <div style="width:50px;height:50px;border-radius:12px;background:${color}15;color:${color};
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;
+      border:1px solid ${color}30;flex-shrink:0">${esc(init)}</div>`;
 
   card.innerHTML = `
-    <div style="display:flex;align-items:flex-start;gap:14px">
+    <div style="display:flex;align-items:flex-start;gap:16px">
       ${logoHtml}
       <div style="flex:1;min-width:0">
-        <h3 style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${esc(title)}</h3>
-        <p style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px">
-          ${esc(company)}${city?`<span aria-hidden="true">·</span>${esc(city)}`:''}
+        <h3 style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;letter-spacing:-0.01em;">${esc(title)}</h3>
+        <p style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;font-weight:500;">
+          ${esc(company)}${city?`<span aria-hidden="true" style="opacity:0.5">·</span>${esc(city)}`:''}
           <a href="${esc(liUrl)}" target="_blank" rel="noopener noreferrer"
              style="color:#0A66C2;text-decoration:none;font-weight:700;font-size:11px;
-                    display:inline-flex;align-items:center;gap:2px;
-                    border:1px solid #0A66C220;border-radius:4px;padding:1px 5px;
-                    transition:background .15s"
-             onmouseover="this.style.background='#e8f0fe'" onmouseout="this.style.background=''"
-             onclick="event.stopPropagation()" title="${esc(company)} sur LinkedIn">in</a>
+                    display:inline-flex;align-items:center;gap:4px; margin-left:4px;
+                    border:1px solid #0A66C220;border-radius:6px;padding:2px 6px;
+                    background:#0A66C208; transition:all .2s ease"
+             onmouseover="this.style.background='#0A66C215';this.style.borderColor='#0A66C240'" onmouseout="this.style.background='#0A66C208';this.style.borderColor='#0A66C220'"
+             onclick="event.stopPropagation()" title="${esc(company)} sur LinkedIn">
+             <i data-lucide="linkedin" style="width:11px;height:11px"></i> LinkedIn
+          </a>
         </p>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:7px">
-          ${contract?`<span class="job-tag contract">${esc(contract)}</span>`:''}
-          ${salary  ?`<span class="job-tag" style="color:var(--green)">${esc(salary)}</span>`:''}
-          ${date    ?`<span class="job-tag">${esc(date)}</span>`:''}
-          ${job.origineOffre?.partenaires?.length?'<span class="job-tag" style="color:var(--blue)">France Travail</span>':''}
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+          ${contract?`<span class="job-tag contract" style="border-radius:6px;padding:3px 8px;font-weight:600;">${esc(contract)}</span>`:''}
+          ${salary  ?`<span class="job-tag" style="color:var(--green);border-radius:6px;padding:3px 8px;font-weight:600;background:var(--green-light,#f0fdf4);border:1px solid #bbf7d0">${esc(salary)}</span>`:''}
+          ${date    ?`<span class="job-tag" style="border-radius:6px;padding:3px 8px;font-weight:600;">${esc(date)}</span>`:''}
+          ${job.origineOffre?.partenaires?.length?'<span class="job-tag" style="color:var(--blue);border-radius:6px;padding:3px 8px;font-weight:600;background:#eff6ff;border:1px solid #bfdbfe">France Travail</span>':''}
         </div>
-        ${desc?`<p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5">${esc(desc)}</p>`:''}
+        ${desc?`<p style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;opacity:0.9;">${esc(desc)}</p>`:''}
       </div>
     </div>
-    <div style="display:flex;gap:6px;margin-top:12px;justify-content:flex-end">
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px;">
       <button class="btn-analyze" onclick="event.stopPropagation();analyzeJob(this,${idx})"
-              style="height:32px;padding:0 11px;border-radius:7px;background:var(--tag-bg);
-                     color:var(--muted);font-size:12px;font-weight:600;border:1px solid var(--border);
-                     cursor:pointer;display:flex;align-items:center;gap:4px;
-                     transition:color .15s,border-color .15s"
-              onmouseover="this.style.color='var(--orange)';this.style.borderColor='var(--orange)'"
-              onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'"
+              style="height:34px;padding:0 14px;border-radius:8px;background:transparent;
+                     color:var(--muted);font-size:13px;font-weight:600;border:1px solid var(--border);
+                     cursor:pointer;display:flex;align-items:center;gap:6px;
+                     transition:all .2s ease"
+              onmouseover="this.style.color='var(--orange)';this.style.borderColor='var(--orange)';this.style.background='var(--orange-light,#fff7ed)'"
+              onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)';this.style.background='transparent'"
               aria-label="Analyser avec APEX">
-        <i data-lucide="zap" style="width:13px;height:13px"></i> Analyser
+        <i data-lucide="zap" style="width:14px;height:14px"></i> Analyser
       </button>
-      <button onclick="event.stopPropagation();openApplyModal('${esc(title).replace(/'/g,"\\'")}','${esc(city).replace(/'/g,"\\'")}');window._currentJob=window._state.jobs[${idx}]"
-              style="height:32px;padding:0 14px;border-radius:7px;background:var(--orange);
-                     color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;
-                     display:flex;align-items:center;gap:4px;transition:opacity .15s"
-              onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity=''"
+      <button onclick="event.stopPropagation();window._currentJob=window._state.jobs[${idx}];openApplyModal('${esc(title).replace(/'/g,"\\'")}','${esc(city).replace(/'/g,"\\'")}')"
+              style="height:34px;padding:0 16px;border-radius:8px;background:var(--orange);
+                     color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;
+                     display:flex;align-items:center;gap:6px;transition:all .2s ease;box-shadow:0 2px 4px rgba(249,115,22,0.2)"
+              onmouseover="this.style.transform='translateY(-1px)';this.style.box-shadow='0 4px 6px rgba(249,115,22,0.3)'" 
+              onmouseout="this.style.transform='translateY(0)';this.style.box-shadow='0 2px 4px rgba(249,115,22,0.2)'"
               aria-label="Postuler directement">
-        <i data-lucide="send" style="width:13px;height:13px"></i> Postuler
+        <i data-lucide="send" style="width:14px;height:14px"></i> Postuler
       </button>
     </div>`;
 

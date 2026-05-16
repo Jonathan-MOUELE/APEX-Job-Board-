@@ -90,7 +90,7 @@ function _renderCvPreview(){
   const p=document.getElementById('cv-preview'); if(!p) return;
   const d=_cv.data, c=_cv.color;
   if(!d.name&&!d.title&&!d.bio&&!d.experiences.length&&!d.educations.length){
-    p.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem">Remplissez le formulaire Ã  gauche pour voir l\'aperçu.</p>'; return;
+    p.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem">Remplissez le formulaire à gauche pour voir l\'aperçu.</p>'; return;
   }
   p.style.cssText='overflow-y:auto;max-height:68vh;border:1px solid var(--border);border-radius:12px;padding:28px;background:#fff;color:#111;font-family:DM Sans,Arial,sans-serif;font-size:10pt;line-height:1.5';
   p.innerHTML=`
@@ -130,7 +130,7 @@ function _renderCvPreview(){
 window.cvFillWithAI = function(){
   if(!isLoggedIn()){showToast('Connectez-vous pour utiliser le remplissage IA.','warn');return;}
   closeCvCanvas(); openDrawer();
-  setTimeout(()=>sendQuickMessage('Aide-moi Ã  remplir mon CV professionnel. Pose-moi 3 questions clés pour commencer.'),400);
+  setTimeout(()=>sendQuickMessage('Aide-moi à remplir mon CV professionnel. Pose-moi 3 questions clés pour commencer.'),400);
 };
 
 window.cvDownload = function(){

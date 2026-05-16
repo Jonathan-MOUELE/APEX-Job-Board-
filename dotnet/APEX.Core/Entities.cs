@@ -102,8 +102,8 @@ public class RefreshToken
 /// </summary>
 public class JobOfferEntity
 {
-    /// <summary>ID France Travail (string).</summary>
-    [Key, MaxLength(64)]
+    /// <summary>ID France Travail ou source externe (string).</summary>
+    [Key, MaxLength(256)]
     public string Id { get; set; } = string.Empty;
 
     [Required, MaxLength(512)]

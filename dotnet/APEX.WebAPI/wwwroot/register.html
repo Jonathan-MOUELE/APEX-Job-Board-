@@ -301,7 +301,8 @@ h2.page-title { font-weight: 800; font-size: 1.5rem; line-height: 1.2; margin-bo
         const res = await fetch(API + '/api/auth/register', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password: pwd }),
+          body: JSON.stringify({ FullName: name, email, password: pwd }),
+
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) { showErr(data?.message || data?.error || 'Erreur lors de la création du compte.'); return; }

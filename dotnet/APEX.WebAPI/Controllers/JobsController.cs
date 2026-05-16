@@ -107,6 +107,16 @@ public class JobsController : ControllerBase
         keywords = Regex.Replace(keywords, @"[<>""';\\]", "").Trim();
         if (keywords.Length > 128) keywords = keywords[..128];
 
+        // Hack for C#: if searching for C#, also include "C Sharp" to maximize results
+        if (keywords.Equals("C#", StringComparison.OrdinalIgnoreCase))
+        {
+            keywords = "développeur C#"; // More likely to return results than just "C#"
+        }
+        else if (keywords.Contains("C#", StringComparison.OrdinalIgnoreCase))
+        {
+            keywords = keywords.Replace("C#", "C# C Sharp", StringComparison.OrdinalIgnoreCase);
+        }
+
         // 0. Cache Check
         string cacheKey = $"search_{keywords.ToLowerInvariant()}_{location?.ToLowerInvariant()}_{contract}_{country}_{range}";
         if (_cache.TryGetValue(cacheKey, out List<JobOffer>? cachedResults))
@@ -438,7 +448,7 @@ public class JobsController : ControllerBase
 
                 scopedDb.JobOffers.Add(new JobOfferEntity
                 {
-                    Id = job.Id,
+                    Id = (job.Id?.Length > 256 ? job.Id[..256] : job.Id) ?? Guid.NewGuid().ToString(),
                     Title = CleanText(job.Title) ?? "Sans titre",
                     Description = CleanText(job.Description) ?? "",
                     CompanyName = CleanText(job.Company),

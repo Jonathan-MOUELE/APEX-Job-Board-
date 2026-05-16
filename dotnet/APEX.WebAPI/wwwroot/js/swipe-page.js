@@ -15,7 +15,13 @@ class SwipeStandalone {
         
         this.init();
         this.setupKeyboard();
+        this.setupWheel();
+        this.setupAutoHide();
+        
+        this.currentFilter = '';
     }
+
+
 
     async init() {
         await this.loadMore();
@@ -31,15 +37,23 @@ class SwipeStandalone {
         }
     }
 
-    async loadMore() {
-        if (this.loading || !this.hasMore) return;
+    async loadMore(reset = false) {
+        if (this.loading || (!this.hasMore && !reset)) return;
         this.loading = true;
+
+        if (reset) {
+            this.container.innerHTML = '';
+            this.jobs = [];
+            this.page = 1;
+            this.hasMore = true;
+        }
 
         try {
             const params = new URLSearchParams({
                 keyword: this.query,
                 range: `${(this.page - 1) * 15}-${this.page * 15 - 1}`
             });
+            if (this.currentFilter) params.set('contract', this.currentFilter);
             
             const res = await apiFetch(`/api/jobs/search?${params}`);
             if (!res.ok) throw new Error('API Error');
@@ -71,6 +85,7 @@ class SwipeStandalone {
         }
     }
 
+
     setupInfiniteScroll() {
         const sentinel = document.getElementById('infinite-sentinel');
         const observer = new IntersectionObserver((entries) => {
@@ -84,22 +99,63 @@ class SwipeStandalone {
 
     setupKeyboard() {
         window.addEventListener('keydown', (e) => {
-            const isLandscape = window.matchMedia("(orientation: landscape)").matches;
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-                if (isLandscape) {
-                    this.container.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
-                } else {
-                    this.container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
-                }
+                e.preventDefault();
+                this.container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
             } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-                if (isLandscape) {
-                    this.container.scrollBy({ left: -window.innerWidth, behavior: 'smooth' });
-                } else {
-                    this.container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
-                }
+                e.preventDefault();
+                this.container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
             }
         });
     }
+
+    setupWheel() {
+        let lastTime = 0;
+        this.container.addEventListener('wheel', (e) => {
+            const now = Date.now();
+            if (now - lastTime < 500) return; // Throttle 500ms
+            
+            if (Math.abs(e.deltaY) > 10) {
+                e.preventDefault();
+                if (e.deltaY > 0) {
+                    this.container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+                } else if (e.deltaY < 0) {
+                    this.container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+                }
+                lastTime = now;
+            }
+        }, { passive: false });
+    }
+
+    setupAutoHide() {
+        const header = document.getElementById('swipe-header');
+        if (!header) return;
+        
+        let timeout;
+        this.container.addEventListener('scroll', () => {
+            header.classList.add('hidden');
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                header.classList.remove('hidden');
+            }, 1000); // Reappear after 1s of no scroll
+        });
+    }
+
+    async search() {
+        const inp = document.getElementById('swipe-search-input');
+        if (!inp) return;
+        this.query = inp.value || 'développeur';
+        await this.loadMore(true);
+    }
+
+    async setFilter(btn, filter) {
+        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.currentFilter = filter;
+        await this.loadMore(true);
+    }
+
+
 
     buildCard(job, globalIdx) {
         const section = document.createElement('section');
@@ -201,13 +257,18 @@ window.likeStandalone = async function(idx, btn) {
 };
 
 window.applyStandalone = function(title, id) {
-    // For now, redirect back to index with a param or just open a new tab to the source
-    // In a real app, we might open the apply modal here, but since this is a separate page,
-    // we'll redirect to index.html with auto-apply if possible or just show info.
-    showToast(`Redirection pour postuler à : ${title}`, 'info');
-    setTimeout(() => {
-        window.location.href = `index.html?apply=${id}`;
-    }, 1500);
+    const job = window._swipeApp.jobs.find(j => j.id === id);
+    if (job && (job.url || job.applyUrl || job.origineOffre?.urlOrigine)) {
+        showToast(`Redirection vers l'offre : ${title}`, 'info');
+        setTimeout(() => {
+            window.safeOpenUrl(job.url || job.applyUrl || job.origineOffre.urlOrigine);
+        }, 800);
+    } else {
+        showToast(`Redirection pour postuler à : ${title}`, 'info');
+        setTimeout(() => {
+            window.location.href = `index.html?apply=${id}`;
+        }, 1500);
+    }
 };
 
 // Initialize

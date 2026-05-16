@@ -1,6 +1,7 @@
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  APEX.Infrastructure — ApexDbContext V1 Production           ║
-// ║  SQLite via EF Core — User, RefreshToken, JobOffer, Profile  ║
+// ║  SQL Server via EF Core — User, RefreshToken, JobOffer, Profile  ║
+
 // ╚══════════════════════════════════════════════════════════════╝
 
 using Microsoft.EntityFrameworkCore;

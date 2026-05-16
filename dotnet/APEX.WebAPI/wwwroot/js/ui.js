@@ -208,7 +208,7 @@ window.updateCompanyStrip = function(jobs) {
 // ══════════════════════════════════════════════════════
 window.openJobPanel = function(idx) {
   const job=window._state.jobs[idx]; if(!job) return;
-  window._state.currentJob=job; window._state.currentJobIdx=idx;
+  window._state.currentJob=job; window._state.currentJobIdx=idx; window._currentJob=job;
   SEO.setJob(job);
   EventBus.emit(EV.JOB_OPEN, {job, idx});
 
@@ -250,7 +250,7 @@ window.openJobPanel = function(idx) {
          target="_blank" rel="noopener noreferrer"
          style="font-size:12px;color:#0a66c2;text-decoration:none;border:1px solid #0a66c220;border-radius:6px;padding:5px 10px;display:flex;align-items:center;gap:4px"
          onclick="event.stopPropagation()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="#0a66c2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn
+        <i data-lucide="linkedin" style="width:12px;height:12px"></i> LinkedIn
       </a>
       <button onclick="openApplyModal('${esc(title).replace(/'/g,"\\'")}','${esc(city).replace(/'/g,"\\'")}')"
               style="font-size:12px;background:var(--orange);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:700">
@@ -348,7 +348,7 @@ async function _doChat(msg) {
     _appendMsg(reply, false);
   }catch(err){
     clearTimeout(to); document.getElementById(typId)?.remove();
-    _appendMsg(err.name==='AbortError'?'Délai dépassé. Réessayez.':'Erreur réseau. Le serveur est-il démarré ?', false);
+    _appendMsg(err.name==='AbortError'?'D\u00e9lai d\u00e9pass\u00e9. R\u00e9essayez.':'L\'assistant est temporairement indisponible. R\u00e9essayez dans quelques instants.', false);
   }
 }
 
@@ -384,50 +384,52 @@ window.handleChatFile = function(input) {
 window.openApplyModal = function(title, loc, url) {
     const el = document.getElementById('modal-offer-name');
     if(el) el.textContent = title || 'Offre';
-    if (url) {
-      window._tempApplyUrl = url;
-    } else {
-      window._tempApplyUrl = null;
-    }
     openModal('job-panel');
     EventBus.emit(EV.APPLY_CLICK, {title, loc});
-  };
+};
 window.closeModal = ()=>closeModal_id('job-panel');
 
 window.submitApplication = async function() {
     const job = window._currentJob;
     if (!job) return;
 
-    // Détection de la source pour adapter l'entrée demandée
-    const source = job.source || (job.id?.startsWith('ft_') ? 'FranceTravail' : 'Adzuna');
-    
-    // Si l'offre nécessite une postulation sur le site d'origine
-    if (job.applyUrl || job.origineOffre?.urlOrigine) {
-        window.showToast("Redirection vers le site partenaire...", "info");
-        setTimeout(() => {
-            window.safeOpenUrl(job.applyUrl || job.origineOffre.urlOrigine);
-        }, 300); // Latence réduite au minimum
-        return;
-    }
+    const btn = document.querySelector('#job-panel button[onclick="window.submitApplication()"]');
+    if (btn) btn.disabled = true;
 
-    // Sinon, tentative d'envoi direct via ton backend
     try {
-        const formData = new FormData();
-        formData.append('jobId', job.id);
-        formData.append('name', document.getElementById('apply-name').value);
-        formData.append('email', document.getElementById('apply-email').value);
-        
-        const res = await window.apiFetch('/api/applications/submit', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (res.ok) {
-            window.showToast("Candidature envoyée avec succès !", "success");
-            window.closeModal();
+        // Enregistrement dans le suivi de candidatures (colonne 'applied') - Ignore si erreur (ex: visiteur non connecté)
+        if (window.isLoggedIn && window.isLoggedIn()) {
+            await window.apiFetch('/api/applications', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title: job.intitule,
+                    company: job.entreprise?.nom || "Non précisé",
+                    location: job.lieuTravail?.libelle || "",
+                    jobOfferId: job.id,
+                    column: "applied",
+                    applyUrl: job.url || job.applyUrl || job.origineOffre?.urlOrigine
+                })
+            }).catch(e => console.warn("Erreur suivi candidature:", e));
         }
+
+        // Si l'offre nécessite une postulation sur le site d'origine
+        const redirectUrl = job.url || job.applyUrl || job.origineOffre?.urlOrigine;
+        if (redirectUrl) {
+            window.showToast("Redirection vers le site partenaire...", "success");
+            setTimeout(() => {
+                window.safeOpenUrl(redirectUrl);
+                window.closeModal();
+                if (btn) btn.disabled = false;
+            }, 800);
+            return;
+        }
+
+        window.showToast("Candidature interne envoyée avec succès !", "success");
+        window.closeModal();
     } catch (e) {
         window.showToast("Erreur lors de l'envoi.", "error");
+    } finally {
+        if (btn) btn.disabled = false;
     }
 };
 
@@ -440,6 +442,29 @@ window.openSalaryModal      = ()=>{ openModal('salary-modal'); loadSalaries(); }
 window.closeSalaryModal     = ()=>closeModal_id('salary-modal');
 window.openCitiesOverlay    = ()=>openModal('cities-overlay');
 window.closeCitiesOverlay   = ()=>closeModal_id('cities-overlay');
+
+window.openCityModal = function() {
+    const modal = document.getElementById('city-modal');
+    if (modal) modal.classList.add('open');
+    renderAllCities();
+};
+
+window.closeCityModal = function() {
+    const modal = document.getElementById('city-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+function renderAllCities() {
+    const grid = document.getElementById('city-grid-full');
+    if (!grid || grid.children.length > 0) return;
+    
+    const cities = ['Paris', 'Lyon', 'Marseille', 'Bordeaux', 'Toulouse', 'Nantes', 'Nice', 'Strasbourg', 'Montpellier', 'Lille', 'Rennes', 'Reims', 'Saint-Étienne', 'Le Havre', 'Toulon', 'Grenoble', 'Dijon', 'Angers', 'Nîmes', 'Villeurbanne'];
+    
+    grid.innerHTML = cities.map(city => `
+        <button class="city-btn" onclick="closeCityModal(); searchChip('', '${city}'); return false;">${city}</button>
+    `).join('');
+}
+
 
 window.loadSalaries = function() {
     const rows = document.getElementById('salary-rows');
@@ -543,7 +568,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   // Drawer overlay
   document.getElementById('drawer-overlay')?.addEventListener('click', closeDrawer);
+
+  // Recommendations visibility
+  const recSec = document.getElementById('offres-recommendations');
+  if (recSec) {
+      if (localStorage.getItem('apex_token')) {
+          recSec.style.display = 'block';
+      } else {
+          recSec.style.display = 'none';
+      }
+  }
 });
+
 
 // Sticky Hero on Scroll
 window.addEventListener('scroll', () => {

@@ -10,14 +10,32 @@
 
 /** Décode les strings UTF-8 corrompues (é → é etc.) */
 function decodeUtf8Safe(str) {
-  if (!str || typeof str !== 'string') return str || '';
-  try { return decodeURIComponent(escape(str)); } catch(_) {}
+  if (!str) return str;
   return str
-    .replace(/é/g,'é').replace(/è/g,'è').replace(/Ï/g,'à').replace(/â/g,'â')
-    .replace(/î/g,'î').replace(/ô/g,'ô').replace(/ù/g,'ù').replace(/û/g,'û')
-    .replace(/ç/g,'ç').replace(/É/g,'É').replace(/ê/g,'ê').replace(/Ã¼/g,'ü')
-    .replace(/'/g,"'").replace(/â€"/g,'–').replace(/ââ€š ¬/g,'€').replace(/â‚¬/g,'€')
-    .replace(/ °/g,'°').replace(/«/g,'«').replace(/»/g,'»');
+    .replace(/\u00C3\u00A9/g, '\u00E9') // é
+    .replace(/\u00C3\u00A8/g, '\u00E8') // è
+    .replace(/\u00C3\u00AA/g, '\u00EA') // ê
+    .replace(/\u00C3\u00AB/g, '\u00EB') // ë
+    .replace(/\u00C3\u00A7/g, '\u00E7') // ç
+    .replace(/\u00C3\u00AE/g, '\u00EE') // î
+    .replace(/\u00C3\u00AF/g, '\u00EF') // ï
+    .replace(/\u00C3\u00B4/g, '\u00F4') // ô
+    .replace(/\u00C3\u00B6/g, '\u00F6') // ö
+    .replace(/\u00C3\u00B9/g, '\u00F9') // ù
+    .replace(/\u00C3\u00BB/g, '\u00FB') // û
+    .replace(/\u00C3\u00BC/g, '\u00FC') // ü
+    .replace(/\u00C3\u00A0/g, '\u00E0') // à
+    .replace(/\u00C3\u0020/g, '\u00E0 ') // Ã followed by space
+    .replace(/\u00C3/g, '\u00E0')       // Ã alone
+    .replace(/\u00E2\u20AC\u2122/g, "'") // â€™
+    .replace(/\u00E2\u20AC\u00A6/g, "...") // â€¦
+    .replace(/\u00E2\u20AC\u0153/g, '"') // â€œ
+    .replace(/\u00E2\u20AC\u009D/g, '"') // â€ 
+    .replace(/\u00E2\u20AC/g, '-')      // â€
+    .replace(/\u00C5\u201C/g, '\u0153')  // œ
+    .replace(/\u00C3\u0080/g, '\u00C0') // À
+    .replace(/\u00C3\u0089/g, '\u00C9') // É
+    .replace(/\u00C2/g, '');            // Â
 }
 
 /** Formate le salaire en chaîne lisible */
@@ -62,7 +80,7 @@ function processJobs(raw) {
       libelle: decodeUtf8Safe(j.lieuTravail?.libelle || j.location || ''),
     },
     typeContrat: j.typeContrat || j.contractType || j.natureContrat || '',
-    url:         j.url || j.origineOffre?.urlOrigine || j.applyUrl || '',
+    url:         j.url || j.originUrl || j.origineOffre?.urlOrigine || j.contact?.urlPostulation || j.applyUrl || (j.id&&!j.id.toString().includes('_')?`https://candidat.francetravail.fr/offres/recherche/detail/${j.id}`:''),
     dateCreation:j.dateCreation || j.datePublished || '',
     _processed:  true,
   }));

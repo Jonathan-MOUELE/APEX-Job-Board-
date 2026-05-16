@@ -64,7 +64,8 @@ builder.Services.AddSwaggerGen(c =>
 // ── 3b. Caching & Memory ─────────────────────────────────────────
 builder.Services.AddMemoryCache();
 
-// ── 4. EF Core SQLite ────────────────────────────────────────────
+// ── 4. EF Core SQL Server ────────────────────────────────────────────
+
 builder.Services.AddApexDatabase(builder.Configuration);
 
 // ── 5. France Travail Client ─────────────────────────────────────────

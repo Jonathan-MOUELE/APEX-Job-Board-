@@ -124,16 +124,18 @@ window.handleRegister=async function(e){
   if(e) e.preventDefault();
   const name =document.getElementById('reg-name')?.value?.trim();
   const email=document.getElementById('reg-email')?.value?.trim();
-  const pwd  =document.getElementById('reg-password')?.value;
+  const pwd  =document.getElementById('reg-pass')?.value;
   const errEl=document.getElementById('reg-error');
   const btnEl=document.getElementById('reg-submit');
   if(errEl) errEl.textContent='';
   if(!name||!email||!pwd){if(errEl)errEl.textContent='Veuillez remplir tous les champs.';return;}
+
   if(pwd.length<8){if(errEl)errEl.textContent='Mot de passe trop court (8 car. min).';return;}
   if(btnEl){btnEl.disabled=true;btnEl.textContent='Inscription…';}
   try{
-    const res =await apiFetch('/api/auth/register',{method:'POST',body:JSON.stringify({name,email,password:pwd})});
+    const res =await apiFetch('/api/auth/register',{method:'POST',body:JSON.stringify({FullName:name,email,password:pwd})});
     const data=await res.json().catch(()=>({}));
+
     if(!res.ok) throw new Error(data.message||data.title||"Erreur lors de l'inscription.");
     const tok=data.accessToken||data.token;
     if(tok) localStorage.setItem('apex_token',tok);

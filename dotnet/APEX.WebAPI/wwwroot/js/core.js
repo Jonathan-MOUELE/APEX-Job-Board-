@@ -114,37 +114,56 @@ window.sanitizeHTML = (function(){
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  E. UTILS
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ————————————————————————————————————————————————————————
 window.esc = function(str){
   if (str==null) return '';
   const d=document.createElement('div'); d.textContent=String(str); return d.innerHTML;
 };
 
-window.decodeUtf8Safe = function(str){
-  if (!str||typeof str!=='string') return str||'';
-  try{return decodeURIComponent(escape(str));}catch(_){}
+window.decodeUtf8Safe = function(str) {
+  if (!str) return str;
   return str
-    .replace(/Ãƒ ©/g,'é').replace(/Ãƒ ¨/g,'è').replace(/Ãƒ /g,'Ã ').replace(/Ãƒ ¢/g,'â')
-    .replace(/Ãƒ ®/g,'î').replace(/Ãƒ ´/g,'ô').replace(/Ãƒ ¹/g,'ù').replace(/Ãƒ»/g,'û')
-    .replace(/Ãƒ §/g,'ç').replace(/Ãƒâ€°/g,'É').replace(/Ãƒ ª/g,'ê').replace(/Ãƒ ¼/g,'Ã¼')
-    .replace(/ââ‚¬â„¢/g,"'").replace(/ââ‚¬"/g,'–').replace(/Ãƒ ¢ââ‚¬Å¡Â ¬/g,'â‚¬').replace(/ââ€š ¬/g,'â‚¬')
-    .replace(/Â °/g,' °').replace(/Â«/g,'«').replace(/Â»/g,'»');
+    .replace(/\u00C3\u00A9/g, '\u00E9') // é
+    .replace(/\u00C3\u00A8/g, '\u00E8') // è
+    .replace(/\u00C3\u00AA/g, '\u00EA') // ê
+    .replace(/\u00C3\u00AB/g, '\u00EB') // ë
+    .replace(/\u00C3\u00A7/g, '\u00E7') // ç
+    .replace(/\u00C3\u00AE/g, '\u00EE') // î
+    .replace(/\u00C3\u00AF/g, '\u00EF') // ï
+    .replace(/\u00C3\u00B4/g, '\u00F4') // ô
+    .replace(/\u00C3\u00B6/g, '\u00F6') // ö
+    .replace(/\u00C3\u00B9/g, '\u00F9') // ù
+    .replace(/\u00C3\u00BB/g, '\u00FB') // û
+    .replace(/\u00C3\u00BC/g, '\u00FC') // ü
+    .replace(/\u00C3\u00A0/g, '\u00E0') // à
+    .replace(/\u00C3\u0020/g, '\u00E0 ') // Ã followed by space
+    .replace(/\u00C3/g, '\u00E0')       // Ã alone
+    .replace(/\u00E2\u20AC\u2122/g, "'") // â€™
+    .replace(/\u00E2\u20AC\u00A6/g, "...") // â€¦
+    .replace(/\u00E2\u20AC\u0153/g, '"') // â€œ
+    .replace(/\u00E2\u20AC\u009D/g, '"') // â€
+    .replace(/\u00E2\u20AC/g, '-')      // â€
+    .replace(/\u00C5\u201C/g, '\u0153')  // œ
+    .replace(/\u00C3\u0080/g, '\u00C0') // À
+    .replace(/\u00C3\u0089/g, '\u00C9') // É
+    .replace(/\u00C2/g, '');            // Â
 };
 
 window.formatSalary = function(label){
   if (!label) return '';
   const s=decodeUtf8Safe(label);
-  const m=s.match(/(\d[\d\s]*)[\s\S]*?[Ee]uros?\s*[Ã a]\s*(\d[\d\s]*)/i);
+  const m=s.match(/(\d[\d\s]*)[\s\S]*?[Ee]uros?\s*[\u00E0a]\s*(\d[\d\s]*)/i);
   if (m){
     const min=parseInt(m[1].replace(/\s/g,'')),max=parseInt(m[2].replace(/\s/g,''));
-    if (!isNaN(min)&&!isNaN(max)) return `${min.toLocaleString('fr-FR')} – ${max.toLocaleString('fr-FR')} â‚¬/${/mois/i.test(s)?'mois':'an'}`;
+    if (!isNaN(min)&&!isNaN(max)) return `${min.toLocaleString('fr-FR')} \u2013 ${max.toLocaleString('fr-FR')} \u20AC/${/mois/i.test(s)?'mois':'an'}`;
   }
-  return s.replace(/Euros?/gi,'â‚¬').replace(/ââ€š ¬/g,'â‚¬').trim();
+  return s.replace(/Euros?/gi,'\u20AC').replace(/\u00E2\u0082\u00AC/g,'\u20AC').trim();
 };
 
 window.cleanDesc = function(raw,max=180){
   if (!raw) return '';
   const s=decodeUtf8Safe(raw).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-  return s.length>max?s.slice(0,max)+'â€¦':s;
+  return s.length>max?s.slice(0,max)+'\u2026':s;
 };
 
 /** Formatage date relative "il y a 2h" (dayjs-inspired) */
@@ -272,7 +291,7 @@ window.SEO = (()=>{
       try{const u=new URL(location.href);u.searchParams.set('job',j.id||'');history.replaceState({jobId:j.id},t,u.toString());}catch(_){}
     },
     setSearch(q,l){
-      const t=q?`${q}${l?' Ã  '+l:''} — Offres APEX`:'APEX — Trouvez votre emploi';
+      const t=q?`${q}${l?' \u00E0 '+l:''} — Offres APEX`:'APEX — Trouvez votre emploi';
       document.title=t;
       try{const u=new URL(location.href);if(q)u.searchParams.set('q',q);else u.searchParams.delete('q');if(l)u.searchParams.set('l',l);else u.searchParams.delete('l');u.searchParams.delete('job');history.replaceState({q,l},t,u.toString());}catch(_){}
     },
@@ -338,13 +357,20 @@ window.switchContractTab = function(btn,id){
   ['stage','alternance','interim'].forEach(t=>{const el=document.getElementById('tab-'+t);if(el)el.style.display=t===id?'flex':'none';});
 };
 window.toggleMobileMenu = function(){
-  const m=document.getElementById('mobile-nav-menu'); if(!m) return;
-  const open=m.style.display==='block';
-  m.style.display=open?'none':'block';
-  document.body.style.overflow=open?'':'hidden';
-  if(!open) forceLucide(m);
+  const m=document.getElementById('mobile-menu'); if(!m) return;
+  const isOpen=m.classList.contains('open');
+  if(isOpen){
+    m.classList.remove('open');
+    document.body.style.overflow='';
+  } else {
+    m.classList.add('open');
+    document.body.style.overflow='hidden';
+    forceLucide(m);
+  }
+  const btn=document.getElementById('hamburger-btn');
+  if(btn) btn.setAttribute('aria-expanded', String(!isOpen));
 };
-window.closeMobileMenu = ()=>{ const m=document.getElementById('mobile-nav-menu'); if(m)m.style.display='none'; document.body.style.overflow=''; };
+window.closeMobileMenu = ()=>{ const m=document.getElementById('mobile-menu'); if(m)m.classList.remove('open'); document.body.style.overflow=''; const btn=document.getElementById('hamburger-btn'); if(btn)btn.setAttribute('aria-expanded','false'); };
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  L. WEB WORKER BRIDGE  (off-thread data processing)
@@ -376,7 +402,7 @@ window._processJobsSync = function(raw){
     salaire:    {...(j.salaire||{}),   libelle:decodeUtf8Safe(j.salaire?.libelle||j.salary||'')},
     lieuTravail:{...(j.lieuTravail||{}),libelle:decodeUtf8Safe(j.lieuTravail?.libelle||j.location||'')},
     typeContrat:j.typeContrat||j.contractType||j.natureContrat||'',
-    url:j.url||j.origineOffre?.urlOrigine||j.applyUrl||'',
+    url:j.url||j.originUrl||j.origineOffre?.urlOrigine||j.contact?.urlPostulation||j.applyUrl||(j.id&&!j.id.toString().includes('_')?`https://candidat.francetravail.fr/offres/recherche/detail/${j.id}`:''),
     dateCreation:j.dateCreation||j.datePublished||'',
     _processed:true,
   }));

@@ -12,7 +12,8 @@ namespace APEX.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Enregistre le DbContext SQLite.</summary>
+    /// <summary>Enregistre le DbContext SQL Server.</summary>
+
     public static IServiceCollection AddApexDatabase(
         this IServiceCollection services,
         IConfiguration config)
