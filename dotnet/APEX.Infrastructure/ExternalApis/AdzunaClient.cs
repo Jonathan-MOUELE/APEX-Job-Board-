@@ -72,7 +72,8 @@ public class AdzunaClient(
                 return [];
             }
 
-            var root = await response.Content.ReadFromJsonAsync<AdzunaResponse>(new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+            var jsonStr = await response.Content.ReadAsStringAsync(ct);
+            var root = System.Text.Json.JsonSerializer.Deserialize<AdzunaResponse>(jsonStr, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (root?.Results is null) return [];
 
             return root.Results.Select(j => new JobOffer(

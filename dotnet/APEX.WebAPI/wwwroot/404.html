@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="APEX — Page non trouvée (Erreur 404)">
+  <title>APEX — Page introuvable (404)</title>
+  <script>
+    try {
+      const t = localStorage.getItem('apex-theme');
+      if (t === 'dark') document.documentElement.classList.add('dark');
+    } catch (_) {}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --surface2: #f4f4f5;
+      --border: #e4e4e7;
+      --text: #0c0c0d;
+      --muted: #71717a;
+      --orange: #f97316;
+      --orange-light: #fff7ed;
+      --blue: #3b82f6;
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+    html.dark {
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface2: #27272a;
+      --border: #3f3f46;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --orange-light: #1c1208;
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Background glow effects */
+    .glow {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0) 70%);
+      top: -10%;
+      right: -10%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .glow-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0) 70%);
+      bottom: -15%;
+      left: -10%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3rem 2rem;
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(8px);
+      transition: transform 0.3s ease;
+    }
+    .container:hover {
+      transform: translateY(-4px);
+    }
+
+    .logo-apex {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      display: inline-block;
+      margin-bottom: 2rem;
+      text-decoration: none;
+    }
+    .logo-apex span {
+      color: var(--orange);
+    }
+
+    .error-code {
+      font-size: 7rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--orange), var(--blue));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      letter-spacing: -0.05em;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 2.25rem;
+    }
+
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.875rem;
+      background: var(--orange);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.875rem;
+      background: var(--surface2);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="glow-2" aria-hidden="true"></div>
+
+  <div class="container">
+    <a href="index.html" class="logo-apex" aria-label="Retour à l'accueil APEX">APE<span>X</span></a>
+    
+    <div class="error-code" aria-hidden="true">404</div>
+    
+    <h1>Page introuvable</h1>
+    <p>Oups ! La page que vous recherchez n'existe pas ou a été déplacée. APEX peut vous aider à retrouver votre chemin.</p>
+    
+    <div class="btn-stack">
+      <a href="index.html" class="btn-primary">
+        <i data-lucide="home" style="width: 1.1rem; height: 1.1rem;"></i>
+        Retourner à l'accueil
+      </a>
+      <a href="index.html#offres" class="btn-secondary" onclick="sessionStorage.setItem('trigger_search_focus','1')">
+        <i data-lucide="search" style="width: 1.1rem; height: 1.1rem;"></i>
+        Rechercher des offres
+      </a>
+    </div>
+  </div>
+
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

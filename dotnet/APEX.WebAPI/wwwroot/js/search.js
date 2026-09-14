@@ -41,20 +41,7 @@ const ProgressBar = (() => {
 //  B. SEARCH BAR CLASS  (autoComplete.js + Algolia inspired)
 // ══════════════════════════════════════════════════════
 
-const SUGGESTIONS = [
-  'Développeur React','Développeur Vue.js','Développeur .NET','Développeur Python',
-  'Développeur Full Stack','Développeur Node.js','Développeur iOS','Développeur Android',
-  'Data Analyst','Data Scientist','Machine Learning','DevOps','Cloud Engineer',
-  'Cybersécurité','UX Designer','Product Manager','Chef de projet',
-  'Infirmier','Aide-soignant','Médecin généraliste','Pharmacien','Kinésithérapeute',
-  'Comptable','Auditeur','Contrôleur de gestion','Analyste financier',
-  'Commercial B2B','Technico-commercial','Chargé de recrutement','Community Manager',
-  'Logisticien','Cariste','Chef cuisinier','Serveur','Maçon','Électricien',
-  'Plombier','Mécanicien','Juriste','Formateur','Business Analyst','Agent immobilier',
-  'Responsable RH','Gestionnaire paie','Alternance Développeur','Stage Ingénieur',
-];
-
-// SearchBar logic replaced by autoComplete.js
+// SearchBar logic replaced by dynamic async autoComplete.js
 
 // ══════════════════════════════════════════════════════
 //  C. INFINITE SCROLL ENGINE  (IntersectionObserver)
@@ -199,15 +186,19 @@ window.searchChip = function(kw, city, contract) {
   return false;
 };
 
-window.fastSearch = kw => triggerSearch(kw);
+window.fastSearch = kw => {
+  triggerSearch(kw);
+  const offresSec = document.getElementById('offres');
+  if(offresSec) offresSec.scrollIntoView({behavior:'smooth'});
+};
 
 window.closeSearchDropdown = function() {
-    document.getElementById('search-dropdown-results')?.classList.remove('active');
+    // legacy, keep for safety
 };
 
 window.scrollToFullResults = function() {
-    closeSearchDropdown();
-    document.getElementById('offres')?.scrollIntoView({ behavior: 'smooth' });
+    const offresSec = document.getElementById('offres');
+    if(offresSec) offresSec.scrollIntoView({behavior:'smooth'});
 };
 
 
@@ -232,10 +223,6 @@ window.performSearch = async function() {
 
   const sub = document.getElementById('results-subtitle');
   if(sub) sub.textContent='Recherche en cours…';
-
-  // Show dropdown
-  const dropdown = document.getElementById('search-dropdown-results');
-  if(dropdown) dropdown.classList.add('active');
 
   showSkeletons();
   ProgressBar.start();
@@ -262,20 +249,6 @@ window.performSearch = async function() {
     window._state.jobs = jobs;
     window._state.page = 1;
 
-    const dropdownList = document.getElementById('dropdown-jobs-list');
-    if (dropdownList) {
-        dropdownList.innerHTML = '';
-        if (jobs.length === 0) {
-            dropdownList.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Aucun résultat trouvé</div>';
-        } else {
-            jobs.slice(0, 5).forEach((job, i) => {
-                const card = buildJobCard(job, i);
-                dropdownList.appendChild(card);
-            });
-            forceLucide(dropdownList);
-        }
-    }
-
 
     if(sub){
       const n=jobs.length;
@@ -296,17 +269,14 @@ window.performSearch = async function() {
     EventBus.emit(EV.SEARCH_DONE, {query:kw, count:jobs.length});
     telemetry.track('search', {q:kw, l:loc, count:jobs.length});
 
-    setTimeout(()=> {
-        if (!dropdown || !dropdown.classList.contains('active')) {
-            scrollToResults();
-        }
-    }, 100);
+    // Note: Scrolling is now handled by the caller (fastSearch, searchChip, form submit) to prevent auto-scroll on page load.
 
 
   }catch(err){
     ProgressBar.error();
     showSkeletons(0);
     const grid = document.getElementById('jobs-grid');
+    document.getElementById('empty-state')?.classList.add('hidden');
     if(grid){
       grid.innerHTML='';
       const div=document.createElement('div');
@@ -319,14 +289,6 @@ window.performSearch = async function() {
       forceLucide(div);
     }
     if(sub) sub.textContent='Erreur de connexion';
-    const dropdownListErr = document.getElementById('dropdown-jobs-list');
-    if (dropdownListErr) {
-        dropdownListErr.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)">
-            <i data-lucide="wifi-off" style="width:24px;height:24px;margin-bottom:8px;display:block;margin:0 auto 8px"></i>
-            <p>Chargement impossible. Réessayez.</p>
-        </div>`;
-        forceLucide(dropdownListErr);
-    }
     EventBus.emit(EV.SEARCH_ERROR, {error:err.message});
 
   }finally{
@@ -454,7 +416,17 @@ window.renderPage = function(reset = false) {
     let jobs = [...window._state.jobs];
     if (window._state.filter) {
         const f = window._state.filter.toUpperCase();
-        jobs = jobs.filter(j => (j.typeContrat || '').toUpperCase().includes(f) || (j.typeContratLibelle || '').toUpperCase().includes(f));
+        jobs = jobs.filter(j => {
+            const tc = (j.typeContrat || '').toUpperCase();
+            const tcl = (j.typeContratLibelle || '').toUpperCase();
+            if (f === 'MIS' || f === 'INTÉRIM' || f === 'INTERIM') {
+                return tc.includes('MIS') || tcl.includes('MIS') || tcl.includes('INTÉRIM') || tcl.includes('INTERIM');
+            }
+            if (f === 'ALT' || f === 'APP' || f === 'ALTERNANCE') {
+                return tc.includes('ALT') || tc.includes('APP') || tcl.includes('ALT') || tcl.includes('APP') || tcl.includes('APPRENTISSAGE') || tcl.includes('ALTERNANCE');
+            }
+            return tc.includes(f) || tcl.includes(f);
+        });
     }
     const sub = document.getElementById('results-subtitle');
     if (sub && !sub.textContent.includes('cours')) {
@@ -463,7 +435,29 @@ window.renderPage = function(reset = false) {
     }
     if (!jobs.length) {
         document.getElementById('jobs-grid')?.replaceChildren();
-        document.getElementById('empty-state')?.classList.remove('hidden');
+        const emptyEl = document.getElementById('empty-state');
+        if (emptyEl) {
+            emptyEl.classList.remove('hidden');
+            // Check if this is a real search (not initial load)
+            const kw = (document.getElementById('sq-job')?.value||'').trim();
+            const loc = (document.getElementById('sq-city')?.value||'').trim();
+            if (!kw && !loc) {
+                emptyEl.innerHTML = `<div style="padding:40px 20px;text-align:center">
+                  <i data-lucide="search" style="width:52px;height:52px;color:var(--orange);margin:0 auto 16px;display:block;opacity:0.7"></i>
+                  <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">Commencez votre recherche</h3>
+                  <p style="color:var(--muted);font-size:14px;line-height:1.6;max-width:340px;margin:0 auto">Entrez un poste ou une ville dans la barre de recherche ci-dessus pour découvrir les offres du moment.</p>
+                </div>`;
+                forceLucide(emptyEl);
+            } else {
+                emptyEl.innerHTML = `<div style="padding:40px 20px;text-align:center">
+                  <i data-lucide="frown" style="width:48px;height:48px;color:var(--muted);margin:0 auto 16px;display:block"></i>
+                  <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Aucune offre trouvée</h3>
+                  <p style="color:var(--muted);font-size:14px">Essayez d'élargir vos critères ou de changer de ville.</p>
+                </div>`;
+                forceLucide(emptyEl);
+            }
+        }
+        document.getElementById('pagination')?.replaceChildren();
         return;
     }
     document.getElementById('empty-state')?.classList.add('hidden');
@@ -550,29 +544,6 @@ window.renderScoreBadge = function(sd){
 };
 
 // ══════════════════════════════════════════════════════
-//  J. FEATURED JOBS (homepage)
-// ══════════════════════════════════════════════════════
-window.renderFeatured = async function(){
-  const c=document.getElementById('featured-jobs'); if(!c) return;
-  if(window._state.jobs.length>0){
-    c.innerHTML='';
-    window._state.jobs.slice(0,4).forEach((job,i)=>{ const card=buildJobCard(job,i); c.appendChild(card); });
-    forceLucide(c); return;
-  }
-  try{
-    const res=await apiFetch('/api/jobs/search?keyword=emploi&range=0-3');
-    if(!res.ok){ c.innerHTML='<p style="color:var(--muted);text-align:center;padding:1rem">Démarrez le serveur avec <code>dotnet run</code></p>'; return; }
-    const data=await res.json().catch(()=>[]);
-    const jobs=await DataWorker.process(Array.isArray(data)?data:(data.resultats??data.results??[]));
-    c.innerHTML='';
-    if(!jobs.length){ c.innerHTML='<p style="color:var(--muted);text-align:center;padding:1rem">Aucune offre disponible.</p>'; return; }
-    jobs.slice(0,4).forEach((job,i)=>{ const card=buildJobCard(job,i); c.appendChild(card); });
-    forceLucide(c);
-    if(window.updateCompanyStrip) window.updateCompanyStrip(jobs);
-  }catch(_){ c.innerHTML='<p style="color:var(--muted);text-align:center;padding:1rem">Serveur non démarré.</p>'; }
-};
-
-// ══════════════════════════════════════════════════════
 //  K. INIT
 // ══════════════════════════════════════════════════════
 let _searchBar = null;
@@ -583,8 +554,19 @@ document.addEventListener('DOMContentLoaded', ()=>{
     window._searchBar = new autoComplete({
         selector: "#sq-job",
         data: {
-            src: SUGGESTIONS,
-            cache: true,
+            src: async (query) => {
+                try {
+                    const res = await fetch(`/api/jobs/search?keyword=${encodeURIComponent(query)}&range=0-6`);
+                    if (!res.ok) return [];
+                    const data = await res.json();
+                    const raw = Array.isArray(data) ? data : (data.resultats ?? data.results ?? data.items ?? data.offres ?? []);
+                    const titles = raw.map(j => j.intitule || j.Title || j.title).filter(t => !!t);
+                    return [...new Set(titles)];
+                } catch (e) {
+                    return [];
+                }
+            },
+            cache: false,
         },
         resultsList: {
             element: (list, data) => {
@@ -618,24 +600,45 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // Enter sur inputs de recherche
   ['sq-job','sq-city'].forEach(id=>{
     document.getElementById(id)?.addEventListener('keydown',e=>{
-      if(e.key==='Enter'){e.preventDefault();handleSearch(e);}
+      if(e.key==='Enter'){
+        e.preventDefault();
+        handleSearch(e);
+        setTimeout(()=>document.getElementById('offres')?.scrollIntoView({behavior:'smooth'}), 100);
+      }
     });
   });
 
   // Boutons de recherche
-  document.querySelectorAll('.btn-recherche,.hero-search-btn').forEach(btn=>{
-    btn.addEventListener('click',e=>{e.preventDefault();performSearch();});
+  document.querySelectorAll('.btn-recherche,.hero-search-btn,.search-go').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.preventDefault();
+      performSearch();
+      setTimeout(()=>document.getElementById('offres')?.scrollIntoView({behavior:'smooth'}), 100);
+    });
   });
 
-  // URL params → auto-search
+  // URL params → auto-search only if params present
   try{
     const p=new URLSearchParams(location.search);
     const q=p.get('q'),l=p.get('l');
     if(q){const el=document.getElementById('sq-job');if(el)el.value=q;}
     if(l){const el=document.getElementById('sq-city');if(el)el.value=l;}
-    if(q||l) setTimeout(performSearch,600);
-    else     setTimeout(renderFeatured,800);
-  }catch(_){ setTimeout(renderFeatured,800); }
+    if(q||l){
+      setTimeout(performSearch,600);
+    } else {
+      // Show invite to search instead of auto-loading
+      const sub = document.getElementById('results-subtitle');
+      if(sub) sub.textContent = 'Entrez un poste ou une ville pour commencer';
+      // Trigger renderPage with empty state to show the invite message
+      window._state.jobs = [];
+      renderPage(true);
+    }
+  }catch(_){ 
+    const sub = document.getElementById('results-subtitle');
+    if(sub) sub.textContent = 'Entrez un poste ou une ville pour commencer';
+    window._state.jobs = [];
+    renderPage(true);
+  }
 
   // Animated Placeholder
   const keywords = ['Développeur React', 'Serveur', 'Infirmier', 'Commercial', 'Comptable', 'Vendeur', 'Alternance IT', 'Stage Marketing'];
@@ -663,7 +666,7 @@ window.handleAutocomplete = function(e, type) {
   
   let suggestions = [];
   if (type === 'job') {
-    suggestions = SUGGESTIONS.filter(s => s.toLowerCase().includes(val)).slice(0, 5);
+    // handled by autoComplete
   } else if (type === 'city') {
     const cities = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Bordeaux', 'Nantes', 'Lille', 'Rennes', 'Strasbourg', 'Montpellier'];
     suggestions = cities.filter(s => s.toLowerCase().includes(val)).slice(0, 5);

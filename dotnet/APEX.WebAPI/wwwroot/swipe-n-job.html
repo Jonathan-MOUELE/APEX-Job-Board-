@@ -4,385 +4,652 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Swipe n' Job | APEX by AVERS</title>
+    <meta name="description" content="Explorez les offres d'emploi en mode immersif TikTok avec APEX Swipe.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
     <style>
         :root {
-            --orange: #f97316;
-            --muted: #a1a1aa;
+            --brand: #f97316;
+            --brand-glow: rgba(249,115,22,0.45);
+            --brand-dim: rgba(249,115,22,0.12);
+            --bg: #09090b;
+            --glass: rgba(255,255,255,0.07);
+            --glass-border: rgba(255,255,255,0.13);
+            --text-muted: rgba(255,255,255,0.6);
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #000;
+            background: var(--bg);
             color: #fff;
+            font-family: 'DM Sans', system-ui, sans-serif;
             overflow: hidden;
             height: 100dvh;
-            margin: 0;
-            padding: 0;
-            font-family: 'DM Sans', sans-serif;
+            user-select: none;
         }
 
-        .swipe-header {
+        /* ── CANVAS ── */
+        #bg-canvas {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            z-index: 100;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
-            backdrop-filter: blur(5px);
+            inset: 0;
+            z-index: 1;
+            opacity: 0.28;
+            pointer-events: none;
         }
 
-        .swipe-back {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+        /* ── LOADING ── */
+        #loading-overlay {
+            position: fixed; inset: 0;
+            background: #050507;
+            z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.4s ease;
+        }
+        .loader {
+            width: 44px; height: 44px;
+            border: 3px solid rgba(255,255,255,0.06);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* ── HEADER ── */
+        .apex-header {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 14px 20px;
+            display: flex; align-items: center; gap: 12px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+        .apex-header.hide {
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+        }
+
+        .btn-back {
+            width: 44px; height: 44px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
             color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             cursor: pointer;
             text-decoration: none;
+            flex-shrink: 0;
+            transition: all 0.25s;
+        }
+        .btn-back:hover {
+            background: rgba(255,255,255,0.18);
+            transform: translateX(-2px);
+        }
+
+        /* ── SEARCH ── */
+        .search-wrap {
+            flex: 1;
+            position: relative;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .search-inner {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(10,10,12,0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            padding: 0 8px 0 16px;
+            height: 46px;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+        .search-inner:focus-within {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand-dim);
+        }
+        .search-inner i.search-icon { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+        .search-inner input {
+            flex: 1; background: transparent; border: none;
+            color: #fff; outline: none;
+            font-size: 14px; font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .search-inner input::placeholder { color: rgba(255,255,255,0.38); }
+
+        .btn-clear {
+            background: rgba(255,255,255,0.1);
+            border: none; color: #fff;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .btn-clear.visible { display: flex; }
+        .btn-clear:hover { background: rgba(255,255,255,0.22); }
+
+        .btn-search {
+            background: var(--brand);
+            border: none; color: #fff;
+            width: 34px; height: 34px;
+            border-radius: 100px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
             transition: all 0.2s;
         }
-        .swipe-back:hover { background: rgba(255,255,255,0.2); }
+        .btn-search:hover { background: #ea6c0b; transform: scale(1.08); }
 
-        .swipe-title {
-            font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.5px;
+        /* ── AUTOCOMPLETE ── */
+        .suggest-portal {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0; right: 0;
+            background: rgba(14,14,18,0.97);
+            backdrop-filter: blur(28px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+            display: none;
+            z-index: 110;
+        }
+        .suggest-portal.open { display: block; }
+
+        .suggest-header {
+            padding: 10px 16px 4px;
+            font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--brand);
         }
 
-        .swipe-title span {
-            color: var(--orange);
+        .suggest-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 14px; font-weight: 500;
+            color: rgba(255,255,255,0.85);
+            transition: all 0.18s;
+            border-radius: 0;
+        }
+        .suggest-item:hover {
+            background: var(--brand-dim);
+            color: #fff;
+        }
+        .suggest-item i { color: var(--brand); flex-shrink: 0; }
+        .suggest-item .match { color: var(--brand); font-weight: 700; }
+        .suggest-divider {
+            height: 1px;
+            background: var(--glass-border);
+            margin: 4px 16px;
+        }
+        .suggest-footer {
+            padding: 10px 16px;
+            font-size: 12px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .suggest-footer i { width: 14px; height: 14px; color: var(--brand); }
+
+        /* ── FILTER CHIPS ── */
+        .filter-row {
+            position: fixed;
+            top: 74px; left: 0; right: 0;
+            z-index: 99;
+            padding: 0 20px 10px;
+            display: flex; gap: 8px;
+            overflow-x: auto; scrollbar-width: none;
+        }
+        .filter-row::-webkit-scrollbar { display: none; }
+
+        .chip {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: rgba(255,255,255,0.85);
+            padding: 7px 18px;
+            border-radius: 100px;
+            font-size: 12px; font-weight: 700;
+            cursor: pointer; white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .chip:hover { background: rgba(255,255,255,0.14); }
+        .chip.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            box-shadow: 0 4px 16px var(--brand-glow);
+            color: #fff;
         }
 
-        #swipe-container {
-            height: 100dvh;
-            width: 100vw;
-            display: flex;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        #swipe-container::-webkit-scrollbar { display: none; }
-
-        /* ALWAYS VERTICAL (TikTok/YT Shorts Style) */
-        #swipe-container {
-            flex-direction: column;
+        /* ── REEL VIEWPORT ── */
+        #reel-viewport {
+            position: relative; z-index: 10;
+            height: 100dvh; width: 100vw;
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
-            height: 100dvh;
-            width: 100vw;
+            scrollbar-width: none;
         }
+        #reel-viewport::-webkit-scrollbar { display: none; }
 
-
-        .swipe-card-section {
-            flex: 0 0 100dvh;
-            height: 100dvh;
-            width: 100vw;
+        /* ── REEL UNIT ── */
+        .reel-unit {
+            height: 100dvh; width: 100vw;
             scroll-snap-align: start;
             scroll-snap-stop: always;
             position: relative;
-            display: flex;
-            align-items: flex-end;
+            display: flex; align-items: flex-end;
             overflow: hidden;
         }
 
-
-        .card-bg {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
+        .reel-bg {
+            position: absolute; inset: 0; z-index: 0;
         }
-
-        .card-bg img {
-            width: 100%;
-            height: 100%;
+        .reel-bg img {
+            width: 100%; height: 100%;
             object-fit: cover;
-            filter: brightness(0.6) contrast(1.1);
-            transition: transform 0.5s ease;
+            filter: brightness(0.38) contrast(1.1) saturate(0.9);
+            will-change: transform;
+            transform: scale(1.05);
+            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .reel-unit.active .reel-bg img {
+            animation: panZoom 20s linear infinite alternate;
+        }
+        @keyframes panZoom {
+            0%   { transform: scale(1.05) translate(0, 0); }
+            100% { transform: scale(1.18) translate(-1%, 2%); }
         }
 
-        .card-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, 
-                rgba(0,0,0,0.95) 0%, 
-                rgba(0,0,0,0.3) 50%,
-                transparent 100%);
-            z-index: 1;
+        .reel-overlay {
+            position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(to top,
+                rgba(0,0,0,0.97) 0%,
+                rgba(0,0,0,0.4) 40%,
+                transparent 70%);
         }
 
-        .bottom-info {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            right: 100px;
-            padding: 40px 24px;
-            z-index: 5;
-            pointer-events: none;
+        /* ── CONTENT LAYOUT ── */
+        .reel-body {
+            position: relative; z-index: 20;
+            width: 100%;
+            padding: 0 24px 44px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
         }
 
-        .bottom-info > * { pointer-events: auto; }
+        /* ── JOB META (LEFT) ── */
+        .job-meta { flex: 1; min-width: 0; }
 
-        .company-name {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--orange);
+        .job-company {
+            font-size: 12px; font-weight: 800;
+            color: var(--brand);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
+            display: flex; align-items: center; gap: 6px;
+            margin-bottom: 8px;
         }
 
         .job-title {
-            font-size: 28px;
+            font-size: clamp(20px,5.5vw,30px);
             font-weight: 800;
-            line-height: 1.1;
-            margin: 0;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
         }
 
-        .tag-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 4px 0;
+        .job-tags {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 14px;
         }
 
-        .swipe-tag {
-            background: rgba(255,255,255,0.15);
+        .jtag {
+            padding: 5px 13px;
+            border-radius: 100px;
+            font-size: 11px; font-weight: 700;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(8px);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
         }
+        .jtag.type { background: var(--brand-dim); border-color: rgba(249,115,22,0.3); color: #fb923c; }
+        .jtag.salary { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
 
         .job-desc {
-            font-size: 14px;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.5;
-            max-width: 500px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.65;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            max-width: 480px;
         }
 
-        .side-actions {
-            position: absolute;
-            right: 20px;
-            bottom: 60px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            align-items: center;
+        .job-date {
+            font-size: 11px; font-weight: 600;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase; letter-spacing: 0.06em;
+            margin-top: 10px;
         }
 
-        .action-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
+        /* ── SIDEBAR ACTIONS (RIGHT) ── */
+        .sidebar-actions {
+            display: flex; flex-direction: column;
+            gap: 20px; align-items: center;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .action-btn {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 5px;
             cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
+            background: none; border: none; padding: 0;
             color: #fff;
-            transition: transform 0.2s;
+            transition: transform 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
         }
-
-        .action-item:active { transform: scale(0.9); }
+        .action-btn:hover { transform: scale(1.1) translateY(-2px); }
+        .action-btn:active { transform: scale(0.88); }
 
         .action-circle {
-            width: 56px;
-            height: 56px;
+            width: 54px; height: 54px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background: rgba(15,15,20,0.65);
+            border: 1.5px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            transition: all 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
+            position: relative;
+            overflow: hidden;
         }
-
-        .btn-apply-circle {
-            background: var(--orange);
-            border-color: rgba(255,255,255,0.3);
+        .action-circle::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.08), transparent 70%);
         }
+        .action-btn:hover .action-circle {
+            background: rgba(255,255,255,0.18);
+            border-color: rgba(255,255,255,0.35);
+        }
+        .action-circle.apply {
+            background: var(--brand);
+            border-color: rgba(255,255,255,0.2);
+            box-shadow: 0 6px 20px var(--brand-glow);
+        }
+        .action-circle.apply:hover { background: #ea6c0b; }
+        .action-circle.saved {
+            background: rgba(245,158,11,0.2);
+            border-color: #f59e0b;
+        }
+        .action-circle.saved i { color: #f59e0b !important; }
 
         .action-label {
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 10px; font-weight: 800;
             text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: rgba(255,255,255,0.75);
         }
 
-        #loading-overlay {
+        /* Pulse on apply */
+        @keyframes pulse-brand {
+            0%   { box-shadow: 0 0 0 0 var(--brand-glow); }
+            70%  { box-shadow: 0 0 0 14px rgba(249,115,22,0); }
+            100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
+        }
+        .pulse { animation: pulse-brand 2.2s infinite; }
+
+        /* Progress dots */
+        .progress-dots {
             position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.4s;
-        }
-
-        .loader {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: var(--orange);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .controls-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 50;
-            background: rgba(0,0,0,0.5);
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 12px;
-            backdrop-filter: blur(4px);
-            opacity: 0.6;
-            pointer-events: none;
+            display: flex; flex-direction: column; gap: 6px;
         }
-        .swipe-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
-            transition: transform 0.3s ease, opacity 0.3s ease;
+        .progress-dot {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            transition: all 0.3s;
         }
-        .swipe-header.hidden {
-            transform: translateY(-20px);
-            opacity: 0;
-            pointer-events: none;
+        .progress-dot.active {
+            background: var(--brand);
+            height: 16px;
+            border-radius: 2px;
         }
-        .search-bar-transparent {
-            display: flex;
-            align-items: center;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(12px);
-            border-radius: 14px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            width: 100%;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
+
+        /* ── EMPTY STATE ── */
+        .empty-reel {
+            height: 100dvh; width: 100vw;
+            scroll-snap-align: start;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 16px; padding: 40px; text-align: center;
         }
-        .search-bar-transparent input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            outline: none;
-            font-size: 15px;
-            font-weight: 500;
+        .empty-reel svg { color: var(--brand); }
+        .empty-reel h2 { font-size: 22px; font-weight: 800; }
+        .empty-reel p { color: var(--text-muted); font-size: 14px; }
+        .empty-reel a {
+            display: inline-block;
+            background: var(--brand); color: #fff;
+            padding: 12px 28px; border-radius: 100px;
+            text-decoration: none; font-weight: 700;
+            margin-top: 8px;
         }
-        .search-bar-transparent input::placeholder { color: rgba(255,255,255,0.5); }
-        .search-bar-transparent button {
-            background: transparent;
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
+
+        /* ── ANIMATIONS ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .filters-transparent {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            overflow-x: auto;
-            scrollbar-width: none;
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(18px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
-        .filters-transparent::-webkit-scrollbar { display: none; }
-        .filter-chip {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 6px 16px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
+
+        .reel-unit.active .job-meta {
+            animation: fadeInUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
         }
-        .filter-chip:hover { background: rgba(255,255,255,0.2); }
-        .filter-chip.active {
-            background: var(--orange);
-            border-color: var(--orange);
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        .reel-unit.active .sidebar-actions {
+            animation: slideInRight 0.55s 0.1s cubic-bezier(0.16,1,0.3,1) both;
         }
     </style>
-
 </head>
 <body>
-    <div id="loading-overlay">
-        <div class="loader"></div>
-    </div>
 
-    <header class="swipe-header">
-        <a href="index.html" class="swipe-back">
-            <i data-lucide="arrow-left"></i>
+    <canvas id="bg-canvas"></canvas>
+    <div id="loading-overlay"><div class="loader"></div></div>
+
+    <!-- ── HEADER ── -->
+    <header class="apex-header" id="apex-header">
+        <a href="index.html" class="btn-back" aria-label="Retour">
+            <i data-lucide="arrow-left" style="width:18px;height:18px"></i>
         </a>
-        <div class="swipe-title">APEX <span>Swipe</span></div>
-        <div style="width:40px"></div>
+
+        <div class="search-wrap">
+            <div class="search-inner">
+                <i data-lucide="search" class="search-icon" style="width:16px;height:16px"></i>
+                <input
+                    type="text"
+                    id="swipe-search-input"
+                    placeholder="Métier, compétence…"
+                    autocomplete="off"
+                    oninput="window._swipeApp?.onSearchInput(this.value); toggleClear(this)"
+                    onkeydown="if(event.key==='Enter'){window._swipeApp?.search();hideSuggest();}"
+                >
+                <button class="btn-clear" id="btn-clear" onclick="clearSearch()" aria-label="Effacer">
+                    <i data-lucide="x" style="width:13px;height:13px"></i>
+                </button>
+                <button class="btn-search" onclick="window._swipeApp?.search()" aria-label="Rechercher">
+                    <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
+                </button>
+            </div>
+            <div class="suggest-portal" id="suggest-portal">
+                <div class="suggest-header">Suggestions</div>
+                <div id="suggest-list"></div>
+                <div class="suggest-divider"></div>
+                <div class="suggest-footer">
+                    <i data-lucide="zap"></i>
+                    <span>Appuyez Entrée pour chercher</span>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <!-- FLOATING SEARCH & FILTERS -->
-    <div class="swipe-header" id="swipe-header">
-        <div class="search-bar-transparent">
-            <input type="text" id="swipe-search-input" placeholder="Rechercher un job..." onkeydown="if(event.key==='Enter') window._swipeApp.search()">
-            <button onclick="window._swipeApp.search()"><i data-lucide="search" style="width:18px;height:18px"></i></button>
-        </div>
-        <div class="filters-transparent">
-            <button class="filter-chip active" onclick="window._swipeApp.setFilter(this, '')">Tous</button>
-            <button class="filter-chip" onclick="window._swipeApp.setFilter(this, 'CDI')">CDI</button>
-            <button class="filter-chip" onclick="window._swipeApp.setFilter(this, 'CDD')">CDD</button>
-            <button class="filter-chip" onclick="window._swipeApp.setFilter(this, 'Alternance')">Alternance</button>
-            <button class="filter-chip" onclick="window._swipeApp.setFilter(this, 'Stage')">Stage</button>
-        </div>
+    <!-- ── FILTER CHIPS ── -->
+    <div class="filter-row" id="filter-row">
+        <button class="chip active" onclick="window._swipeApp?.setFilter(this,'')">Toutes</button>
+        <button class="chip" onclick="window._swipeApp?.setFilter(this,'CDI')">CDI</button>
+        <button class="chip" onclick="window._swipeApp?.setFilter(this,'CDD')">CDD</button>
+        <button class="chip" onclick="window._swipeApp?.setFilter(this,'Alternance')">Alternance</button>
+        <button class="chip" onclick="window._swipeApp?.setFilter(this,'Stage')">Stage</button>
+        <button class="chip" onclick="window._swipeApp?.setFilter(this,'Freelance')">Freelance</button>
     </div>
 
-    <div id="swipe-container">
+    <!-- ── REEL VIEWPORT ── -->
+    <div id="reel-viewport" id="swipe-container"></div>
 
-        <!-- Les offres seront injectées ici -->
-    </div>
+    <!-- Progress dots (max 8) -->
+    <div class="progress-dots" id="progress-dots"></div>
 
-    <div class="controls-hint">Scrollez ou utilisez les flèches du clavier pour naviguer</div>
-
-
-    <script src="js/core.js?v=7"></script>
-    <script src="js/auth.js?v=7"></script>
-    <script src="js/swipe-page.js?v=7"></script>
+    <script src="js/core.js?v=9"></script>
+    <script src="js/auth.js?v=9"></script>
+    <script src="js/swipe-page.js?v=9"></script>
     <script>
         lucide.createIcons();
+
+        // ── LOADING REMOVE ────────────────────────────
+        window.addEventListener('load', () => {
+            const ov = document.getElementById('loading-overlay');
+            if (ov) { ov.style.opacity = '0'; setTimeout(() => ov.remove(), 420); }
+        });
+
+        // ── CANVAS PARTICLES ──────────────────────────
+        (function() {
+            const C = document.getElementById('bg-canvas');
+            if (!C) return;
+            const ctx = C.getContext('2d');
+            let pts = [];
+
+            function resize() { C.width = innerWidth; C.height = innerHeight; }
+            addEventListener('resize', resize); resize();
+
+            class Particle {
+                constructor() { this.reset(true); }
+                reset(anywhere) {
+                    this.x = Math.random() * C.width;
+                    this.y = anywhere ? Math.random() * C.height : C.height + 4;
+                    this.vy = -(Math.random() * 0.5 + 0.08);
+                    this.vx = (Math.random() - 0.5) * 0.15;
+                    this.r  = Math.random() * 1.6 + 0.3;
+                    this.a  = Math.random() * 0.55 + 0.1;
+                }
+                step() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.y < -4) this.reset(false);
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(249,115,22,${this.a})`;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 65; i++) pts.push(new Particle());
+            (function loop() {
+                ctx.clearRect(0, 0, C.width, C.height);
+                pts.forEach(p => { p.step(); p.draw(); });
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+        // ── SEARCH HELPERS ────────────────────────────
+        function toggleClear(input) {
+            const btn = document.getElementById('btn-clear');
+            if (!btn) return;
+            btn.classList.toggle('visible', input.value.length > 0);
+        }
+        function clearSearch() {
+            const inp = document.getElementById('swipe-search-input');
+            if (inp) { inp.value = ''; inp.focus(); }
+            document.getElementById('btn-clear')?.classList.remove('visible');
+            hideSuggest();
+        }
+        function hideSuggest() {
+            document.getElementById('suggest-portal')?.classList.remove('open');
+        }
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search-wrap')) hideSuggest();
+        });
+
+        // ── AUTOCOMPLETE ──────────────────────────────
+        const SUGGEST_POOL = [
+            'Développeur Full-Stack', 'Développeur React', 'Développeur Vue.js',
+            'Développeur Node.js', 'Développeur Python', 'Développeur Mobile',
+            'UX/UI Designer', 'Product Designer', 'Chef de Projet IT',
+            'Data Analyst', 'Data Scientist', 'DevOps Engineer', 'SRE',
+            'Product Manager', 'Ingénieur Cybersécurité', 'Commercial B2B',
+            'Marketing Digital', 'Alternance Développeur', 'Stage RH',
+            'Comptable', 'Juriste', 'Infirmier', 'Formateur',
+        ];
+
+        window.SwipeAutocomplete = {
+            show(query) {
+                const portal = document.getElementById('suggest-portal');
+                const list   = document.getElementById('suggest-list');
+                if (!portal || !list) return;
+                if (!query || query.length < 2) { portal.classList.remove('open'); return; }
+
+                const q = query.toLowerCase();
+                const matches = SUGGEST_POOL
+                    .filter(s => s.toLowerCase().includes(q))
+                    .slice(0, 6);
+
+                if (!matches.length) { portal.classList.remove('open'); return; }
+
+                list.innerHTML = matches.map(m => {
+                    const idx = m.toLowerCase().indexOf(q);
+                    const hi  = idx >= 0
+                        ? m.slice(0,idx) + `<span class="match">${m.slice(idx,idx+q.length)}</span>` + m.slice(idx+q.length)
+                        : m;
+                    return `<div class="suggest-item" onclick="window._swipeApp?.selectSuggestion('${m.replace(/'/g,"\\'")}')">
+                        <i data-lucide="search" style="width:14px;height:14px"></i>
+                        <span>${hi}</span>
+                    </div>`;
+                }).join('');
+
+                portal.classList.add('open');
+                lucide.createIcons();
+            },
+            hide() { document.getElementById('suggest-portal')?.classList.remove('open'); }
+        };
+
+        // ── HEADER AUTO-HIDE ──────────────────────────
+        (() => {
+            const vp     = document.getElementById('reel-viewport');
+            const dots   = document.getElementById('progress-dots');
+            if (!vp) return;
+            vp.addEventListener('scroll', () => {
+                const idx = Math.round(vp.scrollTop / innerHeight);
+                document.querySelectorAll('.reel-unit').forEach((u, i) => {
+                    u.classList.toggle('active', i === idx);
+                });
+
+                // Update progress dots
+                if (dots) {
+                    const total = Math.min(document.querySelectorAll('.reel-unit').length, 8);
+                    [...dots.children].forEach((d, i) => {
+                        d.classList.toggle('active', i === Math.min(idx, total - 1));
+                    });
+                }
+            }, { passive: true });
+        })();
     </script>
 </body>
 </html>
-

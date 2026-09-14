@@ -138,25 +138,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// ── 9. CORS depuis configuration ─────────────────────────────────
-var allowedOrigins = builder.Configuration
-    .GetSection("Cors:AllowedOrigins")
-    .Get<string[]>() ?? ["http://localhost"];
+// ── 9. CORS depuis configuration ─────────────────────────────
+// Origins de base (développement local)
+var devOrigins = new[]
+{
+    "http://localhost",
+    "http://localhost:80",
+    "http://127.0.0.1",
+    "http://localhost:5188",
+    "http://localhost:5191"
+    // NOTE: "null" origin intentionally excluded — would allow file:// and sandboxed iframes
+};
 
+// Origins supplémentaires depuis la configuration (production)
+var configOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+// Fusion des deux sources
+var allAllowedOrigins = devOrigins.Union(configOrigins).Distinct().ToArray();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApexPolicy", policy =>
     {
         policy
-          .WithOrigins(
-            "http://localhost",
-            "http://localhost:80",
-            "http://127.0.0.1",
-            "http://localhost:5188",
-            "http://localhost:5191"
-          // NOTE: "null" origin intentionally excluded — would allow file:// and sandboxed iframes
-          )
+          .WithOrigins(allAllowedOrigins)
           .AllowAnyHeader()
           .AllowAnyMethod()
           .AllowCredentials();
@@ -285,7 +292,7 @@ app.Use(async (ctx, next) =>
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' http://localhost:5191 http://localhost:5188 https://unpkg.com https://images.unsplash.com https://api.francetravail.io https://fonts.googleapis.com; " +
+        "connect-src 'self' data: http://localhost:5191 http://localhost:5188 https://unpkg.com https://images.unsplash.com https://api.francetravail.io https://fonts.googleapis.com; " +
         "frame-ancestors 'none'; " +
         "base-uri 'self'; " +
         "form-action 'self';";
@@ -340,13 +347,34 @@ app.UseCors("ApexPolicy"); // CORS must be first — before auth & rate limiting
 app.UseRateLimiter();
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+    if (response.StatusCode == 404 &&
+        !(context.HttpContext.Request.Path.Value ?? "").StartsWith("/api", StringComparison.OrdinalIgnoreCase))
+    {
+        response.ContentType = "text/html";
+        await response.SendFileAsync("wwwroot/404.html");
+    }
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ── 17. Health endpoint ──────────────────────────────────────────
-app.MapGet("/health", async (ApexDbContext db, IConfiguration cfg) =>
+// ── 17. Health endpoint (protégé par header secret) ─────────────
+app.MapGet("/health", async (HttpContext http, ApexDbContext db, IConfiguration cfg) =>
 {
+    // Protection : header APEX-Health-Token requis (sauf en dev)
+    if (!app.Environment.IsDevelopment())
+    {
+        var expectedToken = cfg["Apex:HealthToken"];
+        var providedToken = http.Request.Headers["APEX-Health-Token"].FirstOrDefault();
+        if (string.IsNullOrEmpty(expectedToken) || providedToken != expectedToken)
+            return Results.NotFound(); // 404 pour ne pas révéler l'existence de l'endpoint
+    }
+
     var checks = new Dictionary<string, string>();
 
     // DB
@@ -358,8 +386,8 @@ app.MapGet("/health", async (ApexDbContext db, IConfiguration cfg) =>
     catch { checks["db"] = "unhealthy"; }
 
     // Gemini ping (juste vérifier que la clé est configurée)
-    checks["gemini"] = !string.IsNullOrEmpty(cfg["Gemini:ApiKey"]) &&
-                       !cfg["Gemini:ApiKey"]!.StartsWith("DEV_ONLY")
+    checks["gemini"] = !string.IsNullOrEmpty(cfg["Ai:ApiKey"]) &&
+                       !cfg["Ai:ApiKey"]!.StartsWith("DEV_ONLY")
                        ? "configured" : "missing_key";
 
     // FT clé présente
@@ -374,7 +402,7 @@ app.MapGet("/health", async (ApexDbContext db, IConfiguration cfg) =>
         checks,
         timestamp = DateTime.UtcNow
     }, statusCode: allHealthy ? 200 : 503);
-});
+}).ExcludeFromDescription();
 
 // ── 18. Seed Admin ───────────────────────────────────────────────
 try

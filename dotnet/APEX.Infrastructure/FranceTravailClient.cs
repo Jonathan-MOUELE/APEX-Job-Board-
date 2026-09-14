@@ -254,12 +254,12 @@ public sealed class FranceTravailClient(
         if (!string.IsNullOrEmpty(contractType))
         {
             // France Travail V2 contract codes: CDI, CDD, MIS (intérim), SAI (saisonnier/stage), APP (apprentissage/alternance)
-            var finalType = contractType switch
+            var finalType = contractType.ToUpperInvariant() switch
             {
-                "ALT" => "APP",   // Alternance → Apprentissage (APP) in FT V2
-                "MIS" => "MIS",   // Intérim
-                "SAI" => "SAI",   // Stage / Saisonnier
-                _     => contractType
+                "ALT" or "ALTERNANCE" or "APP" or "APPRENTISSAGE" => "APP",
+                "MIS" or "INTÉRIM" or "INTERIM" => "MIS",
+                "SAI" or "STAGE" or "SAISONNIER" => "SAI",
+                _ => contractType
             };
             qs.Append("&typeContrat=").Append(Uri.EscapeDataString(finalType));
         }

@@ -578,6 +578,18 @@ document.addEventListener('DOMContentLoaded', ()=>{
           recSec.style.display = 'none';
       }
   }
+
+  // Handle 404 page search focus redirect
+  if (sessionStorage.getItem('trigger_search_focus') === '1') {
+    sessionStorage.removeItem('trigger_search_focus');
+    const jobInp = document.getElementById('sq-job');
+    if (jobInp) {
+      setTimeout(() => {
+        jobInp.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        jobInp.focus();
+      }, 500);
+    }
+  }
 });
 
 

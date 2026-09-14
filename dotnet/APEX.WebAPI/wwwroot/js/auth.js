@@ -96,7 +96,7 @@ window.openProfileMenu   =()=>document.getElementById('apex-account-panel')?.cla
 window.handleLogin=async function(e){
   if(e) e.preventDefault();
   const email=document.getElementById('login-email')?.value?.trim();
-  const pwd  =document.getElementById('login-password')?.value;
+  const pwd  =document.getElementById('login-pwd')?.value;
   const errEl=document.getElementById('login-error');
   const btnEl=document.getElementById('login-submit');
   if(errEl) errEl.textContent='';

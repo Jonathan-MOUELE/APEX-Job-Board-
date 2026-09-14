@@ -83,23 +83,13 @@ public class BotController : ControllerBase
             bool isCompatible = _aiSettings.Provider.Equals("openrouter", StringComparison.OrdinalIgnoreCase) 
                              || _aiSettings.Provider.Equals("deepseek", StringComparison.OrdinalIgnoreCase);
 
-            (string? text, System.Net.HttpStatusCode status) = isCompatible
-                ? await CallOpenRouterAsync(model, apiKey, systemPrompt, req, userMsg, ct)
-                : await CallGeminiAsync(model, apiKey, systemPrompt, req, userMsg, ct);
-
-            if (text == null && (status == System.Net.HttpStatusCode.TooManyRequests
-                || status == System.Net.HttpStatusCode.ServiceUnavailable
-                || status == System.Net.HttpStatusCode.NotFound))
-            {
-                var fallbackModel = _aiSettings.ProModel ?? model;
-                _logger.LogWarning("[CHAT] Modèle principal indisponible ({Status}) — fallback {M}", (int)status, fallbackModel);
-                (text, status) = isCompatible
-                    ? await CallOpenRouterAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct)
-                    : await CallGeminiAsync(fallbackModel, apiKey, systemPrompt, req, userMsg, ct);
-            }
+            (string? text, System.Net.HttpStatusCode status) = await CallAiWithFallbackAsync(model, apiKey, systemPrompt, req, userMsg, isCompatible, ct);
 
             if (text == null)
             {
+                if (status == System.Net.HttpStatusCode.TooManyRequests) {
+                    return StatusCode(503, new { reply = "Le quota gratuit de l'IA (Google Gemini) est épuisé. Veuillez patienter une minute et réessayer.", fallback = true });
+                }
                 return StatusCode(503, new { reply = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
             }
 
@@ -108,7 +98,7 @@ public class BotController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "[BOT] Erreur interne");
-            return StatusCode(503, new { reply = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
+            return StatusCode(503, new { reply = "Une erreur serveur est survenue. L'assistant est temporairement indisponible.", fallback = true });
         }
     }
 
@@ -135,7 +125,7 @@ public class BotController : ControllerBase
         try
         {
             var fakeReq = new ChatRequest(prompt, null);
-            (string? responseText, System.Net.HttpStatusCode _) = await CallGeminiAsync(model, apiKey, systemPrompt: "", fakeReq, prompt, ct);
+            (string? responseText, System.Net.HttpStatusCode _) = await CallAiWithFallbackAsync(model, apiKey, systemPrompt: "", fakeReq, prompt, isCompatible: false, ct);
             if (responseText is null) return Ok(new { suggestions = Array.Empty<string>() });
             var arrayMatch = System.Text.RegularExpressions.Regex.Match(responseText, @"\[.*?\]", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (!arrayMatch.Success) return Ok(new { suggestions = Array.Empty<string>() });
@@ -219,7 +209,7 @@ Réponds UNIQUEMENT en JSON strict:
         try
         {
             var fakeReq2 = new ChatRequest(prompt, null);
-            (string? responseText, System.Net.HttpStatusCode _) = await CallGeminiAsync(_aiSettings.FlashModel, apiKey, systemPrompt: "", fakeReq2, prompt, ct);
+            (string? responseText, System.Net.HttpStatusCode _) = await CallAiWithFallbackAsync(_aiSettings.FlashModel, apiKey, systemPrompt: "", fakeReq2, prompt, isCompatible: false, ct);
             if (responseText is null)
                 return StatusCode(503, new { analysis = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
 
@@ -234,6 +224,46 @@ Réponds UNIQUEMENT en JSON strict:
             _logger.LogError(ex, "[BOT] Erreur interne");
             return StatusCode(503, new { analysis = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
         }
+    }
+
+    private async Task<(string? Text, System.Net.HttpStatusCode Status)> CallAiWithFallbackAsync(
+        string primaryModel, string apiKey, string systemPrompt,
+        ChatRequest req, string userMsg, bool isCompatible, CancellationToken ct)
+    {
+        var modelsToTry = new List<string> { primaryModel };
+        if (!string.IsNullOrEmpty(_aiSettings.ProModel) && _aiSettings.ProModel != primaryModel)
+        {
+            modelsToTry.Add(_aiSettings.ProModel);
+        }
+        
+        if (!isCompatible)
+        {
+            modelsToTry.Add("gemini-3.5-flash");
+            modelsToTry.Add("gemini-2.5-flash");
+            modelsToTry.Add("gemini-2.0-flash");
+            modelsToTry.Add("gemini-2.0-flash-lite");
+        }
+
+        string? text = null;
+        System.Net.HttpStatusCode status = System.Net.HttpStatusCode.OK;
+
+        foreach (var model in modelsToTry.Distinct())
+        {
+            _logger.LogInformation("[CHAT] Trying model: {Model}", model);
+            (text, status) = isCompatible
+                ? await CallOpenRouterAsync(model, apiKey, systemPrompt, req, userMsg, ct)
+                : await CallGeminiAsync(model, apiKey, systemPrompt, req, userMsg, ct);
+
+            if (text != null)
+            {
+                _logger.LogInformation("[CHAT] Success with model: {Model}", model);
+                return (text, status);
+            }
+
+            _logger.LogWarning("[CHAT] Model {Model} failed with status {Status}", model, status);
+        }
+
+        return (null, status);
     }
 
     // ── OpenRouter (compatible OpenAI format) ─────────────────

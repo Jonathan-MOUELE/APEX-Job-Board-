@@ -44,8 +44,8 @@
             --orange: #f97316;
             --orange-dark: #ea6c10;
             --orange-light: #fff7ed;
-            --blue: #0ea5e9;
-            --blue-light: #e0f2fe;
+            --blue: #3b82f6;
+            --blue-light: #eff6ff;
             --green: #10b981;
             --green-light: #ecfdf5;
             --tag-bg: #f4f4f5;
@@ -62,7 +62,7 @@
             --text: #f4f4f5;
             --muted: #a1a1aa;
             --orange-light: #1c1208;
-            --blue-light: #0a1929;
+            --blue-light: #0c1a3d;
             --green-light: #071a12;
             --tag-bg: #27272a;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -644,11 +644,12 @@
         }
 
         .feat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(249, 115, 22, 0.02);
+            border: 1px solid var(--orange);
             border-radius: 16px;
             padding: 28px 24px;
-            transition: border-color 0.2s, transform 0.2s;
+            transition: all 0.25s var(--ease);
+            box-shadow: 0 0 16px rgba(249, 115, 22, 0.08), inset 0 0 10px rgba(249, 115, 22, 0.02);
         }
 
         .feat-card:hover {
@@ -699,15 +700,17 @@
    CV UPLOAD SECTION
 ================================ */
         .cv-upload-section {
-            background: var(--surface);
-            border: 2px dashed var(--border);
+            display: block;
+            background: rgba(249, 115, 22, 0.03);
+            border: 2px dashed var(--orange);
             border-radius: 18px;
             padding: 48px 40px;
             text-align: center;
             cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
+            transition: all 0.25s var(--ease);
             max-width: 620px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .cv-upload-section:hover {
@@ -974,9 +977,9 @@
         }
 
         .job-tag.contract {
-            color: var(--blue);
-            border-color: var(--blue-light);
-            background: var(--blue-light);
+            color: var(--orange);
+            border-color: var(--orange-light);
+            background: var(--orange-light);
         }
 
         .job-tag.remote {
@@ -1090,6 +1093,7 @@
         .tool-card:hover {
             border-color: var(--orange);
             transform: translateY(-2px);
+            box-shadow: 0 4px 25px rgba(249, 115, 22, 0.12), 0 0 1px rgba(249, 115, 22, 0.5);
         }
 
         .tool-icon {
@@ -1194,7 +1198,7 @@
 
 
 
-        .pélan-badge {
+        .plan-badge {
             position: absolute;
             top: -12px;
             left: 50%;
@@ -1208,7 +1212,7 @@
             white-space: nowrap;
         }
 
-        .pélan-name {
+        .plan-name {
             font-size: 14px;
             font-weight: 700;
             color: var(--muted);
@@ -1217,7 +1221,7 @@
             margin-bottom: 8px;
         }
 
-        .pélan-price {
+        .plan-price {
             font-size: 32px;
             font-weight: 800;
             letter-spacing: -1px;
@@ -1226,26 +1230,26 @@
             margin-bottom: 4px;
         }
 
-        .pélan-price small {
+        .plan-price small {
             font-size: 16px;
             font-weight: 400;
             color: var(--muted);
         }
 
-        .pélan-period {
+        .plan-period {
             font-size: 13px;
             color: var(--muted);
             margin-bottom: 20px;
         }
 
-        .pélan-feats {
+        .plan-feats {
             display: flex;
             flex-direction: column;
             gap: 10px;
             margin-bottom: 24px;
         }
 
-        .pélan-feat {
+        .plan-feat {
             display: flex;
             align-items: flex-start;
             gap: 8px;
@@ -1253,7 +1257,7 @@
             color: var(--text);
         }
 
-        .pélan-feat svg {
+        .plan-feat svg {
             width: 15px;
             height: 15px;
             color: var(--green);
@@ -1261,15 +1265,15 @@
             margin-top: 2px;
         }
 
-        .pélan-feat.off {
+        .plan-feat.off {
             color: var(--muted);
         }
 
-        .pélan-feat.off svg {
+        .plan-feat.off svg {
             color: var(--muted);
         }
 
-        .pélan-btn {
+        .plan-btn {
             width: 100%;
             height: 38px;
             border-radius: 9px;
@@ -1283,17 +1287,17 @@
             transition: all 0.15s;
         }
 
-        .pélan-btn:hover {
+        .plan-btn:hover {
             background: var(--surface2);
         }
 
-        .pélan-card.featured .pélan-btn {
+        .plan-card.featured .plan-btn {
             background: var(--orange);
             color: #fff;
             border-color: var(--orange);
         }
 
-        .pélan-card.featured .pélan-btn:hover {
+        .plan-card.featured .plan-btn:hover {
             opacity: 0.88;
         }
 
@@ -1302,43 +1306,45 @@
 ================================ */
         .cities-gallery-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
             margin-bottom: 24px;
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 1100px) {
             .cities-gallery-grid {
-                grid-template-columns: repeat(6, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 700px) {
             .cities-gallery-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 420px) {
             .cities-gallery-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: 1fr 1fr;
             }
         }
 
         .city-card-gallery {
             position: relative;
-            height: 160px;
-            border-radius: 12px;
+            height: 180px;
+            border-radius: 16px;
             overflow: hidden;
             cursor: pointer;
+            border: none;
+            padding: 0;
             transition: transform 0.35s cubic-bezier(.4, 0, .2, 1),
                 box-shadow 0.35s cubic-bezier(.4, 0, .2, 1);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
         }
 
         .city-card-gallery:hover {
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 24px 48px rgba(249, 115, 22, 0.2);
         }
 
         .city-gallery-img {
@@ -1346,20 +1352,28 @@
             inset: 0;
             background-size: cover;
             background-position: center;
-            transition: transform 0.55s ease;
+            transition: transform 0.6s ease;
         }
 
         .city-card-gallery:hover .city-gallery-img {
-            transform: scale(1.08);
+            transform: scale(1.1);
         }
 
         .city-gallery-overlay {
             position: absolute;
             inset: 0;
             background: linear-gradient(to top,
-                    rgba(0, 0, 0, 0.82) 0%,
-                    rgba(0, 0, 0, 0.28) 55%,
-                    rgba(0, 0, 0, 0.04) 100%);
+                    rgba(0, 0, 0, 0.88) 0%,
+                    rgba(0, 0, 0, 0.3) 55%,
+                    transparent 100%);
+            transition: background 0.3s;
+        }
+
+        .city-card-gallery:hover .city-gallery-overlay {
+            background: linear-gradient(to top,
+                    rgba(249, 115, 22, 0.75) 0%,
+                    rgba(0, 0, 0, 0.3) 55%,
+                    transparent 100%);
         }
 
         .city-gallery-content {
@@ -1372,37 +1386,37 @@
         }
 
         .city-gallery-name {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             letter-spacing: -0.02em;
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
         }
 
         .city-gallery-view {
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 10px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-top: 6px;
+            letter-spacing: 0.08em;
+            margin-top: 5px;
             padding: 4px 10px;
             border-radius: 20px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.18);
             backdrop-filter: blur(8px);
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             opacity: 0;
             transform: translateY(6px);
-            transition: all 0.3s ease;
+            transition: all 0.28s ease;
         }
 
         .city-card-gallery:hover .city-gallery-view {
             opacity: 1;
             transform: translateY(0);
-            background: var(--orange);
-            border-color: transparent;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         /* ================================
@@ -2409,13 +2423,16 @@
         @media (max-width: 1024px) {
 
             header nav,
-            .header-right .btn-ghost,
-            .header-right .btn-solid {
+            header .auth-group,
+            header #auth-profile-btn,
+            header #theme-btn,
+            header .vr {
                 display: none !important;
             }
 
             .hamburger-btn {
                 display: flex !important;
+                margin-left: auto !important;
             }
 
             .logo-apex {
@@ -2468,6 +2485,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.25s;
+            overflow: hidden;
         }
 
         .mobile-menu-overlay.open {
@@ -2478,14 +2496,14 @@
         .mobile-menu-panel {
             position: absolute;
             top: 0;
-            left: 0;
-            width: min(320px, 90vw);
+            right: 0;
+            width: min(300px, 88vw);
             height: 100%;
-            background: var(--surface2, #1a1a2e);
-            border-right: 1px solid var(--border);
+            background: var(--surface);
+            border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transform: translateX(-100%);
+            transform: translateX(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -2502,10 +2520,16 @@
         }
 
         .mobile-menu-nav {
-            padding: 1.25rem;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .mobile-menu-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
         }
 
         .mobile-nav-link {
@@ -2513,22 +2537,23 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.875rem 1rem;
-            border-radius: 0.625rem;
-            font-size: 1rem;
-            font-weight: 500;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
             color: var(--text);
             text-decoration: none;
             transition: background 0.15s, color 0.15s;
         }
 
-        .mobile-nav-link:hover {
-            background: var(--elevated, rgba(255, 255, 255, .08));
-            color: var(--accent, #6366f1);
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
+            background: var(--orange-light);
+            color: var(--orange);
         }
 
         .mobile-nav-link i {
-            width: 1.125rem;
-            height: 1.125rem;
+            width: 1.1rem;
+            height: 1.1rem;
             flex-shrink: 0;
         }
 
@@ -3031,7 +3056,6 @@
 <body>
 
     <!-- ACCESSIBILITÉ : Skip link -->
-    <a href="#main" id="skip-link">Passer au contenu principal</a>
 
     <!-- ================================
      HEADER
@@ -3061,7 +3085,6 @@
             <a href="#conseils" class="nav-link">Conseils</a>
         </nav>
 
-        </div>
 
         <button class="btn-icon-sm" onclick="toggleTheme()" id="theme-btn" title="Changer de thème"
             aria-label="Basculer mode sombre">
@@ -3084,7 +3107,7 @@
             aria-expanded="false">
             <i data-lucide="menu"></i>
         </button>
-        </div>
+
     </header>
 
     <!-- CV CANVAS -->
@@ -3165,7 +3188,7 @@
                     <div class="cv-sec">
                         <div class="cv-sec-title">Résumé professionnel</div>
                         <textarea class="cv-inp" id="cv-summary" rows="4"
-                            placeholder="Décrivez votre profil en 2—œ3 phrases…"
+                            placeholder="Décrivez votre profil en 2-3 phrases…"
                             oninput="_renderCvPreview()"></textarea>
                     </div>
                     <div class="cv-sec">
@@ -3212,18 +3235,32 @@
         <div class="mobile-menu-panel">
             <div class="mobile-menu-header">
                 <span style="font-weight:800;font-size:1.1rem;letter-spacing:-.02em">APE<span
-                        style="color:var(--accent,#6366f1)">X</span></span>
+                        style="color:var(--orange)">X</span></span>
                 <button class="btn-icon-sm" onclick="closeMobileMenu()" aria-label="Fermer le menu"><i
                         data-lucide="x"></i></button>
             </div>
             <nav class="mobile-menu-nav" aria-label="Navigation principale">
-                <a href="#offres" class="mobile-nav-link" onclick="closeMobileMenu()"><i data-lucide="briefcase"></i>
-                    Offres</a>
-                <a href="swipe-n-job.html" class="mobile-nav-link"><i data-lucide="layout"></i> Swipe n' Job</a>
-                <a href="entreprises.html" class="mobile-nav-link"><i data-lucide="building-2"></i> Entreprises</a>
-                <a href="#villes-premium" class="mobile-nav-link" onclick="closeMobileMenu()"><i data-lucide="map"></i>
-                    Villes</a>
+                <a href="#offres" class="mobile-nav-link" onclick="closeMobileMenu()">
+                    <i data-lucide="briefcase"></i> Offres
+                </a>
+                <a href="swipe-n-job.html" class="mobile-nav-link">
+                    <i data-lucide="zap"></i> Swipe n&apos; Job
+                </a>
+                <a href="entreprises.html" class="mobile-nav-link">
+                    <i data-lucide="building-2"></i> Entreprises
+                </a>
+                <a href="#villes-premium" class="mobile-nav-link" onclick="closeMobileMenu()">
+                    <i data-lucide="map-pin"></i> Villes
+                </a>
             </nav>
+            <div class="mobile-menu-footer">
+                <a href="javascript:void(0)" onclick="closeMobileMenu(); openLoginModal()" class="mobile-nav-link">
+                    <i data-lucide="log-in"></i> Se connecter
+                </a>
+                <a href="javascript:void(0)" onclick="closeMobileMenu(); toggleTheme()" class="mobile-nav-link">
+                    <i data-lucide="sun"></i> Thème
+                </a>
+            </div>
         </div>
     </div>
 
@@ -3251,18 +3288,6 @@
                         </div>
                         <button type="submit" class="search-go">Rechercher</button>
                     </form>
-                    <div id="search-dropdown-results" class="search-results-dropdown">
-                        <div
-                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
-                            <h4 style="font-size:14px; font-weight:700">Résultats de recherche</h4>
-                            <button onclick="closeSearchDropdown()" class="btn-icon-sm"><i data-lucide="x"></i></button>
-                        </div>
-                        <div id="dropdown-jobs-list" class="jobs-list mini">
-                            <!-- Results will be injected here -->
-                        </div>
-                        <button onclick="scrollToFullResults()" class="btn-solid"
-                            style="width:100%; margin-top:16px">Voir tous les résultats</button>
-                    </div>
                 </div>
 
 
@@ -3292,13 +3317,13 @@
         </section>
 
         <!-- RESERVED SPACE FOR SEARCH RESULTS -->
-        <section id="offres" class="sec" style="display:none; padding-top:20px; background:var(--bg);">
+        <section id="offres" class="sec" style="padding-top:20px; background:var(--bg);">
             <div class="sec-inner">
                 <div id="search-results">
                     <div
                         style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--border); padding-bottom:16px;">
                         <div>
-                            <h2 class="sec-title" style="margin-bottom:4px; font-size:1.8rem">Opportunités</h2>
+                            <h2 class="sec-title" style="margin-bottom:4px; font-size:1.8rem">Les dernières offres</h2>
                             <p id="results-subtitle" style="font-size:14px; color:var(--muted)">Recherche en cours…</p>
                         </div>
                     </div>
@@ -3318,19 +3343,6 @@
         </section>
 
         <!-- ================================
-     COMPANIES STRIP
-================================ -->
-        <div class="companies-strip" id="entreprises" aria-label="Entreprises recrutant actuellement">
-            <div class="companies-strip-inner">
-                <span class="strip-label">Ils recrutent</span>
-                <div style="display:flex;align-items:center;gap:1rem;color:var(--muted);font-size:0.8rem">
-                    <i data-lucide="loader-2" class="spin" style="width:14px;height:14px"></i>
-                    Chargement des entreprises...
-                </div>
-            </div>
-        </div>
-
-        <!-- ================================
      FEATURES
 ================================ -->
         <section class="sec" aria-labelledby="feat-title">
@@ -3339,7 +3351,7 @@
                     <div class="sec-eye">Pourquoi APEX ?</div>
                     <h2 class="sec-title" id="feat-title">Votre carrière mérite mieux qu'un simple moteur de recherche
                     </h2>
-                    <p class="sec-sub">APEX est votre partenaire de bout en bout : de la découverte la signature de
+                    <p class="sec-sub">APEX est votre partenaire de bout en bout : de la découverte à la signature de
                         contrat.</p>
                 </div>
                 <div class="features-grid">
@@ -3351,15 +3363,15 @@
                             votre lettre en un clic depuis notre plateforme.</div>
                     </div>
                     <div class="feat-card">
-                        <div class="feat-icon blue"><i data-lucide="clipboard-list"></i></div>
+                        <div class="feat-icon orange"><i data-lucide="clipboard-list"></i></div>
                         <div class="feat-title">Suivez chaque étape en temps réel</div>
                         <div class="feat-desc">Votre tableau de bord vous donne une vue claire de toutes vos
                             candidatures : envoyée,
-                            reélancée, entretien pélanifié, réponse reçue.</div>
+                            relancée, entretien planifié, réponse reçue.</div>
                     </div>
                     <div class="feat-card">
-                        <div class="feat-icon green"><i data-lucide="sparkles"></i></div>
-                        <div class="feat-title">APEX vous aide progresser</div>
+                        <div class="feat-icon orange"><i data-lucide="sparkles"></i></div>
+                        <div class="feat-title">APEX vous aide à progresser</div>
                         <div class="feat-desc">Préparez vos entretiens, améliorez votre CV, découvrez les certifications
                             utiles dans
                             votre domaine — le tout simplement et sans jargon.</div>
@@ -3408,7 +3420,7 @@
                     </div>
                     <a href="entreprises.html" class="btn-ghost">Tous les secteurs <i data-lucide="arrow-right"></i></a>
                 </div>
-                <div class="sectors-bento" role="list" aria-label="Secteurs d'activitéé principaux">
+                <div class="sectors-bento" role="list" aria-label="Secteurs d'activité principaux">
                     <a href="#offres" class="sector-chip span-2r" onclick="return searchChip('informatique')"
                         role="listitem">
                         <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80"
@@ -3450,7 +3462,7 @@
                             <div class="sector-chip-count" data-sector="finance">Voir les offres</div>
                         </div>
                     </a>
-                    <a href="#offres" class="sector-chip span-2c" onclick="return searchChip('bà¢timent')"
+                    <a href="#offres" class="sector-chip span-2c" onclick="return searchChip('bâtiment')"
                         role="listitem">
                         <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80"
                             alt="BTP" loading="lazy">
@@ -3458,7 +3470,7 @@
                             <div class="sector-chip-name"><i data-lucide="building-2"
                                     style="width:14px;height:14px;vertical-align:middle;margin-right:4px"></i> BTP /
                                 Construction</div>
-                            <div class="sector-chip-count" data-sector="bà¢timent">Voir les offres</div>
+                            <div class="sector-chip-count" data-sector="bâtiment">Voir les offres</div>
                         </div>
                     </a>
                     <a href="#offres" class="sector-chip" onclick="return searchChip('logistique')" role="listitem">
@@ -3506,7 +3518,7 @@
                             tout <i data-lucide="arrow-right"></i></button>
                     </div>
                 </div>
-                <div class="jobs-list" id="jobs-grid">
+                <div class="jobs-list" id="recommended-jobs-grid">
                     <div style="text-align:center;padding:40px;color:var(--muted)">
                         <i data-lucide="loader-2" class="spin" style="width:32px;height:32px"></i>
                         <p style="margin-top:12px">Chargement des offres…</p>
@@ -3569,22 +3581,20 @@
                             liens directs.</div>
                         <div class="tool-cta">Trouver des certifs <i data-lucide="arrow-right"></i></div>
                     </a>
-                    <a href="https://openclassrooms.com/fr/paths" target="_bélank" rel="noopener" class="tool-card">
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Propose-moi des projets concrets pour progresser dans mon domaine');" class="tool-card">
                         <div class="tool-icon"><i data-lucide="lightbulb"></i></div>
                         <div class="tool-title">Projets pour progresser</div>
-                        <div class="tool-desc">Des idées de projets et parcours gratuits sur OpenClassrooms pour booster
-                            votre
-                            profil.</div>
+                        <div class="tool-desc">Demandez à APEX des idées de projets pratiques et adaptés à votre secteur pour enrichir votre portfolio.</div>
                         <div class="tool-cta">Explorer les projets <i data-lucide="arrow-right"></i></div>
                     </a>
                     <a href="#" class="tool-card"
-                        onclick="openDrawer();sendQuickMessage('Aide-moi rédiger un e-mail de reélance après candidature');return false;">
+                        onclick="openDrawer();sendQuickMessage('Aide-moi à rédiger un e-mail de relance après candidature');return false;">
                         <div class="tool-icon"><i data-lucide="repeat-2"></i></div>
-                        <div class="tool-title">Reélances & suivi</div>
-                        <div class="tool-desc">Demandez APEX de rédiger un e-mail de reélance professionnel après
+                        <div class="tool-title">Relances & suivi</div>
+                        <div class="tool-desc">Demandez à APEX de rédiger un e-mail de relance professionnel après
                             candidature ou
                             entretien.</div>
-                        <div class="tool-cta">Générer une reélance <i data-lucide="arrow-right"></i></div>
+                        <div class="tool-cta">Générer une relance <i data-lucide="arrow-right"></i></div>
                     </a>
                     <a href="#" class="tool-card" onclick="openSalaryModal();return false;">
                         <div class="tool-icon"><i data-lucide="bar-chart-2"></i></div>
@@ -3606,17 +3616,15 @@
                 <div class="sec-hd sec-hd-row">
                     <div>
                         <div class="sec-eye">Savoir, c'est avancer</div>
-                        <h2 class="sec-title" id="articles-title">Le monde du travail sans élangue de bois</h2>
+                        <h2 class="sec-title" id="articles-title">Le monde du travail sans langue de bois</h2>
                     </div>
-                    <a href="https://www.apec.fr/actualites-marche-emploi.html" target="_bélank" rel="noopener"
-                        class="btn-ghost">Toutes les actualités <i data-lucide="arrow-right"></i></a>
                 </div>
                 <div class="articles-grid">
-                    <a href="https://www.welcometothejungle.com/fr/articles/ia-cv-mythe-ou-realite" target="_bélank"
+                    <a href="https://www.welcometothejungle.com/fr/articles/intelligence-artificielle-travail" target="_blank"
                         rel="noopener" class="article-card">
                         <img class="article-img"
-                            src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=600&q=75"
-                            alt="IA et CV" onerror="this.style.display='none'">
+                            src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=75"
+                            alt="IA et Emploi" onerror="this.style.display='none'">
                         <div class="article-body">
                             <div class="article-cat">IA & Emploi</div>
                             <div class="article-title">L'IA lit-elle vraiment votre CV avant les RH ? Mythes et réalités
@@ -3626,23 +3634,23 @@
                                 the Jungle</div>
                         </div>
                     </a>
-                    <a href="https://www.welcometothejungle.com/fr/articles/reprendre-sa-vie-pro-en-main"
-                        target="_bélank" rel="noopener" class="article-card">
+                    <a href="https://www.welcometothejungle.com/fr/articles/reconversion-professionnelle-etape-par-etape"
+                        target="_blank" rel="noopener" class="article-card">
                         <img class="article-img"
-                            src="https://images.unsplash.com/photo-1758874383918-d85ea841b4e3?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fFJlcHJlbmRyZSUyMHNhJTIwdmllJTIwcHJvJTIwZW4lMjBtYWlufGVufDB8fDB8fHww"
+                            src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&q=75"
                             alt="Reprendre sa carrière" onerror="this.style.display='none'">
                         <div class="article-body">
                             <div class="article-cat">Carrière</div>
-                            <div class="article-title">Reprendre sa vie pro en main en 2026 : le guide complet</div>
+                            <div class="article-title">Reprendre sa vie pro en main : le guide complet</div>
                             <div class="article-date"><i data-lucide="external-link"
                                     style="width:12px;height:12px;display:inline;vertical-align:middle"></i> Welcome to
                                 the Jungle</div>
                         </div>
                     </a>
-                    <a href="https://www.welcometothejungle.com/fr/articles/le-futur-du-recrutement-sera-t-shaped-ou-ne-sera-pas"
-                        target="_bélank" rel="noopener" class="article-card">
+                    <a href="https://www.welcometothejungle.com/fr/articles/t-shaped-competences"
+                        target="_blank" rel="noopener" class="article-card">
                         <img class="article-img"
-                            src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&q=75"
+                            src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=75"
                             alt="Futur du recrutement" onerror="this.style.display='none'">
                         <div class="article-body">
                             <div class="article-cat">Tendances</div>
@@ -3657,22 +3665,15 @@
                 <!-- Topics populaires -->
                 <div style="margin-top:28px;display:flex;flex-wrap:wrap;gap:8px;">
                     <span style="font-size:13px;font-weight:600;color:var(--muted);margin-right:8px;">Sujets :</span>
-                    <a href="https://www.service-public.fr/particuliers/vosdroits/N19806" target="_bélank"
-                        rel="noopener" class="cchip">Droit du travail</a><a
-                        href="https://www.service-public.fr/particuliers/vosdroits/N19871" target="_bélank"
-                        rel="noopener" class="cchip">Contrat de travail</a><a
-                        href="https://www.welcometothejungle.com/fr/articles/alternance-apprentissage-contrat-pro-guide"
-                        target="_bélank" rel="noopener" class="cchip">Alternance</a><a href="#"
-                        onclick="openSalaryCalcModal();return false;" class="cchip">Salaire</a><a
-                        href="https://www.welcometothejungle.com/fr/articles/reussir-entretien-embauche-conseils"
-                        target="_bélank" rel="noopener" class="cchip">Entretien</a><a
-                        href="https://www.welcometothejungle.com/fr/articles/ia-generative-intelligence-artificielle-impact-travail"
-                        target="_bélank" rel="noopener" class="cchip">IA</a><a
-                        href="https://www.welcometothejungle.com/fr/articles/tout-savoir-stage-guide-complet"
-                        target="_bélank" rel="noopener" class="cchip">Stage</a><a href="https://www.fun-mooc.fr/"
-                        target="_bélank" rel="noopener" class="cchip">Compétences</a><a
-                        href="https://www.welcometothejungle.com/fr/articles/teletravail-hybride-organisation-guide"
-                        target="_bélank" rel="noopener" class="cchip">Télétravail</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Parle-moi du droit du travail')" class="cchip">Droit du travail</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Quels sont les différents types de contrat de travail ?')" class="cchip">Contrat de travail</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Comment trouver une alternance ?')" class="cchip">Alternance</a>
+                    <a href="javascript:void(0)" onclick="openSalaryCalcModal()" class="cchip">Salaire</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Donne-moi des conseils pour préparer un entretien d\'embauche')" class="cchip">Entretien</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Comment l\'intelligence artificielle impacte le marché de l\'emploi ?')" class="cchip">IA</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Quelles sont les règles pour un stage ?')" class="cchip">Stage</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Comment valoriser ses compétences sur son CV ?')" class="cchip">Compétences</a>
+                    <a href="javascript:void(0)" onclick="sendQuickMessage('Quelle est la réglementation du télétravail ?')" class="cchip">Télétravail</a>
                 </div>
             </div>
         </section>
@@ -3738,15 +3739,23 @@
                         Comptabilité</a>
                 </div>
                 <div id="tab-interim" class="contract-chips" style="display:none">
+                    <a href="#" class="cchip" onclick="return searchChip('Conducteur poids lourd','','MIS')">Intérim Conducteur PL</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Opérateur de production','','MIS')">Intérim Opérateur</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Agent logistique','','MIS')">Intérim Logistique</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Manutentionnaire','','MIS')">Intérim Manutention</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Cariste','','MIS')">Intérim Cariste</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Soudeur','','MIS')">Intérim Soudeur</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Technicien maintenance','','MIS')">Intérim Maintenance</a>
+                    <a href="#" class="cchip" onclick="return searchChip('Agent de sécurité','','MIS')">Intérim Sécurité</a>
                 </div>
                 <div
                     style="text-align:center;margin-top:32px;padding:20px;border-radius:12px;background:var(--bg-card);border:1px dashed var(--border)">
                     <p style="font-size:15px;color:var(--muted);margin:0 0 12px">Vous pouvez aussi soutenir APEX
                         directement :</p>
                     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-                        <a href="https://fr.tipeee.com/" target="_bélank" rel="noopener" class="btn-ghost"
+                        <a href="https://fr.tipeee.com/" target="_blank" rel="noopener" class="btn-ghost"
                             style="font-weight:600"><i data-lucide="star"></i> Tipeee</a>
-                        <a href="https://www.paypal.com/" target="_bélank" rel="noopener" class="btn-ghost"
+                        <a href="https://www.paypal.com/" target="_blank" rel="noopener" class="btn-ghost"
                             style="font-weight:600"><i data-lucide="credit-card"></i> PayPal</a>
                     </div>
                 </div>
@@ -3763,7 +3772,7 @@
                     <h2 class="sec-title">Imaginez votre prochain salaire</h2>
                     <p style="color:var(--muted);max-width:600px;margin-top:8px;">Explorez les carrières, les salaires
                         et les
-                        emplois bien rémunérés par secteur d'activitéé et par lieu.</p>
+                        emplois bien rémunérés par secteur d'activité et par lieu.</p>
                 </div>
 
                 <div class="salary-bench-grid">
@@ -3863,7 +3872,7 @@
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Paris</div>
-                            <div class="city-gallery-view">→</div>
+                            <div class="city-gallery-view">Voir les offres</div>
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Lyon'); return false;">
@@ -3873,7 +3882,7 @@
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Lyon</div>
-                            <div class="city-gallery-view">→</div>
+                            <div class="city-gallery-view">Voir les offres</div>
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Marseille'); return false;">
@@ -3883,7 +3892,7 @@
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Marseille</div>
-                            <div class="city-gallery-view">→</div>
+                            <div class="city-gallery-view">Voir les offres</div>
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="searchChip('','Bordeaux'); return false;">
@@ -3893,13 +3902,18 @@
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
                             <div class="city-gallery-name">Bordeaux</div>
-                            <div class="city-gallery-name-sub" style="font-size:10px; opacity:0.7">Voir les offres</div>
+                            <div class="city-gallery-view">Voir les offres</div>
                         </div>
                     </button>
                     <button class="city-card-gallery" onclick="openCityModal(); return false;">
-                        <div class="city-gallery-img"
-                            style="background: var(--orange); display:flex; align-items:center; justify-content:center">
-                            <i data-lucide="plus" style="width:40px; height:40px; color:white"></i>
+                        <div class="city-gallery-img" style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: var(--bg); position: relative; padding: 0;">
+                            <div style="background-image:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=150&q=60'); background-size: cover; background-position: center;"></div>
+                            <div style="background-image:url('https://images.unsplash.com/photo-1549146474-72412a2fe040?w=150&q=60'); background-size: cover; background-position: center;"></div>
+                            <div style="background-image:url('https://images.unsplash.com/photo-1490623970972-ae8bb3da4fef?w=150&q=60'); background-size: cover; background-position: center;"></div>
+                            <div style="background-image:url('https://images.unsplash.com/photo-1509840144521-87c2b300faef?w=150&q=60'); background-size: cover; background-position: center;"></div>
+                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(249, 115, 22, 0.45); backdrop-filter: blur(2px);">
+                                <i data-lucide="plus" style="width:36px; height:36px; color:white"></i>
+                            </div>
                         </div>
                         <div class="city-gallery-overlay"></div>
                         <div class="city-gallery-content">
@@ -3942,40 +3956,6 @@
                 </div>
             </div>
         </section>
-        <!-- ================================
-     FAQ
-================================ -->
-        <section class="sec sec-alt" id="faq">
-            <div class="sec-inner">
-                <div class="sec-hd" style="text-align:center">
-                    <div class="sec-eye">FAQ</div>
-                    <h2 class="sec-title">Questions fréquentes</h2>
-                </div>
-                <div class="faq-grid" style="max-width:800px;margin:0 auto; display: grid; gap: 1.5rem;">
-                    <div class="faq-item"
-                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">APEX est-il gratuit
-                            ?</h3>
-                        <p style="color: var(--muted);">Oui, toutes les fonctionnalités de recherche et d'IA sont
-                            gratuites pour les candidats.</p>
-                    </div>
-                    <div class="faq-item"
-                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">D'où proviennent les
-                            offres ?</h3>
-                        <p style="color: var(--muted);">Les offres sont synchronisées en temps réel avec France Travail
-                            (ex-Pôle Emploi) et d'autres sources officielles.</p>
-                    </div>
-                    <div class="faq-item"
-                        style="background: var(--surface); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
-                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--orange);">Comment fonctionne
-                            l'IA ?</h3>
-                        <p style="color: var(--muted);">Notre IA analyse votre CV et les offres pour vous donner des
-                            conseils personnalisés et mesurer votre compatibilité.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
 
     </main>
 
@@ -3988,7 +3968,7 @@
                 <div class="footer-brand">
                     <span class="logo-apex">APE<span>X</span></span>
                     <p>Le job board intelligent qui vous aide trouver, postuler et progresser dans votre carrière.</p>
-                    <a href="https://mail.google.com/mail/?view=cm&to=aversreply@gmail.com" target="_bélank"
+                    <a href="https://mail.google.com/mail/?view=cm&to=aversreply@gmail.com" target="_blank"
                         rel="noopener">aversreply@gmail.com</a>
                 </div>
                 <div class="footer-col">
@@ -4011,9 +3991,6 @@
                     <a href="legal.html#cnil">Protection des données (CNIL)</a>
                     <a href="legal.html#rgpd">Politique de confidentialité</a>
                     <a href="legal.html#cgu">CGU</a>
-                    <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/" target="_bélank"
-                        rel="noopener">Licence
-                        Etalab-2.0</a>
                 </div>
                 <div class="footer-col">
                     <h5>Contact</h5>
@@ -4028,10 +4005,7 @@
             </div>
             <div class="footer-bottom">
                 <div>
-                    Les offres d'emploi proviennent de l'API Offres d'emploi France Travail (Pôle emploi) v2, sous
-                    licence ouverte
-                    Etalab-2.0. APEX / AVERS n'est pas affilié France Travail. Les analyses IA sont des aides la
-                    décision —
+                    Les offres d'emploi proviennent de l'API Offres d'emploi France Travail (Pôle emploi) v2. APEX / AVERS n'est pas affilié France Travail. Les analyses IA sont des aides la décision —
                     relisez avant d'envoyer. Données conformes au RGPD (UE 2016/679) et l'AI Act. Les logos des
                     entreprises sont
                     la propriété de leurs titulaires respectifs. APEX n'est pas partenaire officiel de ces entreprises.
@@ -4199,7 +4173,7 @@
                             style="width:18px;height:18px;vertical-align:middle;margin-right:6px"></i> Panorama des
                         salaires</div>
                     <div class="modal-sub">Fourchettes indicatives brut/mois — sources APEC, INSEE, France Travail
-                        2025—œ2026
+                        2025-2026
                     </div>
                 </div>
                 <button class="modal-close" onclick="closeSalaryModal()" aria-label="Fermer"><i
@@ -4242,7 +4216,7 @@
                     <input type="password" id="login-pwd" class="form-input" placeholder="Votre mot de passe" required>
                 </div>
                 <div style="text-align:right;margin-bottom:16px">
-                    <a href="forgot.html" style="font-size:13px;color:var(--blue)">Mot de passe oublié ?</a>
+                    <a href="forgot.html" style="font-size:13px;color:var(--orange)">Mot de passe oublié ?</a>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-ghost" type="button" onclick="closeLoginModal()">Annuler</button>
@@ -4251,7 +4225,7 @@
             </form>
             <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--muted)">
                 Pas encore de compte ? <a href="javascript:void(0)" onclick="closeLoginModal(); openRegisterModal()"
-                    style="color:var(--blue);font-weight:600">Créer un compte</a>
+                    style="color:var(--orange);font-weight:600">Créer un compte</a>
             </div>
         </div>
     </div>
@@ -4289,7 +4263,7 @@
             </form>
             <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--muted)">
                 Déjà un compte ? <a href="javascript:void(0)" onclick="closeRegisterModal(); openLoginModal()"
-                    style="color:var(--blue);font-weight:600">Se connecter</a>
+                    style="color:var(--orange);font-weight:600">Se connecter</a>
             </div>
         </div>
     </div>
@@ -4356,12 +4330,60 @@
             }
         })(0);
     </script>
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" aria-label="Navigation mobile principale">
+        <a href="index.html" class="active">
+            <i data-lucide="home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="swipe-n-job.html">
+            <i data-lucide="zap"></i>
+            <span>Swipe</span>
+        </a>
+        <a href="javascript:void(0)" onclick="openDrawer()" class="nav-bot-btn" aria-label="Assistant IA APEX">
+            <div class="bot-icon-wrapper">
+                <i data-lucide="message-circle"></i>
+            </div>
+        </a>
+        <a href="entreprises.html">
+            <i data-lucide="building-2"></i>
+            <span>Entreprises</span>
+        </a>
+        <a href="javascript:void(0)" onclick="openLoginModal()" id="mobile-nav-profile">
+            <i data-lucide="user"></i>
+            <span>Compte</span>
+        </a>
+    </nav>
+
+    <script src="js/core.js?v=8"></script>
+    <script src="js/auth.js?v=8"></script>
+    <script src="js/search.js?v=8"></script>
+    <script src="js/ui.js?v=8"></script>
+    <script src="js/features.js?v=8"></script>
+    <script>
+    // ── Utilitaires globaux inline ──
+    window.switchContractTab = function(btn, tabId) {
+      // Désactiver tous les onglets
+      document.querySelectorAll('.ct-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      // Masquer tous les panneaux
+      ['tab-stage', 'tab-alternance', 'tab-interim'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      // Activer l'onglet cliqué
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      const panel = document.getElementById('tab-' + tabId);
+      if (panel) {
+        panel.style.display = 'flex';
+        panel.style.flexWrap = 'wrap';
+        panel.style.gap = '10px';
+      }
+    };
     </script>
-    <script src="js/core.js?v=7"></script>
-    <script src="js/auth.js?v=7"></script>
-    <script src="js/search.js?v=7"></script>
-    <script src="js/ui.js?v=7"></script>
-    <script src="js/features.js?v=7"></script>
 </body>
 
 </html>

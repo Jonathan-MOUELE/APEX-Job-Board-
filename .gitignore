@@ -8,6 +8,7 @@ appsettings.*.json
 # Pourquoi: Ne pas versionner les fichiers compilés générés par .NET
 bin/
 obj/
+run/
 
 # Pourquoi: Ne pas versionner les dossiers de configuration spécifiques à Visual Studio
 .vs/
@@ -18,3 +19,21 @@ obj/
 # Pourquoi: Ne pas versionner les préférences utilisateur spécifiques à l'IDE (Visual Studio/VS Code)
 *.user
 *.suo
+
+# Pourquoi : Ne pas versionner les logs de build, d'erreurs et de migration temporaires
+*build_errors*.txt
+*build_logs*.txt
+*build_output*.txt
+restore_errors.txt
+full_build_log.txt
+migration_output.txt
+ef_migration_output.txt
+
+# Pourquoi : Ne pas versionner les fichiers de cache Python ou les environnements virtuels
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Pourquoi : Ne pas versionner les fichiers de contexte volumineux d'IA
+APEX_AI_STUDIO_CONTEXT.md

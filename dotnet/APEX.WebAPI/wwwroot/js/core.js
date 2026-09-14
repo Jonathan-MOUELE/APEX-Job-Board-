@@ -194,12 +194,48 @@ window.forceLucide = function(node){
   try{node?lucide.createIcons({nodes:[node]}):lucide.createIcons();}catch(_){}
 };
 
-window.getCompanyColor = function(name){
+// ── COMPANY LOGOS ─────────────────────────────────────────
+
+/**
+ * Recherche de logo avec fallback graphique HD
+ */
+window.renderCompanyLogo = function(name) {
+  if (!name || name.toLowerCase().includes('non communiquée')) {
+    return `<div class="logo-fallback" style="background:var(--surface-glass, rgba(255,255,255,0.08)); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid rgba(255,255,255,0.1);"><i data-lucide="building" style="color:var(--muted, #a1a1aa);width:20px;height:20px"></i></div>`;
+  }
+
+  const domain = name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
+  const logoUrl = `https://logo.clearbit.com/${domain}`;
+  const color = window.generateColorFromName(name);
+
+  return `
+    <div class="logo-container" style="background-color: ${color}; width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid rgba(255,255,255,0.1); overflow:hidden;">
+      <img src="${logoUrl}" 
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+           class="company-logo-img" style="width:100%; height:100%; object-fit:contain; background:#fff">
+      <div class="logo-initials" style="display:none; color:#fff; font-weight:800; font-size:14px;">
+        ${name.substring(0, 2).toUpperCase()}
+      </div>
+    </div>
+  `;
+};
+
+window.generateColorFromName = function(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return `hsl(${Math.abs(hash) % 360}, 65%, 45%)`;
+};
+
+window.getCompanyColor = function(name) {
+
   if (!name) return '#f97316';
   const p=['#e11d48','#7c3aed','#0284c7','#059669','#d97706','#dc2626','#2563eb','#16a34a','#9333ea','#0891b2','#be185d','#0f766e'];
   let h=0; for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))&0xffffffff;
   return p[Math.abs(h)%p.length];
 };
+
 window.getCompanyInitials = n=>(n||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
 window.getCompanyLogoUrl = name=>{
   if (!name) return null;

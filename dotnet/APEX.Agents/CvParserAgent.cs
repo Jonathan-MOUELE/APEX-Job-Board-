@@ -117,7 +117,7 @@ public class CvParserAgent(
 
     private async Task<LlmCvExtraction> CallLlmToParseCvAsync(string cvText, CancellationToken ct)
     {
-        var modelId = _opts.ProModel ?? "gemini-3.1-pro-preview";
+        var modelId = _opts.ProModel ?? "gemini-2.0-flash";
         var apiKey = _opts.ApiKey ?? throw new InvalidOperationException("API Key manquante.");
 
         var systemPrompt = @"Tu es un expert en recrutement IT. 

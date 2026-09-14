@@ -6,19 +6,18 @@
 
 class SwipeStandalone {
     constructor() {
-        this.container = document.getElementById('swipe-container');
+        // Support both old id and new id
+        this.container = document.getElementById('reel-viewport') || document.getElementById('swipe-container');
         this.jobs = [];
         this.page = 1;
         this.loading = false;
         this.hasMore = true;
         this.query = new URLSearchParams(window.location.search).get('q') || 'développeur';
-        
+        this.currentFilter = '';
+
         this.init();
         this.setupKeyboard();
         this.setupWheel();
-        this.setupAutoHide();
-        
-        this.currentFilter = '';
     }
 
 
@@ -46,6 +45,7 @@ class SwipeStandalone {
             this.jobs = [];
             this.page = 1;
             this.hasMore = true;
+            this.initDots(0);
         }
 
         try {
@@ -54,13 +54,13 @@ class SwipeStandalone {
                 range: `${(this.page - 1) * 15}-${this.page * 15 - 1}`
             });
             if (this.currentFilter) params.set('contract', this.currentFilter);
-            
+
             const res = await apiFetch(`/api/jobs/search?${params}`);
             if (!res.ok) throw new Error('API Error');
-            
+
             const data = await res.json();
             const raw = Array.isArray(data) ? data : (data.resultats ?? data.results ?? []);
-            
+
             if (raw.length === 0) {
                 this.hasMore = false;
                 if (this.jobs.length === 0) this.renderEmpty();
@@ -69,13 +69,14 @@ class SwipeStandalone {
 
             const processedJobs = await DataWorker.process(raw);
             this.jobs.push(...processedJobs);
-            
+
             processedJobs.forEach((job, idx) => {
                 const card = this.buildCard(job, this.jobs.length - processedJobs.length + idx);
                 this.container.appendChild(card);
             });
 
             lucide.createIcons();
+            this.initDots(Math.min(this.jobs.length, 8));
             this.page++;
         } catch (err) {
             console.error('Swipe Load Error:', err);
@@ -85,16 +86,17 @@ class SwipeStandalone {
         }
     }
 
+    initDots(count) {
+        const el = document.getElementById('progress-dots');
+        if (!el) return;
+        el.innerHTML = Array.from({ length: count }, (_, i) =>
+            `<div class="progress-dot${i === 0 ? ' active' : ''}"></div>`
+        ).join('');
+    }
+
 
     setupInfiniteScroll() {
-        const sentinel = document.getElementById('infinite-sentinel');
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !this.loading) {
-                this.loadMore();
-            }
-        }, { rootMargin: '400px' });
-        
-        if (sentinel) observer.observe(sentinel);
+        window.createSentinel?.(this.container, () => this.loadMore(), '500px');
     }
 
     setupKeyboard() {
@@ -113,39 +115,35 @@ class SwipeStandalone {
         let lastTime = 0;
         this.container.addEventListener('wheel', (e) => {
             const now = Date.now();
-            if (now - lastTime < 500) return; // Throttle 500ms
-            
+            if (now - lastTime < 500) return;
             if (Math.abs(e.deltaY) > 10) {
                 e.preventDefault();
-                if (e.deltaY > 0) {
-                    this.container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
-                } else if (e.deltaY < 0) {
-                    this.container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
-                }
+                this.container.scrollBy({ top: e.deltaY > 0 ? innerHeight : -innerHeight, behavior: 'smooth' });
                 lastTime = now;
             }
         }, { passive: false });
     }
 
-    setupAutoHide() {
-        const header = document.getElementById('swipe-header');
-        if (!header) return;
-        
-        let timeout;
-        this.container.addEventListener('scroll', () => {
-            header.classList.add('hidden');
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                header.classList.remove('hidden');
-            }, 1000); // Reappear after 1s of no scroll
-        });
-    }
+    // Removed legacy setupAutoHide (handled inline in HTML)
 
     async search() {
         const inp = document.getElementById('swipe-search-input');
         if (!inp) return;
-        this.query = inp.value || 'développeur';
+        this.query = inp.value.trim() || 'développeur';
+        window.SwipeAutocomplete?.hide();
         await this.loadMore(true);
+    }
+
+    onSearchInput(value) {
+        window.SwipeAutocomplete?.show(value);
+    }
+
+    selectSuggestion(text) {
+        const inp = document.getElementById('swipe-search-input');
+        if (inp) inp.value = text;
+        window.SwipeAutocomplete?.hide();
+        this.query = text;
+        this.loadMore(true);
     }
 
     async setFilter(btn, filter) {
@@ -159,93 +157,102 @@ class SwipeStandalone {
 
     buildCard(job, globalIdx) {
         const section = document.createElement('section');
-        section.className = 'swipe-card-section';
-        
+        section.className = 'reel-unit' + (globalIdx === 0 ? ' active' : '');
+
         const imgs = [
-            'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
             'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
             'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
             'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=1200&q=80'
+            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80'
         ];
         const bgImg = imgs[globalIdx % imgs.length];
-        
-        const color = getCompanyColor(job.entreprise?.nom);
-        const init = getCompanyInitials(job.entreprise?.nom);
-        const logo = getCompanyLogoUrl(job.entreprise?.nom);
+
+        const companyName = job.entreprise?.nom || '';
+        const color       = getCompanyColor(companyName);
+        const init        = getCompanyInitials(companyName);
+        const logo        = getCompanyLogoUrl(companyName);
+        const salary      = job.salaire?.libelle ? formatSalary(job.salaire.libelle) : '';
+        const dateStr     = job.dateCreation ? relativeDate(job.dateCreation) : '';
+        const lieuLabel   = job.lieuTravail?.libelle || '';
+        const linkedInQ   = encodeURIComponent((companyName + ' ' + (job.intitule || '')).trim());
+        const safeTitle   = esc(job.intitule || '').replace(/'/g, '&#39;');
 
         section.innerHTML = `
-            <div class="card-bg">
-                <img src="${bgImg}" alt="">
-            </div>
-            <div class="card-overlay"></div>
-            
-            <div class="bottom-info">
-                <div class="company-name">${esc(job.entreprise?.nom || 'Entreprise')}</div>
-                <h2 class="job-title">${esc(job.intitule || 'Sans titre')}</h2>
-                
-                <div class="tag-row">
-                    ${job.typeContrat ? `<span class="swipe-tag">${esc(job.typeContrat)}</span>` : ''}
-                    ${job.lieuTravail?.libelle ? `<span class="swipe-tag"><i data-lucide="map-pin" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>${esc(job.lieuTravail.libelle)}</span>` : ''}
-                </div>
+            <div class="reel-bg"><img src="${bgImg}" alt="" loading="lazy"></div>
+            <div class="reel-overlay"></div>
 
-                <div class="job-desc">
-                    ${esc(cleanDesc(job.description || '', 250))}
-                </div>
-            </div>
-
-            <div class="side-actions">
-                <button class="action-item" onclick="window.likeStandalone(${globalIdx}, this)">
-                    <div class="action-circle"><i data-lucide="heart"></i></div>
-                    <span class="action-label">Sauver</span>
-                </button>
-                <button class="action-item" onclick="window.applyStandalone('${esc(job.intitule).replace(/'/g, "\\'")}', '${job.id}')">
-                    <div class="action-circle btn-apply-circle"><i data-lucide="send"></i></div>
-                    <span class="action-label">Postuler</span>
-                </button>
-                <div class="action-item">
-                    <div class="action-circle" style="background:#fff">
-                         ${logo ? `<img src="${logo}" alt="" style="width:32px;height:32px;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-                         <span style="color:${color};font-weight:800;font-size:14px;display:${logo ? 'none' : 'flex'}">${init}</span>
+            <div class="reel-body">
+                <div class="job-meta">
+                    <div class="job-company" style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:28px; height:28px; flex-shrink:0;">
+                            ${window.renderCompanyLogo ? window.renderCompanyLogo(companyName) : `<i data-lucide="building-2" style="width:14px;height:14px"></i>`}
+                        </div>
+                        ${esc(companyName || 'Entreprise')}
                     </div>
+                    <h2 class="job-title">${esc(job.intitule || "Offre d'emploi")}</h2>
+                    <div class="job-tags">
+                        ${job.typeContrat ? `<span class="jtag type">${esc(job.typeContrat)}</span>` : ''}
+                        ${lieuLabel ? `<span class="jtag"><i data-lucide="map-pin" style="width:10px;height:10px;vertical-align:middle;margin-right:3px"></i>${esc(lieuLabel)}</span>` : ''}
+                        ${salary ? `<span class="jtag salary">${esc(salary)}</span>` : ''}
+                    </div>
+                    <p class="job-desc">${esc(cleanDesc(job.description || '', 280))}</p>
+                    ${dateStr ? `<div class="job-date">Publié ${esc(dateStr)}</div>` : ''}
+                </div>
+
+                <div class="sidebar-actions">
+                    <button class="action-btn" onclick="window.likeStandalone(${globalIdx}, this)" aria-label="Sauvegarder">
+                        <div class="action-circle"><i data-lucide="heart" style="width:21px;height:21px"></i></div>
+                        <span class="action-label">Sauver</span>
+                    </button>
+                    <button class="action-btn" onclick="window.applyStandalone('${safeTitle}', '${job.id}')" aria-label="Postuler">
+                        <div class="action-circle apply pulse"><i data-lucide="send" style="width:21px;height:21px"></i></div>
+                        <span class="action-label">Postuler</span>
+                    </button>
+                    <button class="action-btn" onclick="window.safeOpenUrl('https://www.linkedin.com/search/results/all/?keywords=${linkedInQ}')" aria-label="LinkedIn">
+                        <div class="action-circle" style="background:#fff"><img src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LI" style="width:24px;height:24px;border-radius:4px;"></div>
+                        <span class="action-label" style="text-transform:none;font-weight:700">LinkedIn</span>
+                    </button>
                 </div>
             </div>
         `;
-        
+
         return section;
     }
 
     renderEmpty() {
         this.container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon"><i data-lucide="frown"></i></div>
+            <div class="empty-reel">
+                <i data-lucide="search-x" style="width:48px;height:48px"></i>
                 <h2>Aucune offre trouvée</h2>
-                <p>Essayez de changer vos critères de recherche.</p>
-                <a href="index.html" class="btn-solid" style="margin-top:20px; text-decoration:none">Retour à l'accueil</a>
+                <p>Essayez de modifier vos critères de recherche.</p>
+                <a href="index.html">Retour à l'accueil</a>
             </div>
         `;
         lucide.createIcons();
     }
 }
 
-// Global Actions
+
+// ── GLOBAL ACTIONS ──────────────────────────────────────────────────────
+
 window.likeStandalone = async function(idx, btn) {
-    const job = window._swipeApp.jobs[idx];
+    const job = window._swipeApp?.jobs[idx];
     if (!job) return;
-    
+
     const circle = btn?.querySelector('.action-circle');
     if (circle) {
-        circle.classList.toggle('active');
-        if (circle.classList.contains('active')) {
-            circle.style.color = '#ef4444';
-            showToast(`♥ Sauvegardé : ${job.intitule}`, 'success');
-        } else {
-            circle.style.color = '';
-        }
+        const isSaved = circle.classList.toggle('saved');
+        const starIcon = btn.querySelector('i[data-lucide="heart"]');
+        showToast(
+            isSaved ? `⭐ Ajouté au Board : ${job.intitule}` : 'Retiré du Board',
+            isSaved ? 'success' : 'info'
+        );
     }
-    
-    // Save to server if logged in
+
     const token = localStorage.getItem('apex_token');
     if (token) {
         apiFetch('/api/jobs/bookmark', {
@@ -253,6 +260,31 @@ window.likeStandalone = async function(idx, btn) {
             headers: { 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ jobId: job.id })
         }).catch(() => {});
+    }
+};
+
+window.triggerVerdictAI = async function(idx, btn) {
+    const job = window._swipeApp?.jobs[idx];
+    if (!job) return;
+
+    const circle = btn?.querySelector('.action-circle');
+    if (circle) {
+        circle.style.animation = 'spin 0.8s linear infinite';
+        circle.style.borderColor = 'var(--brand, #f97316)';
+    }
+
+    const prompt = `Analyse ce poste pour un candidat : "${job.intitule}" chez ${job.entreprise?.nom || 'une entreprise'} (${job.typeContrat || 'contrat non précisé'}, ${job.lieuTravail?.libelle || ''}). Description : ${(job.description || '').slice(0, 400)}. Donne un verdict court (3 phrases max) sur l'attractivité du poste.`;
+
+    try {
+        const verdict = await (window.askApexBot?.(prompt, 'flash') ?? Promise.resolve(null));
+        if (circle) {
+            circle.style.animation = '';
+            circle.style.background = 'rgba(168,85,247,0.25)';
+        }
+        showToast(verdict || 'Poste analysé — IA indisponible en mode local.', 'info', 6000);
+    } catch {
+        if (circle) circle.style.animation = '';
+        showToast('Analyse IA indisponible.', 'warn');
     }
 };
 

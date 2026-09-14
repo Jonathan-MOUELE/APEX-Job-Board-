@@ -84,7 +84,7 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = new[] { "Cet email est déjà utilisé." } });
 
         var isDev = _env.IsDevelopment();
-        var confirmToken = GenerateSecureToken();
+        var confirmToken = GenerateSecureToken(); // token brut → envoyé dans l'email
         var user = new AppUser
         {
             Email = req.Email.ToLower().Trim(),
@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password, workFactor: 12),
             Role = "user",
             IsEmailConfirmed = isDev, // Auto-confirm en dev
-            EmailConfirmToken = confirmToken,
+            EmailConfirmToken = HashToken(confirmToken), // hash SHA-256 en BDD, jamais le token brut
             EmailConfirmTokenExpiry = DateTime.UtcNow.AddHours(24),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -144,7 +144,7 @@ public class AuthController : ControllerBase
 
         var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == emailAddress.ToLower() &&
-            u.EmailConfirmToken == token &&
+            u.EmailConfirmToken == HashToken(token) && // comparer avec le hash
             !u.IsDeleted);
 
         if (user is null)
@@ -362,8 +362,8 @@ public class AuthController : ControllerBase
 
         if (user is not null)
         {
-            var resetToken = GenerateSecureToken();
-            user.PasswordResetToken = resetToken;
+            var resetToken = GenerateSecureToken(); // token brut → envoyé dans l'email
+            user.PasswordResetToken = HashToken(resetToken); // hash SHA-256 en BDD, jamais le token brut
             user.PasswordResetExpiry = DateTime.UtcNow.AddHours(1);
             user.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
@@ -397,7 +397,7 @@ public class AuthController : ControllerBase
 
         var user = await _db.Users.FirstOrDefaultAsync(u =>
             u.Email == req.Email.ToLower() &&
-            u.PasswordResetToken == req.Token &&
+            u.PasswordResetToken == HashToken(req.Token) && // comparer avec le hash
             !u.IsDeleted);
 
         if (user is null)
@@ -437,8 +437,8 @@ public class AuthController : ControllerBase
 
         if (user is not null)
         {
-            var token = GenerateSecureToken();
-            user.EmailConfirmToken = token;
+            var token = GenerateSecureToken(); // token brut → envoyé dans l'email
+            user.EmailConfirmToken = HashToken(token); // hash SHA-256 en BDD
             user.EmailConfirmTokenExpiry = DateTime.UtcNow.AddHours(24);
             user.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
@@ -487,12 +487,15 @@ public class AuthController : ControllerBase
     private static string GenerateSecureToken()
         => Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
-    /// <summary>SHA-256 hash of a raw refresh token — the DB never stores raw tokens.</summary>
-    private static string HashRefreshToken(string rawToken)
+    /// <summary>SHA-256 hash d'un token brut — la BDD ne stocke jamais les tokens en clair.</summary>
+    private static string HashToken(string rawToken)
     {
         var bytes = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawToken));
         return Convert.ToHexString(bytes);
     }
+
+    /// <summary>SHA-256 hash of a raw refresh token — the DB never stores raw tokens.</summary>
+    private static string HashRefreshToken(string rawToken) => HashToken(rawToken);
 
     // ══════════════════════════════════════════════════════════
     //  GET /api/auth/test-email?to=your@email.com  (dev only)
