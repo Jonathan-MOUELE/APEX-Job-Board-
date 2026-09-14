@@ -1,26 +1,29 @@
-# Pourquoi: Ne pas versionner les fichiers de configuration contenant des secrets
-appsettings.json
-appsettings.Development.json
-appsettings.Production.json
-appsettings.*.json
-# Jamais committer de secrets — utiliser des variables d'environnement en production
+# Configuration avec secrets (ne JAMAIS committer de clés réelles)
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.*.json
+!**/appsettings*.example.json
+.env
+.env.*
+!.env.production.example
 
-# Pourquoi: Ne pas versionner les fichiers compilés générés par .NET
-bin/
-obj/
-run/
+# Fichiers compilés et exécution .NET
+**/bin/
+**/obj/
+**/run/
 
-# Pourquoi: Ne pas versionner les dossiers de configuration spécifiques à Visual Studio
+# Configuration Visual Studio / VS Code
 .vs/
-
-# Pourquoi: Ne pas versionner la base de données SQLite locale pour éviter de partager des données privées
-*.db
-
-# Pourquoi: Ne pas versionner les préférences utilisateur spécifiques à l'IDE (Visual Studio/VS Code)
 *.user
 *.suo
 
-# Pourquoi : Ne pas versionner les logs de build, d'erreurs et de migration temporaires
+# Bases de données locales
+*.db
+*.db-shm
+*.db-wal
+
+# Logs de build, d'erreurs et de migration temporaires
 *build_errors*.txt
 *build_logs*.txt
 *build_output*.txt
@@ -29,11 +32,9 @@ full_build_log.txt
 migration_output.txt
 ef_migration_output.txt
 
-# Pourquoi : Ne pas versionner les fichiers de cache Python ou les environnements virtuels
+# Caches Python et environnements virtuels
 __pycache__/
 *.pyc
-.env
-.env.*
 
-# Pourquoi : Ne pas versionner les fichiers de contexte volumineux d'IA
+# Fichiers de contexte volumineux d'IA
 APEX_AI_STUDIO_CONTEXT.md
