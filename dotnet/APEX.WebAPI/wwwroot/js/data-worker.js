@@ -79,7 +79,28 @@ function processJobs(raw) {
       ...(j.lieuTravail||{}),
       libelle: decodeUtf8Safe(j.lieuTravail?.libelle || j.location || ''),
     },
-    typeContrat: j.typeContrat || j.contractType || j.natureContrat || '',
+    typeContrat: (function(tc) {
+      if (!tc) return '';
+      // Normalisation des codes bruts → libellés FR
+      const MAP = {
+        'CDI': 'CDI', 'CDD': 'CDD',
+        'MIS': 'Intérim', 'SAI': 'Saisonnier',
+        'LIB': 'Libéral', 'REP': 'Reprise',
+        'FRA': 'Franchise', 'CCE': 'Commerce',
+        'DIN': 'Indépendant',
+        'full_time':  'Temps plein',
+        'part_time':  'Temps partiel',
+        'FULL_TIME':  'Temps plein',
+        'PART_TIME':  'Temps partiel',
+        'INTERNSHIP': 'Stage',
+        'APPRENTICESHIP': 'Alternance',
+        'CONTRACT': 'CDD',
+        'PERMANENT': 'CDI',
+        'FREELANCE': 'Freelance',
+        'TEMPORARY': 'Intérim',
+      };
+      return MAP[tc] || (MAP[tc.toUpperCase()] || tc);
+    })(j.typeContrat || j.contractType || j.natureContrat || ''),
     url:         j.url || j.originUrl || j.origineOffre?.urlOrigine || j.contact?.urlPostulation || j.applyUrl || (j.id&&!j.id.toString().includes('_')?`https://candidat.francetravail.fr/offres/recherche/detail/${j.id}`:''),
     dateCreation:j.dateCreation || j.datePublished || '',
     _processed:  true,

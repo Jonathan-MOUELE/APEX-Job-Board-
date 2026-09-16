@@ -11,233 +11,9 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap"
     rel="stylesheet">
   <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-  <style>
-    @keyframes spin { to { transform: rotate(360deg) } }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
-    .spin { animation: spin 1s linear infinite; }
-
-    :root {
-      --bg: #fafafa;
-      --surface: #fff;
-      --surface2: #f4f4f5;
-      --border: #e4e4e7;
-      --text: #0c0c0d;
-      --muted: #71717a;
-      --orange: #f97316;
-      --orange-dark: #ea6c10;
-      --orange-light: #fff7ed;
-      --blue: #0ea5e9;
-      --blue-light: #e0f2fe;
-      --shadow: 0 1px 3px rgba(0,0,0,0.07);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-      --font: 'DM Sans', system-ui, sans-serif;
-    }
-
-    html.dark {
-      --bg: #09090b;
-      --surface: #18181b;
-      --surface2: #1f1f22;
-      --border: #27272a;
-      --text: #f4f4f5;
-      --muted: #a1a1aa;
-      --orange-light: #1c1208;
-      --blue-light: #0a1929;
-      --shadow: 0 1px 3px rgba(0,0,0,0.4);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── HEADER ── */
-    header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      height: 58px; display: flex; align-items: center;
-      padding: 0 32px; gap: 8px;
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    header.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,0.08); background: var(--surface); }
-
-    .logo-wrap { display: flex; align-items: center; gap: 6px; text-decoration: none; flex-shrink: 0; }
-    .logo-apex { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
-    .logo-apex span { color: var(--orange); }
-    .logo-by {
-      font-size: 11px; font-weight: 700; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px;
-    }
-
-    nav { display: flex; gap: 2px; margin-left: 28px; flex: 1; }
-    .nav-link {
-      font-size: 14px; font-weight: 500; color: var(--muted);
-      text-decoration: none; padding: 6px 11px; border-radius: 6px;
-      transition: color 0.15s, background 0.15s;
-    }
-    .nav-link:hover, .nav-link.active { color: var(--text); background: var(--surface2); }
-
-    .header-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-
-    .btn-ghost {
-      height: 34px; padding: 0 14px; border-radius: 7px;
-      border: 1px solid var(--border); background: transparent;
-      color: var(--text); font-family: var(--font);
-      font-size: 13px; font-weight: 500; cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-      text-decoration: none; white-space: nowrap;
-      transition: background 0.15s;
-    }
-    .btn-ghost:hover { background: var(--surface2); }
-
-    .btn-solid {
-      height: 34px; padding: 0 16px; border-radius: 7px; border: none;
-      background: var(--orange); color: #fff; font-family: var(--font);
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; gap: 5px;
-      text-decoration: none; transition: opacity 0.15s;
-    }
-    .btn-solid:hover { opacity: 0.88; }
-
-    .btn-icon-sm {
-      width: 34px; height: 34px; border-radius: 7px;
-      border: 1px solid var(--border); background: transparent;
-      color: var(--muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: color 0.15s;
-    }
-    .btn-icon-sm:hover { color: var(--text); }
-    .btn-icon-sm svg, .btn-ghost svg, .btn-solid svg { width: 14px; height: 14px; }
-
-    .vr { width: 1px; height: 20px; background: var(--border); }
-
-    /* ── PAGE ── */
-    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 90px 32px 80px; }
-    .page-title { font-size: clamp(28px, 4vw, 42px); font-weight: 700; letter-spacing: -1.5px; margin-bottom: 8px; }
-    .page-sub { font-size: 15px; color: var(--muted); margin-bottom: 32px; }
-
-    /* ── SEARCH BAR ── */
-    .search-bar { display: flex; gap: 10px; margin-bottom: 36px; flex-wrap: wrap; }
-    .search-bar input {
-      flex: 1; min-width: 200px; height: 42px;
-      border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 0 14px; font-family: var(--font); font-size: 14px;
-      background: var(--surface); color: var(--text);
-      outline: none; transition: border-color 0.15s;
-    }
-    .search-bar input:focus { border-color: var(--orange); }
-
-    .search-bar select {
-      height: 42px; border: 1.5px solid var(--border); border-radius: 10px;
-      padding: 0 12px; font-family: var(--font); font-size: 14px;
-      background: var(--surface); color: var(--text); cursor: pointer;
-    }
-    .search-bar button {
-      height: 42px; padding: 0 20px; background: var(--orange); color: #fff;
-      border: none; border-radius: 10px; font-family: var(--font);
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
-      transition: opacity 0.15s;
-    }
-    .search-bar button:hover { opacity: 0.88; }
-    .search-bar button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── GRID ── */
-    .companies-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .company-card {
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: 14px; padding: 20px;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 10px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-      cursor: pointer; text-align: center;
-      animation: fadeUp 0.3s ease-out both;
-    }
-    .company-card:hover { border-color: var(--orange); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-    .company-logo-box {
-      width: 64px; height: 64px; border-radius: 14px; overflow: hidden;
-      background: var(--surface2); display: flex; align-items: center;
-      justify-content: center; font-size: 18px; font-weight: 700;
-      color: #fff; flex-shrink: 0;
-    }
-    .company-logo-box img { width: 100%; height: 100%; object-fit: contain; }
-    .company-name { font-size: 15px; font-weight: 700; color: var(--text); }
-    .company-sector { font-size: 12px; color: var(--muted); margin-top: -4px; }
-
-    .company-actions { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; justify-content: center; }
-    .company-actions button {
-      font-size: 11px; font-weight: 700; padding: 5px 10px;
-      border-radius: 8px; border: 1px solid var(--border);
-      background: var(--surface); color: var(--text);
-      cursor: pointer; display: flex; align-items: center; gap: 4px;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-      font-family: var(--font);
-    }
-    .company-actions button:hover { border-color: var(--orange); color: var(--orange); }
-    .company-actions button.btn-linkedin { color: #0077b5; border-color: rgba(0,119,181,0.3); }
-    .company-actions button.btn-linkedin:hover { background: rgba(0,119,181,0.08); border-color: #0077b5; }
-    .company-actions button.btn-offres { color: var(--orange); border-color: rgba(249,115,22,0.3); }
-    .company-actions button.btn-offres:hover { background: var(--orange-light); border-color: var(--orange); }
-
-    /* ── SECTOR FILTER ── */
-    .sector-filter { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
-    .sfchip {
-      font-size: 13px; font-weight: 500; color: var(--muted);
-      padding: 5px 12px; border: 1px solid var(--border);
-      border-radius: 100px; background: var(--surface);
-      cursor: pointer; transition: all 0.15s;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .sfchip:hover, .sfchip.active { border-color: var(--orange); color: var(--orange); background: var(--orange-light); }
-    .sfchip svg { width: 12px; height: 12px; }
-
-    .results-count { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-
-    .loading-state { text-align: center; padding: 60px 20px; color: var(--muted); }
-
-    /* ── TOAST ── */
-    .apex-toast {
-      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
-      background: var(--surface); border: 1.5px solid var(--orange); color: var(--text);
-      padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 99999;
-      display: flex; align-items: center; gap: 10px; max-width: 90vw;
-      opacity: 0; transition: opacity .25s, transform .25s;
-    }
-    .apex-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      header { padding: 0 16px; }
-      nav { display: none; }
-      .page-wrap { padding: 80px 16px 60px; }
-      .search-bar { flex-direction: column; }
-      .search-bar input, .search-bar select, .search-bar button { width: 100%; min-width: unset; }
-      .companies-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-      .company-card { padding: 14px; }
-      .company-logo-box { width: 48px; height: 48px; border-radius: 10px; }
-      .company-name { font-size: 13px; }
-      .company-actions button { font-size: 10px; padding: 4px 8px; }
-      .header-right .btn-ghost span, .header-right .btn-solid span { display: none; }
-    }
-
-    @media (max-width: 480px) {
-      .companies-grid { grid-template-columns: 1fr; }
-      .page-title { font-size: 24px; }
-    }
-  </style>
+  
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/entreprises.css">
 </head>
 
 <body>
@@ -313,7 +89,7 @@
   </main>
 
   <script>
-    const API = 'http://localhost:5191';
+    const API = '';
 
     // ── Utilities ────────────────────────────────────────────
     function safeIcons() {
@@ -481,28 +257,54 @@
         return;
       }
 
-      grid.innerHTML = filtered.map((c, i) => {
-        const initials = c.name.substring(0, 2).toUpperCase();
-        const color = brandColor(c.name);
-        const safeName = escH(c.name).replace(/'/g, "\\'");
-        const linkedInUrl = 'https://www.linkedin.com/search/results/companies/?keywords=' + encodeURIComponent(c.name);
-
-        return '<div class="company-card" style="animation-delay:' + (i * 0.03) + 's">' +
-          '<div class="company-logo-box" style="background:' + color + '">' +
-            '<img src="https://logo.clearbit.com/' + escH(c.domain) + '" alt="' + escH(c.name) + '"' +
-            ' onerror="logoErr(this,\'' + escH(c.domain) + '\',\'' + safeName + '\')" loading="lazy">' +
-            '<span style="display:none;color:#fff;font-size:16px;font-weight:700;width:100%;height:100%;align-items:center;justify-content:center">' + initials + '</span>' +
-          '</div>' +
-          '<div class="company-name">' + escH(c.name) + '</div>' +
-          '<div class="company-sector">' + escH(c.desc || '') + '</div>' +
-          '<div class="company-actions">' +
-            '<button class="btn-offres" onclick="searchCompany(\'' + safeName + '\')" title="Voir les offres">' +
-              '<i data-lucide="briefcase" style="width:11px;height:11px"></i> Offres</button>' +
-            '<button class="btn-linkedin" onclick="openLinkedIn(\'' + safeName + '\')" title="Rechercher sur LinkedIn">' +
-              '<i data-lucide="linkedin" style="width:11px;height:11px"></i> LinkedIn</button>' +
-          '</div>' +
-        '</div>';
-      }).join('');
+      const tableHtml = `
+      <div style="overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border);">
+        <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 600px;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border); background: var(--surface2);">
+              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Entreprise</th>
+              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Secteur / Agences</th>
+              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map((c, i) => {
+              const initials = c.name.substring(0, 2).toUpperCase();
+              const color = brandColor(c.name);
+              const safeName = escH(c.name).replace(/'/g, "\\'");
+              return `
+                <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 16px; display: flex; align-items: center; gap: 12px;">
+                    <div class="company-logo-box" style="width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: ${color}">
+                      <img src="https://logo.clearbit.com/${escH(c.domain)}" alt="${escH(c.name)}" onerror="logoErr(this,'${escH(c.domain)}','${safeName}')" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; background: white;">
+                      <span style="display:none;color:#fff;font-size:14px;font-weight:700;">${initials}</span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 1rem; color: var(--text);">${escH(c.name)}</div>
+                  </td>
+                  <td style="padding: 16px; color: var(--muted); font-size: 0.9rem;">
+                    ${escH(c.desc || '')}
+                  </td>
+                  <td style="padding: 16px; text-align: right;">
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                      <button class="btn-offres" onclick="searchCompany('${safeName}')" style="background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='var(--orange)'; this.style.color='white'" onmouseout="this.style.background='var(--surface2)'; this.style.color='var(--text)'">
+                        <i data-lucide="briefcase" style="width:14px;height:14px"></i> Offres
+                      </button>
+                      <button class="btn-linkedin" onclick="openLinkedIn('${safeName}')" style="background: var(--surface2); color: #0a66c2; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='#0a66c2'; this.style.color='white'" onmouseout="this.style.background='var(--surface2)'; this.style.color='#0a66c2'">
+                        <i data-lucide="linkedin" style="width:14px;height:14px"></i> LinkedIn
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+      grid.innerHTML = tableHtml;
+      
+      // Update grid class since it's no longer a grid
+      grid.className = 'companies-table-container';
+      
       safeIcons();
     }
 
@@ -530,9 +332,22 @@
       const keywords = ['développeur','infirmier','commercial','bâtiment','comptable','logistique','marketing','juridique','restauration','transport','ingénieur','banque'];
       const seen = new Map();
 
+      // Helper to clean company names and group national franchises
+      function formatCompanyName(name) {
+          let n = name.toUpperCase().trim();
+          const agencies = ['ACTUAL', 'ADECCO', 'MANPOWER', 'RANDSTAD', 'PROMAN', 'SYNERGIE', 'CRIT', 'SUPPLAY', 'O2', 'KANGOUROU KIDS', 'TOTAL', 'TOTALENERGIES', 'LEROY MERLIN', 'DECATHLON', 'CARREFOUR', 'AUCHAN', 'E.LECLERC', 'LIDL', 'ALDI', 'KPMG', 'DELOITTE', 'EY', 'PWC', 'CAPGEMINI', 'SOPRA STERIA', 'CGI', 'ATOS', 'BNP PARIBAS', 'SOCIETE GENERALE', 'CREDIT AGRICOLE'];
+          for (const ag of agencies) {
+              if (n === ag || n.startsWith(ag + ' ') || n.startsWith(ag + '-')) return ag;
+          }
+          n = n.replace(/\b(SA|SAS|SARL|SASU|EURL|SNC)\b/g, '').trim();
+          n = n.replace(/\s+\d{2,5}$/, '').trim();
+          return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase(); // Title case for non-agencies
+      }
+
       await Promise.allSettled(keywords.map(async kw => {
         try {
-          const res = await fetch(API + '/api/jobs/search?keyword=' + encodeURIComponent(kw) + '&range=0-49');
+          const baseUrl = (typeof window._API !== 'undefined' ? window._API : '');
+          const res = await fetch(baseUrl + '/api/jobs/search?keyword=' + encodeURIComponent(kw) + '&range=0-49');
           if (!res.ok) return;
           const data = await res.json();
           const jobs = data.results || data.items || [];
@@ -542,14 +357,26 @@
             const rawName = (j.company || j.entreprise?.nom || '').trim();
             const name = decodeUtf8Safe(rawName);
             if (!name || name.length < 2) return;
-            const key = name.toLowerCase();
-            if (seen.has(key)) return;
+            
+            const formattedName = formatCompanyName(name);
+            const key = formattedName.toLowerCase();
+            const loc = decodeUtf8Safe(j.location || j.lieuTravail?.libelle || '');
+            
+            if (seen.has(key)) {
+                let existing = seen.get(key);
+                if (loc) existing.locations.add(loc);
+                if (existing.locations.size > 1) {
+                    existing.desc = `${existing.locations.size} agences en France`;
+                }
+                return;
+            }
 
             seen.set(key, {
-              name: name,
-              domain: resolveDomain(name),
+              name: formattedName,
+              domain: resolveDomain(formattedName),
               sector: detectedSector,
-              desc: decodeUtf8Safe(j.location || j.lieuTravail?.libelle || '') || 'Recrute en ce moment'
+              desc: loc || 'Recrute en ce moment',
+              locations: new Set(loc ? [loc] : [])
             });
           });
         } catch (_) { }
@@ -566,7 +393,11 @@
       if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Actualiser'; safeIcons(); }
 
       if (!_allCompanies.length) {
-        showToast('Aucune entreprise chargée. Vérifiez que le serveur API est actif.', 'warn');
+        if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+            showToast('Aucune entreprise chargée. Vérifiez que le serveur API est actif.', 'warn');
+        } else {
+            showToast('Aucune entreprise trouvée pour le moment.', 'info');
+        }
       }
     }
 

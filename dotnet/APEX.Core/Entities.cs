@@ -66,6 +66,7 @@ public class AppUser
     public ICollection<Bookmark> Bookmarks { get; set; } = [];
     public ICollection<SearchAlert> SearchAlerts { get; set; } = [];
     public ICollection<JobApplication> JobApplications { get; set; } = [];
+    public ICollection<BotAnalytic> BotAnalytics { get; set; } = [];
 }
 
 /// <summary>
@@ -273,4 +274,27 @@ public class JobApplication
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}
+
+/// <summary>
+/// Historique des actions de l'IA (APEX Bot) pour monitoring et dashboard.
+/// </summary>
+public class BotAnalytic
+{
+    [Key]
+    public int Id { get; set; }
+
+    public int UserId { get; set; }
+    [ForeignKey(nameof(UserId))]
+    public AppUser User { get; set; } = null!;
+
+    [Required, MaxLength(128)]
+    public string ActionType { get; set; } = ""; // ex: "CV_ANALYSIS", "SWIPE_MATCH", "BIO_GENERATED"
+
+    [Column(TypeName = "TEXT")]
+    public string? DetailsJson { get; set; } // Données additionnelles (score, feedback)
+
+    public int TokensUsed { get; set; } = 0;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

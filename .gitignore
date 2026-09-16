@@ -37,4 +37,5 @@ __pycache__/
 *.pyc
 
 # Fichiers de contexte volumineux d'IA
-APEX_AI_STUDIO_CONTEXT.md
+*.md
+!AGENTS.md

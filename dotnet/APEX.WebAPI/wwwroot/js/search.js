@@ -143,13 +143,36 @@ let _feed = null; // instance globale
 //  D. SEARCH STATE & HELPERS
 // ══════════════════════════════════════════════════════
 window.setFilter = function(btn, val) {
-  document.querySelectorAll('.qtag').forEach(p=>p.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  window._state.filter = val||null;
-  window._state.page   = 1;
-  EventBus.emit(EV.FILTER_CHANGE, {filter: val});
-  telemetry.track('filter', {filter: val});
-  if(window._state.jobs.length) renderPage(true);
+  if (!window._state.filters) window._state.filters = new Set();
+
+  if (!val) {
+    // Bouton "Tous" → vider tous les filtres
+    window._state.filters.clear();
+    document.querySelectorAll('.qtag').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  } else {
+    // Toggle du filtre cliqué
+    if (window._state.filters.has(val)) {
+      window._state.filters.delete(val);
+      if (btn) btn.classList.remove('active');
+    } else {
+      window._state.filters.add(val);
+      if (btn) btn.classList.add('active');
+    }
+    // Désactiver "Tous" si au moins un filtre est actif
+    const tousBtn = document.querySelector('.qtag[data-filter-all]');
+    if (tousBtn) tousBtn.classList.toggle('active', window._state.filters.size === 0);
+  }
+
+  // Compat legacy : exposer filter comme string (premier filtre ou null)
+  window._state.filter = window._state.filters.size > 0
+    ? [...window._state.filters].join(',')
+    : null;
+
+  window._state.page = 1;
+  EventBus.emit(EV.FILTER_CHANGE, {filters: [...window._state.filters]});
+  telemetry.track('filter', {filters: [...window._state.filters]});
+  if (window._state.jobs.length) renderPage(true);
   else performSearch();
 };
 
@@ -158,6 +181,7 @@ window.handleSearch = function(e, clear=false) {
   if(clear){
     ['sq-job','sq-city'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     window._state.filter=null;
+    window._state.filters = new Set();
     document.querySelectorAll('.qtag').forEach(p=>p.classList.remove('active'));
     document.querySelector('.qtag')?.classList.add('active');
   }
@@ -232,9 +256,14 @@ window.performSearch = async function() {
 
   try{
     const params = new URLSearchParams();
-    if(kw)                      params.set('keyword',  kw);
-    if(loc)                     params.set('location', loc);
-    if(window._state.filter)    params.set('contract', window._state.filter);
+    if(kw)  params.set('keyword',  kw);
+    if(loc) params.set('location', loc);
+    // Multi-filtres : on envoie le premier seulement à l'API (France Travail n'accepte qu'une valeur),
+    // le filtrage multi côté client se fait dans renderPage
+    const activeFilters = window._state.filters?.size > 0
+      ? [...window._state.filters]
+      : (window._state.filter ? [window._state.filter] : []);
+    if (activeFilters.length === 1) params.set('contract', activeFilters[0]);
     params.set('range', `0-${window._PAGE_SIZE-1}`);
 
     const res = await apiFetch(`/api/jobs/search?${params}`);
@@ -414,18 +443,24 @@ window.buildJobCard = function(job, idx) {
 // ══════════════════════════════════════════════════════
 window.renderPage = function(reset = false) {
     let jobs = [...window._state.jobs];
-    if (window._state.filter) {
-        const f = window._state.filter.toUpperCase();
+    const activeFilters = window._state.filters?.size > 0
+      ? [...window._state.filters]
+      : (window._state.filter ? [window._state.filter] : []);
+    if (activeFilters.length > 0) {
         jobs = jobs.filter(j => {
-            const tc = (j.typeContrat || '').toUpperCase();
+            const tc  = (j.typeContrat || '').toUpperCase();
             const tcl = (j.typeContratLibelle || '').toUpperCase();
-            if (f === 'MIS' || f === 'INTÉRIM' || f === 'INTERIM') {
-                return tc.includes('MIS') || tcl.includes('MIS') || tcl.includes('INTÉRIM') || tcl.includes('INTERIM');
-            }
-            if (f === 'ALT' || f === 'APP' || f === 'ALTERNANCE') {
-                return tc.includes('ALT') || tc.includes('APP') || tcl.includes('ALT') || tcl.includes('APP') || tcl.includes('APPRENTISSAGE') || tcl.includes('ALTERNANCE');
-            }
-            return tc.includes(f) || tcl.includes(f);
+            // L'offre doit correspondre à AU MOINS UN des filtres sélectionnés
+            return activeFilters.some(fRaw => {
+                const f = fRaw.toUpperCase();
+                if (f === 'MIS' || f === 'INTÉRIM' || f === 'INTERIM') {
+                    return tc.includes('MIS') || tcl.includes('MIS') || tcl.includes('INTÉRIM') || tcl.includes('INTERIM');
+                }
+                if (f === 'ALT' || f === 'APP' || f === 'ALTERNANCE') {
+                    return tc.includes('ALT') || tc.includes('APP') || tcl.includes('ALT') || tcl.includes('APP') || tcl.includes('APPRENTISSAGE') || tcl.includes('ALTERNANCE');
+                }
+                return tc.includes(f) || tcl.includes(f);
+            });
         });
     }
     const sub = document.getElementById('results-subtitle');
@@ -438,6 +473,7 @@ window.renderPage = function(reset = false) {
         const emptyEl = document.getElementById('empty-state');
         if (emptyEl) {
             emptyEl.classList.remove('hidden');
+            emptyEl.style.display = 'block';
             // Check if this is a real search (not initial load)
             const kw = (document.getElementById('sq-job')?.value||'').trim();
             const loc = (document.getElementById('sq-city')?.value||'').trim();
@@ -460,7 +496,11 @@ window.renderPage = function(reset = false) {
         document.getElementById('pagination')?.replaceChildren();
         return;
     }
-    document.getElementById('empty-state')?.classList.add('hidden');
+    const emptyEl = document.getElementById('empty-state');
+    if (emptyEl) {
+        emptyEl.classList.add('hidden');
+        emptyEl.style.display = 'none';
+    }
     const start = (window._state.page - 1) * window._PAGE_SIZE;
     const slice = jobs.slice(start, start + window._PAGE_SIZE);
     const grid = document.getElementById('jobs-grid');

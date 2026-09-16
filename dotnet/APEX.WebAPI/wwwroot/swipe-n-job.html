@@ -8,459 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-    <style>
-        :root {
-            --brand: #f97316;
-            --brand-glow: rgba(249,115,22,0.45);
-            --brand-dim: rgba(249,115,22,0.12);
-            --bg: #09090b;
-            --glass: rgba(255,255,255,0.07);
-            --glass-border: rgba(255,255,255,0.13);
-            --text-muted: rgba(255,255,255,0.6);
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background: var(--bg);
-            color: #fff;
-            font-family: 'DM Sans', system-ui, sans-serif;
-            overflow: hidden;
-            height: 100dvh;
-            user-select: none;
-        }
-
-        /* ── CANVAS ── */
-        #bg-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: 1;
-            opacity: 0.28;
-            pointer-events: none;
-        }
-
-        /* ── LOADING ── */
-        #loading-overlay {
-            position: fixed; inset: 0;
-            background: #050507;
-            z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.4s ease;
-        }
-        .loader {
-            width: 44px; height: 44px;
-            border: 3px solid rgba(255,255,255,0.06);
-            border-top-color: var(--brand);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* ── HEADER ── */
-        .apex-header {
-            position: fixed; top: 0; left: 0; right: 0;
-            z-index: 100;
-            padding: 14px 20px;
-            display: flex; align-items: center; gap: 12px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, transparent 100%);
-            backdrop-filter: blur(10px);
-            transition: opacity 0.4s, transform 0.4s;
-        }
-        .apex-header.hide {
-            opacity: 0;
-            transform: translateY(-8px);
-            pointer-events: none;
-        }
-
-        .btn-back {
-            width: 44px; height: 44px;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            text-decoration: none;
-            flex-shrink: 0;
-            transition: all 0.25s;
-        }
-        .btn-back:hover {
-            background: rgba(255,255,255,0.18);
-            transform: translateX(-2px);
-        }
-
-        /* ── SEARCH ── */
-        .search-wrap {
-            flex: 1;
-            position: relative;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-
-        .search-inner {
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(10,10,12,0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 100px;
-            padding: 0 8px 0 16px;
-            height: 46px;
-            transition: border-color 0.25s, box-shadow 0.25s;
-        }
-        .search-inner:focus-within {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px var(--brand-dim);
-        }
-        .search-inner i.search-icon { color: rgba(255,255,255,0.4); flex-shrink: 0; }
-        .search-inner input {
-            flex: 1; background: transparent; border: none;
-            color: #fff; outline: none;
-            font-size: 14px; font-weight: 500;
-            font-family: 'DM Sans', sans-serif;
-        }
-        .search-inner input::placeholder { color: rgba(255,255,255,0.38); }
-
-        .btn-clear {
-            background: rgba(255,255,255,0.1);
-            border: none; color: #fff;
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            display: none; align-items: center; justify-content: center;
-            cursor: pointer; flex-shrink: 0;
-            transition: background 0.2s;
-        }
-        .btn-clear.visible { display: flex; }
-        .btn-clear:hover { background: rgba(255,255,255,0.22); }
-
-        .btn-search {
-            background: var(--brand);
-            border: none; color: #fff;
-            width: 34px; height: 34px;
-            border-radius: 100px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .btn-search:hover { background: #ea6c0b; transform: scale(1.08); }
-
-        /* ── AUTOCOMPLETE ── */
-        .suggest-portal {
-            position: absolute;
-            top: calc(100% + 10px);
-            left: 0; right: 0;
-            background: rgba(14,14,18,0.97);
-            backdrop-filter: blur(28px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.7);
-            display: none;
-            z-index: 110;
-        }
-        .suggest-portal.open { display: block; }
-
-        .suggest-header {
-            padding: 10px 16px 4px;
-            font-size: 10px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.1em;
-            color: var(--brand);
-        }
-
-        .suggest-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px;
-            cursor: pointer;
-            font-size: 14px; font-weight: 500;
-            color: rgba(255,255,255,0.85);
-            transition: all 0.18s;
-            border-radius: 0;
-        }
-        .suggest-item:hover {
-            background: var(--brand-dim);
-            color: #fff;
-        }
-        .suggest-item i { color: var(--brand); flex-shrink: 0; }
-        .suggest-item .match { color: var(--brand); font-weight: 700; }
-        .suggest-divider {
-            height: 1px;
-            background: var(--glass-border);
-            margin: 4px 16px;
-        }
-        .suggest-footer {
-            padding: 10px 16px;
-            font-size: 12px; color: var(--text-muted);
-            display: flex; align-items: center; gap: 8px;
-        }
-        .suggest-footer i { width: 14px; height: 14px; color: var(--brand); }
-
-        /* ── FILTER CHIPS ── */
-        .filter-row {
-            position: fixed;
-            top: 74px; left: 0; right: 0;
-            z-index: 99;
-            padding: 0 20px 10px;
-            display: flex; gap: 8px;
-            overflow-x: auto; scrollbar-width: none;
-        }
-        .filter-row::-webkit-scrollbar { display: none; }
-
-        .chip {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            color: rgba(255,255,255,0.85);
-            padding: 7px 18px;
-            border-radius: 100px;
-            font-size: 12px; font-weight: 700;
-            cursor: pointer; white-space: nowrap;
-            font-family: 'DM Sans', sans-serif;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .chip:hover { background: rgba(255,255,255,0.14); }
-        .chip.active {
-            background: var(--brand);
-            border-color: var(--brand);
-            box-shadow: 0 4px 16px var(--brand-glow);
-            color: #fff;
-        }
-
-        /* ── REEL VIEWPORT ── */
-        #reel-viewport {
-            position: relative; z-index: 10;
-            height: 100dvh; width: 100vw;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
-        }
-        #reel-viewport::-webkit-scrollbar { display: none; }
-
-        /* ── REEL UNIT ── */
-        .reel-unit {
-            height: 100dvh; width: 100vw;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            position: relative;
-            display: flex; align-items: flex-end;
-            overflow: hidden;
-        }
-
-        .reel-bg {
-            position: absolute; inset: 0; z-index: 0;
-        }
-        .reel-bg img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            filter: brightness(0.38) contrast(1.1) saturate(0.9);
-            will-change: transform;
-            transform: scale(1.05);
-            transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .reel-unit.active .reel-bg img {
-            animation: panZoom 20s linear infinite alternate;
-        }
-        @keyframes panZoom {
-            0%   { transform: scale(1.05) translate(0, 0); }
-            100% { transform: scale(1.18) translate(-1%, 2%); }
-        }
-
-        .reel-overlay {
-            position: absolute; inset: 0; z-index: 1;
-            background: linear-gradient(to top,
-                rgba(0,0,0,0.97) 0%,
-                rgba(0,0,0,0.4) 40%,
-                transparent 70%);
-        }
-
-        /* ── CONTENT LAYOUT ── */
-        .reel-body {
-            position: relative; z-index: 20;
-            width: 100%;
-            padding: 0 24px 44px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 16px;
-        }
-
-        /* ── JOB META (LEFT) ── */
-        .job-meta { flex: 1; min-width: 0; }
-
-        .job-company {
-            font-size: 12px; font-weight: 800;
-            color: var(--brand);
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            display: flex; align-items: center; gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .job-title {
-            font-size: clamp(20px,5.5vw,30px);
-            font-weight: 800;
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-        }
-
-        .job-tags {
-            display: flex; gap: 8px; flex-wrap: wrap;
-            margin-bottom: 14px;
-        }
-
-        .jtag {
-            padding: 5px 13px;
-            border-radius: 100px;
-            font-size: 11px; font-weight: 700;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(8px);
-        }
-        .jtag.type { background: var(--brand-dim); border-color: rgba(249,115,22,0.3); color: #fb923c; }
-        .jtag.salary { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
-
-        .job-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.65;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            max-width: 480px;
-        }
-
-        .job-date {
-            font-size: 11px; font-weight: 600;
-            color: rgba(255,255,255,0.35);
-            text-transform: uppercase; letter-spacing: 0.06em;
-            margin-top: 10px;
-        }
-
-        /* ── SIDEBAR ACTIONS (RIGHT) ── */
-        .sidebar-actions {
-            display: flex; flex-direction: column;
-            gap: 20px; align-items: center;
-            padding-bottom: 8px;
-            flex-shrink: 0;
-        }
-
-        .action-btn {
-            display: flex; flex-direction: column;
-            align-items: center; gap: 5px;
-            cursor: pointer;
-            background: none; border: none; padding: 0;
-            color: #fff;
-            transition: transform 0.25s cubic-bezier(0.175,0.885,0.32,1.275);
-        }
-        .action-btn:hover { transform: scale(1.1) translateY(-2px); }
-        .action-btn:active { transform: scale(0.88); }
-
-        .action-circle {
-            width: 54px; height: 54px;
-            border-radius: 50%;
-            background: rgba(15,15,20,0.65);
-            border: 1.5px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-            transition: all 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
-            position: relative;
-            overflow: hidden;
-        }
-        .action-circle::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.08), transparent 70%);
-        }
-        .action-btn:hover .action-circle {
-            background: rgba(255,255,255,0.18);
-            border-color: rgba(255,255,255,0.35);
-        }
-        .action-circle.apply {
-            background: var(--brand);
-            border-color: rgba(255,255,255,0.2);
-            box-shadow: 0 6px 20px var(--brand-glow);
-        }
-        .action-circle.apply:hover { background: #ea6c0b; }
-        .action-circle.saved {
-            background: rgba(245,158,11,0.2);
-            border-color: #f59e0b;
-        }
-        .action-circle.saved i { color: #f59e0b !important; }
-
-        .action-label {
-            font-size: 10px; font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            color: rgba(255,255,255,0.75);
-        }
-
-        /* Pulse on apply */
-        @keyframes pulse-brand {
-            0%   { box-shadow: 0 0 0 0 var(--brand-glow); }
-            70%  { box-shadow: 0 0 0 14px rgba(249,115,22,0); }
-            100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
-        }
-        .pulse { animation: pulse-brand 2.2s infinite; }
-
-        /* Progress dots */
-        .progress-dots {
-            position: fixed;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 50;
-            display: flex; flex-direction: column; gap: 6px;
-        }
-        .progress-dot {
-            width: 4px; height: 4px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            transition: all 0.3s;
-        }
-        .progress-dot.active {
-            background: var(--brand);
-            height: 16px;
-            border-radius: 2px;
-        }
-
-        /* ── EMPTY STATE ── */
-        .empty-reel {
-            height: 100dvh; width: 100vw;
-            scroll-snap-align: start;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 16px; padding: 40px; text-align: center;
-        }
-        .empty-reel svg { color: var(--brand); }
-        .empty-reel h2 { font-size: 22px; font-weight: 800; }
-        .empty-reel p { color: var(--text-muted); font-size: 14px; }
-        .empty-reel a {
-            display: inline-block;
-            background: var(--brand); color: #fff;
-            padding: 12px 28px; border-radius: 100px;
-            text-decoration: none; font-weight: 700;
-            margin-top: 8px;
-        }
-
-        /* ── ANIMATIONS ── */
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(18px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        .reel-unit.active .job-meta {
-            animation: fadeInUp 0.55s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        .reel-unit.active .sidebar-actions {
-            animation: slideInRight 0.55s 0.1s cubic-bezier(0.16,1,0.3,1) both;
-        }
-    </style>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/swipe-n-job.css">
 </head>
 <body>
 
@@ -474,38 +24,61 @@
         </a>
 
         <div class="search-wrap">
-            <div class="search-inner">
-                <i data-lucide="search" class="search-icon" style="width:16px;height:16px"></i>
-                <input
-                    type="text"
-                    id="swipe-search-input"
-                    placeholder="Métier, compétence…"
-                    autocomplete="off"
-                    oninput="window._swipeApp?.onSearchInput(this.value); toggleClear(this)"
-                    onkeydown="if(event.key==='Enter'){window._swipeApp?.search();hideSuggest();}"
-                >
-                <button class="btn-clear" id="btn-clear" onclick="clearSearch()" aria-label="Effacer">
-                    <i data-lucide="x" style="width:13px;height:13px"></i>
-                </button>
-                <button class="btn-search" onclick="window._swipeApp?.search()" aria-label="Rechercher">
-                    <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
-                </button>
+            <div class="search-row">
+                <div class="search-inner" id="swipe-search-inner">
+                    <i data-lucide="search" class="search-icon" style="width:16px;height:16px"></i>
+                    <input
+                        type="text"
+                        id="swipe-search-input"
+                        placeholder="Métier, compétence…"
+                        autocomplete="off"
+                        oninput="window._swipeApp?.onSearchInput(this.value); toggleClear(this)"
+                        onkeydown="if(event.key==='Enter'){window._swipeApp?.search();hideSuggest();}"
+                        onfocus="document.getElementById('swipe-search-inner').classList.add('city-open')"
+                    >
+                    <!-- Separateur ville -->
+                    <span class="city-sep"></span>
+                    <input
+                        type="text"
+                        id="swipe-city-input"
+                        class="city-input"
+                        placeholder="Ville / CP…"
+                        autocomplete="off"
+                        onkeydown="if(event.key==='Enter'){window._swipeApp?.search();}"
+                        aria-label="Ville ou code postal"
+                    >
+                    <button class="btn-clear" id="btn-clear" onclick="clearSearch()" aria-label="Effacer">
+                        <i data-lucide="x" style="width:13px;height:13px"></i>
+                    </button>
+                    <button class="btn-search" onclick="window._swipeApp?.search()" aria-label="Rechercher">
+                        <i data-lucide="arrow-right" style="width:15px;height:15px"></i>
+                    </button>
+                </div>
             </div>
             <div class="suggest-portal" id="suggest-portal">
                 <div class="suggest-header">Suggestions</div>
                 <div id="suggest-list"></div>
                 <div class="suggest-divider"></div>
                 <div class="suggest-footer">
-                    <i data-lucide="zap"></i>
-                    <span>Appuyez Entrée pour chercher</span>
+                    <span>Appuyez sur Entrée pour chercher</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Bot IA + Connexion -->
+        <div class="header-actions">
+            <button class="btn-icon-hdr bot" onclick="openSwipeBot()" aria-label="Ouvrir l'assistant APEX" title="APEX IA">
+                <i data-lucide="message-circle" style="width:18px;height:18px"></i>
+            </button>
+            <button class="btn-icon-hdr" id="swipe-auth-btn" onclick="handleSwipeAuth()" aria-label="Se connecter" title="Se connecter">
+                <i data-lucide="user" style="width:18px;height:18px" id="swipe-auth-icon"></i>
+            </button>
         </div>
     </header>
 
     <!-- ── FILTER CHIPS ── -->
     <div class="filter-row" id="filter-row">
-        <button class="chip active" onclick="window._swipeApp?.setFilter(this,'')">Toutes</button>
+        <button class="chip active" data-filter-all onclick="window._swipeApp?.setFilter(this,'')">Toutes</button>
         <button class="chip" onclick="window._swipeApp?.setFilter(this,'CDI')">CDI</button>
         <button class="chip" onclick="window._swipeApp?.setFilter(this,'CDD')">CDD</button>
         <button class="chip" onclick="window._swipeApp?.setFilter(this,'Alternance')">Alternance</button>
@@ -519,9 +92,11 @@
     <!-- Progress dots (max 8) -->
     <div class="progress-dots" id="progress-dots"></div>
 
-    <script src="js/core.js?v=9"></script>
-    <script src="js/auth.js?v=9"></script>
-    <script src="js/swipe-page.js?v=9"></script>
+    <script src="js/core.js?v=10"></script>
+    <script src="js/auth.js?v=10"></script>
+    <script src="js/ui.js?v=10"></script>
+    <script src="js/features.js?v=10"></script>
+    <script src="js/swipe-page.js?v=10"></script>
     <script>
         lucide.createIcons();
 
@@ -573,52 +148,189 @@
         function toggleClear(input) {
             const btn = document.getElementById('btn-clear');
             if (!btn) return;
-            btn.classList.toggle('visible', input.value.length > 0);
+            const city = document.getElementById('swipe-city-input');
+            btn.classList.toggle('visible', input.value.length > 0 || (city && city.value.length > 0));
         }
         function clearSearch() {
             const inp = document.getElementById('swipe-search-input');
+            const city = document.getElementById('swipe-city-input');
             if (inp) { inp.value = ''; inp.focus(); }
+            if (city) city.value = '';
             document.getElementById('btn-clear')?.classList.remove('visible');
             hideSuggest();
         }
         function hideSuggest() {
             document.getElementById('suggest-portal')?.classList.remove('open');
         }
+        // Ferme le champ ville si on clique ailleurs
         document.addEventListener('click', e => {
-            if (!e.target.closest('.search-wrap')) hideSuggest();
+            if (!e.target.closest('.search-wrap')) {
+                hideSuggest();
+                const si = document.getElementById('swipe-search-inner');
+                const city = document.getElementById('swipe-city-input');
+                if (si && (!city || !city.value)) si.classList.remove('city-open');
+            }
         });
 
-        // ── AUTOCOMPLETE ──────────────────────────────
+        // ── BOT & AUTH depuis Swipe ────────────────────
+        function openSwipeBot() {
+            // ui.js expose openDrawer globalement via core.js
+            if (typeof window.toggleDrawer === 'function') {
+                window.toggleDrawer();
+            } else if (typeof window.openDrawer === 'function') {
+                window.openDrawer();
+            } else {
+                // Fallback : rediriger vers l'accueil avec le bot ouvert
+                window.location.href = 'index.html?bot=1';
+            }
+        }
+
+        function handleSwipeAuth() {
+            if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+                // Déjà connecté → Rediriger vers l'accueil qui ouvrira le profil
+                window.location.href = 'index.html#profil';
+            } else {
+                // Pas connecté → modal login
+                if (typeof window.openLoginModal === 'function') {
+                    window.openLoginModal();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        // Mettre à jour l'icône auth selon l'état de connexion
+        function updateSwipeAuthIcon() {
+            const btn = document.getElementById('swipe-auth-btn');
+            const icon = document.getElementById('swipe-auth-icon');
+            if (!btn || !icon) return;
+            if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
+                btn.title = 'Mon profil';
+                icon.setAttribute('data-lucide', 'user-check');
+                btn.style.background = 'rgba(249,115,22,0.15)';
+                btn.style.borderColor = 'rgba(249,115,22,0.4)';
+            }
+            lucide.createIcons();
+        }
+        // Vérifier après que core.js / auth.js ont chargé
+        setTimeout(updateSwipeAuthIcon, 800);
+
+
+        // ── AUTOCOMPLETE MULTI-SECTEURS ──────────────────────────────
         const SUGGEST_POOL = [
-            'Développeur Full-Stack', 'Développeur React', 'Développeur Vue.js',
-            'Développeur Node.js', 'Développeur Python', 'Développeur Mobile',
-            'UX/UI Designer', 'Product Designer', 'Chef de Projet IT',
-            'Data Analyst', 'Data Scientist', 'DevOps Engineer', 'SRE',
-            'Product Manager', 'Ingénieur Cybersécurité', 'Commercial B2B',
-            'Marketing Digital', 'Alternance Développeur', 'Stage RH',
-            'Comptable', 'Juriste', 'Infirmier', 'Formateur',
+            // Numérique & IT
+            'Développeur Full-Stack', 'Développeur React', 'Développeur Vue.js', 'Développeur Angular',
+            'Développeur Node.js', 'Développeur Python', 'Développeur PHP / Laravel', 'Développeur Java / Spring',
+            'Développeur Mobile', 'Développeur iOS', 'Développeur Android', 'Développeur C# / .NET',
+            'UX/UI Designer', 'Product Designer', 'Chef de Projet IT', 'Product Owner', 'Scrum Master',
+            'Data Analyst', 'Data Scientist', 'Data Engineer', 'DevOps Engineer', 'SRE / Cloud',
+            'Ingénieur Cybersécurité', 'Administrateur Réseau', 'Technicien Support Informatique',
+            // Bâtiment & Travaux Publics (BTP)
+            'Électricien Bâtiment', 'Plombier Chauffagiste', 'Maçon', 'Peintre en Bâtiment',
+            'Menuisier', 'Couvreur Zingueur', 'Plaquiste', 'Carreleur', 'Serrurier Métallier',
+            'Conducteur de Travaux', 'Chef de Chantier', 'Grutier', 'Technicien CVC',
+            // Restauration & Hôtellerie
+            'Cuisinier', 'Commis de Cuisine', 'Chef de Partie', 'Second de Cuisine', 'Chef Cuisinier',
+            'Serveur / Serveuse', 'Barman / Barmaid', 'Chef de Rang', 'Plongeur en Restauration',
+            'Employé Polyvalent de Restauration', 'Réceptionniste Hôtel', 'Pâtissier', 'Boulanger',
+            // Santé, Soins & Petite Enfance
+            'Infirmier / Infirmière', 'Aide-Soignant / Aide-Soignante', 'Auxiliaire de Vie',
+            'Éducateur Spécialisé', 'Accompagnant Éducatif Petite Enfance', 'Agent de Crèche',
+            'Secrétaire Médicale', 'Préparateur en Pharmacie', 'Ambulancier', 'Kinésithérapeute',
+            // Transport & Logistique
+            'Chauffeur Livreur', 'Chauffeur Poids Lourd (SPL / PL)', 'Cariste CACES',
+            'Préparateur de Commandes', 'Magasinier Cariste', 'Gestionnaire de Stocks',
+            'Agent de Quai', 'Affréteur', 'Responsable d\'Exploitation Logistique',
+            // Commerce & Vente
+            'Vendeur Conseil', 'Conseiller de Vente', 'Responsable de Magasin', 'Directeur de Boutique',
+            'Hôte / Hôtesse de Caisse', 'Commercial B2B', 'Commercial Terrain', 'Téléconseiller',
+            'Négociateur Immobilier', 'Chargé de Clientèle', 'Chef de Rayon',
+            // Tertiaire, Finance, RH & Gestion
+            'Comptable', 'Assistant Comptable', 'Contrôleur de Gestion', 'Gestionnaire de Paie',
+            'Assistant Administratif', 'Secrétaire Polyvalente', 'Office Manager',
+            'Chargé de Recrutement', 'Responsable Ressources Humaines', 'Juriste d\'Entreprise',
+            // Sécurité, Maintenance & Services
+            'Agent de Sécurité', 'Agent de Sécurité Incendie (SSIAP)', 'Agent de Propreté / Entretien',
+            'Technicien de Maintenance Industrielle', 'Mécanicien Automobile', 'Agent d\'Accueil'
         ];
 
+        const normStr = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+        let suggestDebounceTimer = null;
+
         window.SwipeAutocomplete = {
-            show(query) {
+            async show(query) {
                 const portal = document.getElementById('suggest-portal');
                 const list   = document.getElementById('suggest-list');
                 if (!portal || !list) return;
-                if (!query || query.length < 2) { portal.classList.remove('open'); return; }
 
-                const q = query.toLowerCase();
-                const matches = SUGGEST_POOL
-                    .filter(s => s.toLowerCase().includes(q))
-                    .slice(0, 6);
+                const qRaw = (query || '').trim();
+                const qNorm = normStr(qRaw);
 
-                if (!matches.length) { portal.classList.remove('open'); return; }
+                if (qNorm.length < 1) {
+                    portal.classList.remove('open');
+                    return;
+                }
 
-                list.innerHTML = matches.map(m => {
-                    const idx = m.toLowerCase().indexOf(q);
-                    const hi  = idx >= 0
-                        ? m.slice(0,idx) + `<span class="match">${m.slice(idx,idx+q.length)}</span>` + m.slice(idx+q.length)
-                        : m;
-                    return `<div class="suggest-item" onclick="window._swipeApp?.selectSuggestion('${m.replace(/'/g,"\\'")}')">
+                // 1. Recherche instantanée dans le dictionnaire local multi-secteurs (accent-insensible)
+                let matches = SUGGEST_POOL.filter(s => {
+                    const sn = normStr(s);
+                    return sn.includes(qNorm);
+                });
+
+                // Prioriser les débuts de mots
+                matches.sort((a, b) => {
+                    const an = normStr(a);
+                    const bn = normStr(b);
+                    const aStarts = an.startsWith(qNorm) ? 0 : 1;
+                    const bStarts = bn.startsWith(qNorm) ? 0 : 1;
+                    return aStarts - bStarts;
+                });
+
+                matches = matches.slice(0, 7);
+
+                if (matches.length > 0) {
+                    this.render(matches, qRaw, portal, list);
+                    return;
+                }
+
+                // 2. Si aucun résultat local et saisie > 2 chars, appel API suggest IA/Backend avec debounce
+                if (qNorm.length >= 2) {
+                    clearTimeout(suggestDebounceTimer);
+                    suggestDebounceTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch('/api/bot/suggest', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ text: qRaw })
+                            });
+                            if (res.ok) {
+                                const data = await res.json();
+                                const dynamic = data.suggestions || [];
+                                if (dynamic.length > 0) {
+                                    this.render(dynamic.slice(0, 6), qRaw, portal, list);
+                                    return;
+                                }
+                            }
+                        } catch (_) {}
+                        portal.classList.remove('open');
+                    }, 220);
+                } else {
+                    portal.classList.remove('open');
+                }
+            },
+
+            render(items, qRaw, portal, list) {
+                const qn = normStr(qRaw);
+                list.innerHTML = items.map(m => {
+                    const mn = normStr(m);
+                    const idx = mn.indexOf(qn);
+                    let hi = m;
+                    if (idx >= 0) {
+                        hi = m.slice(0, idx) + `<span class="match">${m.slice(idx, idx + qRaw.length)}</span>` + m.slice(idx + qRaw.length);
+                    }
+                    const esc = m.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    return `<div class="suggest-item" onclick="window._swipeApp?.selectSuggestion('${esc}')">
                         <i data-lucide="search" style="width:14px;height:14px"></i>
                         <span>${hi}</span>
                     </div>`;
@@ -627,29 +339,216 @@
                 portal.classList.add('open');
                 lucide.createIcons();
             },
-            hide() { document.getElementById('suggest-portal')?.classList.remove('open'); }
+
+            hide() {
+                document.getElementById('suggest-portal')?.classList.remove('open');
+            }
         };
 
-        // ── HEADER AUTO-HIDE ──────────────────────────
+        // ── SMOOTH SCROLL POSITION TRACKER (SANS JITTER) ─────────
         (() => {
-            const vp     = document.getElementById('reel-viewport');
-            const dots   = document.getElementById('progress-dots');
+            const vp   = document.getElementById('reel-viewport');
+            const dots = document.getElementById('progress-dots');
             if (!vp) return;
-            vp.addEventListener('scroll', () => {
-                const idx = Math.round(vp.scrollTop / innerHeight);
-                document.querySelectorAll('.reel-unit').forEach((u, i) => {
-                    u.classList.toggle('active', i === idx);
-                });
 
-                // Update progress dots
-                if (dots) {
-                    const total = Math.min(document.querySelectorAll('.reel-unit').length, 8);
-                    [...dots.children].forEach((d, i) => {
-                        d.classList.toggle('active', i === Math.min(idx, total - 1));
+            let isTicking = false;
+            let currentActiveIdx = 0;
+
+            vp.addEventListener('scroll', () => {
+                if (!isTicking) {
+                    window.requestAnimationFrame(() => {
+                        const h = window.innerHeight || 1;
+                        const idx = Math.max(0, Math.round(vp.scrollTop / h));
+                        if (idx !== currentActiveIdx) {
+                            currentActiveIdx = idx;
+                            const units = vp.querySelectorAll('.reel-unit');
+                            units.forEach((u, i) => {
+                                u.classList.toggle('active', i === idx);
+                            });
+
+                            if (dots) {
+                                const total = Math.min(units.length, 8);
+                                [...dots.children].forEach((d, i) => {
+                                    d.classList.toggle('active', i === Math.min(idx, total - 1));
+                                });
+                            }
+                        }
+                        isTicking = false;
                     });
+                    isTicking = true;
                 }
             }, { passive: true });
         })();
+    </script>
+
+    <!-- ── APEX DRAWER (Bot IA) ─────────────────────────── -->
+    <div id="drawer-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s" onclick="closeDrawer()" aria-hidden="true"></div>
+    <div id="apex-drawer" role="dialog" aria-label="Assistant IA APEX" aria-hidden="true"
+         style="position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#18181b;border-left:1px solid rgba(255,255,255,.1);z-index:600;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1)">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0">
+            <div style="width:34px;height:34px;background:#f97316;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:900;letter-spacing:-1px">A</div>
+            <div>
+                <div style="font-size:15px;font-weight:700;color:#fff">APEX</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5)">Votre guide emploi personnel</div>
+            </div>
+            <button onclick="closeDrawer()" aria-label="Fermer" style="margin-left:auto;width:30px;height:30px;border-radius:7px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+        </div>
+        <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth">
+            <div style="display:flex;gap:8px;max-width:88%;align-self:flex-start">
+                <div style="width:28px;height:28px;border-radius:50%;background:#f97316;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="bot" style="width:13px;height:13px;color:#fff"></i></div>
+                <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:13px;border-bottom-left-radius:3px;padding:9px 13px;font-size:13px;color:#fff;line-height:1.55">Bonjour ! Je suis APEX, votre assistant emploi.<br>Je peux vous aider à trouver une offre, préparer un entretien, améliorer votre CV. Par où on commence ?</div>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0">
+            <button onclick="sendQuickMessage('Aide-moi préparer mon entretien')" style="flex-shrink:0;padding:7px 12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:20px;color:#f97316;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap"><i data-lucide="mic" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>Entretien</button>
+            <button onclick="sendQuickMessage('Analyse mon CV')" style="flex-shrink:0;padding:7px 12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:20px;color:#f97316;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap"><i data-lucide="file-text" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>CV</button>
+            <button onclick="sendQuickMessage('Quelles certifications gratuites recommandes-tu ?')" style="flex-shrink:0;padding:7px 12px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:20px;color:#f97316;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap"><i data-lucide="award" style="width:12px;height:12px;vertical-align:middle;margin-right:4px"></i>Certifs</button>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px 14px 14px;flex-shrink:0">
+            <textarea id="chat-inp" placeholder="Posez votre question…" onkeydown="chatKey(event)" aria-label="Message pour APEX"
+                style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:13px;padding:10px 12px;resize:none;height:44px;font-family:inherit;outline:none"></textarea>
+            <button onclick="sendMsg()" aria-label="Envoyer" style="width:44px;height:44px;background:#f97316;border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="send" style="width:16px;height:16px;color:#fff"></i></button>
+        </div>
+    </div>
+
+    <!-- ── MODAL LOGIN ─────────────────────────────────── -->
+    <div id="login-modal" onclick="if(event.target===this)closeLoginModal()"
+         style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:700;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;padding:16px">
+        <div style="background:#18181b;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px;width:100%;max-width:400px;animation:fadeUp .25s ease">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+                <div>
+                    <div style="font-size:18px;font-weight:800;color:#fff">Se connecter</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">Accédez à votre espace APEX</div>
+                </div>
+                <button onclick="closeLoginModal()" style="width:30px;height:30px;border-radius:7px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+            </div>
+            <form onsubmit="handleLogin(event)">
+                <div style="margin-bottom:14px">
+                    <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7);display:block;margin-bottom:6px">Adresse e-mail</label>
+                    <input type="email" id="login-email" placeholder="votre@email.fr" required style="width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:14px;outline:none;box-sizing:border-box">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="font-size:12px;font-weight:600;color:rgba(255,255,255,.7);display:block;margin-bottom:6px">Mot de passe</label>
+                    <input type="password" id="login-pwd" placeholder="Votre mot de passe" required style="width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:14px;outline:none;box-sizing:border-box">
+                </div>
+                <div id="login-error-swipe" style="display:none;color:#f87171;font-size:12px;margin-bottom:12px;padding:8px 12px;background:rgba(239,68,68,.1);border-radius:8px;border:1px solid rgba(239,68,68,.2)"></div>
+                <div style="display:flex;gap:10px">
+                    <button type="button" onclick="closeLoginModal()" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;font-size:14px;font-weight:600">Annuler</button>
+                    <button type="submit" style="flex:2;padding:11px;border-radius:10px;border:none;background:#f97316;color:#fff;cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px"><i data-lucide="log-in" style="width:15px;height:15px"></i> Se connecter</button>
+                </div>
+            </form>
+            <div style="text-align:center;margin-top:16px;font-size:13px;color:rgba(255,255,255,.4)">
+                Pas encore de compte ? <a href="register.html" style="color:#f97316;font-weight:600">Créer un compte</a>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        // ── DRAWER APEX ──────────────────────────────────────
+        window.openDrawer = function(prefill) {
+            document.getElementById('apex-drawer').classList.add('open');
+            document.getElementById('drawer-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            if (typeof prefill === 'string') {
+                const inp = document.getElementById('chat-inp');
+                if (inp) inp.value = prefill;
+            }
+            lucide.createIcons();
+        };
+        window.closeDrawer = function() {
+            document.getElementById('apex-drawer').classList.remove('open');
+            document.getElementById('drawer-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        };
+
+        // ── LOGIN MODAL ──────────────────────────────────────
+        window.openLoginModal = function() {
+            const m = document.getElementById('login-modal');
+            m.classList.add('open');
+            lucide.createIcons();
+            setTimeout(() => document.getElementById('login-email')?.focus(), 100);
+        };
+        window.closeLoginModal = function() {
+            document.getElementById('login-modal').classList.remove('open');
+        };
+
+        // ── HANDLE LOGIN (swipe page) ────────────────────────
+        if (!window.handleLogin) {
+            window.handleLogin = async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value.trim();
+                const pwd   = document.getElementById('login-pwd').value;
+                const errEl = document.getElementById('login-error-swipe');
+                errEl.style.display = 'none';
+                try {
+                    const r = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ email, password: pwd })
+                    });
+                    const data = await r.json();
+                    if (!r.ok) {
+                        errEl.textContent = data.error || 'Email ou mot de passe incorrect.';
+                        errEl.style.display = 'block';
+                        return;
+                    }
+                    if (data.accessToken && typeof window.setTokens === 'function') {
+                        window.setTokens(data.accessToken, data.user);
+                    } else if (data.accessToken) {
+                        localStorage.setItem('apex_token', data.accessToken);
+                        if (data.user) localStorage.setItem('apex_user', JSON.stringify(data.user));
+                    }
+                    closeLoginModal();
+                    updateSwipeAuthIcon();
+                } catch(ex) {
+                    errEl.textContent = 'Erreur réseau. Réessayez.';
+                    errEl.style.display = 'block';
+                }
+            };
+        }
+
+        // ── BOT CHAT (minimal pour swipe) ────────────────────
+        window.sendMsg = window.sendMsg || async function() {
+            const inp = document.getElementById('chat-inp');
+            const txt = inp?.value.trim();
+            if (!txt) return;
+            inp.value = '';
+            _swipeAppendMsg(txt, true);
+            try {
+                const r = await fetch('/api/jobs/chat', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ message: txt, history: [] })
+                });
+                const d = await r.json();
+                _swipeAppendMsg(d.reply || d.message || 'Je ne peux pas répondre pour l\'instant.', false);
+            } catch {
+                _swipeAppendMsg('Erreur réseau. Réessayez.', false);
+            }
+        };
+        window.sendQuickMessage = window.sendQuickMessage || function(msg) {
+            const inp = document.getElementById('chat-inp');
+            if (inp) { inp.value = msg; window.sendMsg(); }
+        };
+        window.chatKey = window.chatKey || function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMsg(); }
+        };
+        function _swipeAppendMsg(text, isUser) {
+            const box = document.getElementById('chat-msgs');
+            if (!box) return;
+            const div = document.createElement('div');
+            div.style.cssText = `display:flex;gap:8px;max-width:88%;align-self:${isUser?'flex-end':'flex-start'};${isUser?'flex-direction:row-reverse':''}`;
+            if (!isUser) {
+                div.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:#f97316;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="bot" style="width:13px;height:13px;color:#fff"></i></div><div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:13px;border-bottom-left-radius:3px;padding:9px 13px;font-size:13px;color:#fff;line-height:1.55">${text}</div>`;
+            } else {
+                div.innerHTML = `<div style="background:#f97316;border-radius:13px;border-bottom-right-radius:3px;padding:9px 13px;font-size:13px;color:#fff;line-height:1.55">${text}</div>`;
+            }
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

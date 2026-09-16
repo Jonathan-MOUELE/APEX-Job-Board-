@@ -285,6 +285,7 @@ window.openDrawer = function(prefill) {
   const ov=document.getElementById('drawer-overlay');
   if(d)  { d.classList.add('open'); document.body.style.overflow='hidden'; forceLucide(d); }
   if(ov) ov.classList.add('open');
+  document.getElementById('apex-account-panel')?.classList.remove('open');
   if(typeof prefill==='string') { const inp=document.getElementById('chat-inp'); if(inp) inp.value=prefill; }
   EventBus.emit(EV.DRAWER_OPEN, {});
 };
@@ -293,6 +294,14 @@ window.closeDrawer = function() {
   document.getElementById('drawer-overlay')?.classList.remove('open');
   document.body.style.overflow='';
   EventBus.emit(EV.DRAWER_CLOSE, {});
+};
+window.toggleDrawer = function() {
+  const d=document.getElementById('apex-drawer');
+  if (d && d.classList.contains('open')) {
+    window.closeDrawer();
+  } else {
+    window.openDrawer();
+  }
 };
 
 function _appendMsg(text, isUser) {
@@ -370,12 +379,29 @@ window.sendQuickMessage = function(text) {
 window.chatKey = e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} };
 
 window.handleChatFile = function(input) {
-  const f=input?.files?.[0]; if(!f) return;
-  if(!['.pdf','.doc','.docx','.odt'].includes('.'+f.name.split('.').pop().toLowerCase())){
-    showToast('Format PDF, Word ou ODT uniquement.','error'); return;
+  const f = input?.files?.[0]; if (!f) return;
+  const ext = '.' + f.name.split('.').pop().toLowerCase();
+  if (!['.pdf', '.doc', '.docx', '.odt'].includes(ext)) {
+    showToast('Format PDF, Word ou ODT uniquement.', 'error'); return;
   }
   _appendMsg(`[Fichier joint : ${f.name}]`, true);
-  setTimeout(()=>_appendMsg(`Fichier "${f.name}" reçu. Uploadez votre CV dans votre profil pour une analyse complète.`, false), 700);
+  
+  const token = localStorage.getItem('apex_token') || sessionStorage.getItem('apex_token');
+  if (token) {
+    _appendMsg(`Fichier "${f.name}" reçu. Lancement de l'analyse automatique et enregistrement sur votre profil…`, false);
+    if (typeof window.profUploadCv === 'function') {
+      window.profUploadCv(f).then(() => {
+        setTimeout(() => {
+          _appendMsg("Votre CV a été analysé et lié à votre compte ! Vous pouvez me poser toutes vos questions pour optimiser vos candidatures ou cibler des offres compatibles.", false);
+        }, 1200);
+      });
+    }
+  } else {
+    setTimeout(() => {
+      _appendMsg(`Fichier "${f.name}" bien reçu. Connectez-vous à votre compte pour que je puisse sauvegarder vos compétences et calculer vos scores de compatibilité !`, false);
+      if (typeof openLoginModal === 'function') openLoginModal();
+    }, 700);
+  }
 };
 
 // ══════════════════════════════════════════════════════
@@ -604,6 +630,136 @@ window.addEventListener('scroll', () => {
     }
   }
 });
+
+// ─────────────────────────────────
+// DASHBOARD ANALYTICS & PTR
+// ─────────────────────────────────
+window._loadDashboardAnalytics = async function() {
+    const skeleton = document.getElementById('dashboard-skeletons');
+    const content = document.getElementById('dashboard-content');
+    
+    if (skeleton) skeleton.style.display = 'flex';
+    if (content) content.style.display = 'none';
+
+    try {
+        const res = await window.apiFetch('/api/profile/analytics');
+        if (!res.ok) throw new Error('Erreur de chargement');
+        const data = await res.json();
+        
+        // Update KPIs
+        document.getElementById('dash-total-actions').innerText = data.stats.totalActions || 0;
+        document.getElementById('dash-total-cv').innerText = data.stats.cvAnalyzed || 0;
+        document.getElementById('dash-total-jobs').innerText = data.stats.jobsScored || 0;
+
+        // Render timeline
+        const tl = document.getElementById('dash-timeline');
+        tl.innerHTML = '';
+        if (data.history && data.history.length > 0) {
+            data.history.forEach(item => {
+                let icon = 'activity';
+                let color = 'var(--muted)';
+                let bg = 'rgba(255,255,255,0.05)';
+                let title = 'Action Inconnue';
+                let desc = '';
+
+                if (item.actionType === 'CV_PARSED' || item.actionType === 'CV_ANALYSIS') {
+                    icon = 'file-check-2'; color = '#3b82f6'; bg = 'rgba(59,130,246,0.1)';
+                    title = 'CV Analysé';
+                    try {
+                        const d = JSON.parse(item.detailsJson);
+                        desc = d.fileName ? `Fichier: ${d.fileName}` : 'Analyse de votre profil';
+                    } catch(e){}
+                } else if (item.actionType === 'JOB_SWIPE_MATCH') {
+                    icon = 'crosshair'; color = '#10b981'; bg = 'rgba(16,185,129,0.1)';
+                    title = 'Compatibilité Évaluée';
+                    try {
+                        const d = JSON.parse(item.detailsJson);
+                        desc = `Offre: ${d.jobTitle} - Score: ${d.score}/100`;
+                    } catch(e){}
+                } else if (item.actionType === 'CHAT_MESSAGE') {
+                    icon = 'message-circle'; color = 'var(--orange)'; bg = 'rgba(249,115,22,0.1)';
+                    title = 'Interaction Bot';
+                    desc = 'Vous avez discuté avec l\'IA APEX';
+                }
+
+                tl.innerHTML += `
+                    <div class="timeline-item">
+                        <div class="timeline-icon" style="color:${color}; background:${bg}">
+                            <i data-lucide="${icon}" style="width:20px;height:20px"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${title}</div>
+                            <div class="timeline-desc">${desc}</div>
+                        </div>
+                        <div class="timeline-time">
+                            ${window.relativeDate(item.createdAt)}
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            tl.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px;">Aucune donnée d'analytique pour le moment.</div>`;
+        }
+        
+        forceLucide(tl);
+    } catch (err) {
+        console.error("Dashboard err", err);
+    } finally {
+        if (skeleton) skeleton.style.display = 'none';
+        if (content) content.style.display = 'block';
+    }
+};
+
+// Pull to refresh on dashboard
+const dashScroll = document.getElementById('dashboard-scroll-area');
+if (dashScroll) {
+    let startY = 0;
+    let currentY = 0;
+    let isRefreshing = false;
+    const indicator = document.getElementById('ptr-indicator');
+    const icon = document.getElementById('ptr-icon');
+
+    dashScroll.addEventListener('touchstart', e => {
+        if (dashScroll.scrollTop === 0) startY = e.touches[0].clientY;
+        else startY = 0;
+    }, {passive:true});
+
+    dashScroll.addEventListener('touchmove', e => {
+        if (startY === 0 || isRefreshing) return;
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+
+        if (diff > 0) {
+            indicator.style.display = 'flex';
+            if (diff > 60) {
+                icon.style.transform = 'rotate(180deg)';
+                if (navigator.vibrate && diff < 65) navigator.vibrate([20]); // Haptic
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    }, {passive:true});
+
+    dashScroll.addEventListener('touchend', e => {
+        if (startY === 0 || isRefreshing) return;
+        const diff = currentY - startY;
+        if (diff > 60) {
+            isRefreshing = true;
+            document.getElementById('ptr-text').innerText = "Actualisation...";
+            if (navigator.vibrate) navigator.vibrate([50]);
+            
+            _loadDashboardAnalytics().then(() => {
+                indicator.style.display = 'none';
+                document.getElementById('ptr-text').innerText = "Tirer pour actualiser";
+                icon.style.transform = 'rotate(0deg)';
+                isRefreshing = false;
+            });
+        } else {
+            indicator.style.display = 'none';
+        }
+        startY = 0;
+    }, {passive:true});
+}
 
 
 

@@ -21,6 +21,7 @@ public class ApexDbContext(DbContextOptions<ApexDbContext> options) : DbContext(
     public DbSet<Bookmark>      Bookmarks     => Set<Bookmark>();
     public DbSet<SearchAlert>   SearchAlerts  => Set<SearchAlert>();
     public DbSet<JobApplication> JobApplications => Set<JobApplication>();
+    public DbSet<BotAnalytic>   BotAnalytics  => Set<BotAnalytic>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -96,6 +97,15 @@ public class ApexDbContext(DbContextOptions<ApexDbContext> options) : DbContext(
             e.HasOne(c => c.User)
              .WithMany(u => u.JobApplications)
              .HasForeignKey(c => c.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+        // ─── BotAnalytic ─────────────────────────────────────────
+        modelBuilder.Entity<BotAnalytic>(e =>
+        {
+            e.HasIndex(ba => new { ba.UserId, ba.ActionType });
+            e.HasOne(ba => ba.User)
+             .WithMany(u => u.BotAnalytics)
+             .HasForeignKey(ba => ba.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
     }

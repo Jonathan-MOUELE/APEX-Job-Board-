@@ -4,6 +4,58 @@
  */
 'use strict';
 
+// ── POOL DE VIDÉOS PAR SECTEUR (sans remise, Fisher-Yates) ─────────────────────────
+// Placez vos vidéos dans /videos/ ou utilisez des URLs Pexels HD (format MP4 direct)
+const VIDEO_POOLS = {
+    // ─ IT / Développement ──────────────────────────────────────────────────
+    it: [
+        // Coverr — gratuit, pas de compte
+        'https://coverr.co/videos/typing-on-a-laptop--7oNX6sLJp/download',
+        'https://coverr.co/videos/a-coder-types-on-a-computer/download',
+        // Pexels MP4 direct — chercher sur pexels.com/videos/ : coding, developer
+        // Remplacez ces URLs par les liens "Download Free Video" (bouton HD) de Pexels
+        // Ex: 'https://videos.pexels.com/video-files/XXXXX/XXXXX-hd_1920_1080_25fps.mp4'
+        // Pixabay (no-auth)
+        'https://cdn.pixabay.com/video/2022/08/17/128183-740860699_large.mp4', // code écran
+    ],
+    // ─ Générique professionnel ───────────────────────────────────────────
+    general: [
+        'https://cdn.pixabay.com/video/2020/04/03/35025-405715685_large.mp4', // bureau
+        'https://cdn.pixabay.com/video/2020/09/03/49289-456906888_large.mp4', // réunion
+        // Ajoutez vos vidéos ici : 'videos/mon-fichier.mp4'
+    ],
+};
+
+// Fisher-Yates shuffle (in-place)
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// Géreur de pool sans remise par secteur
+const VideoQueue = {
+    queues: {},
+    get(sector) {
+        const pool = VIDEO_POOLS[sector] || VIDEO_POOLS.general;
+        if (!pool.length) return null;
+        if (!this.queues[sector] || this.queues[sector].length === 0) {
+            // Re-remplir et shuffler
+            this.queues[sector] = shuffleArray([...pool]);
+        }
+        return this.queues[sector].pop();
+    }
+};
+
+// Détecte le secteur pour le pool vidéo
+function getSectorKey(title) {
+    const t = (title || '').toLowerCase();
+    if (/développeur|developer|informatique|syst[eè]me|réseau|devops|cloud|data|ia|web|front|back|full.?stack|php|java|python|react|node|sql/.test(t)) return 'it';
+    return 'general';
+}
+
 class SwipeStandalone {
     constructor() {
         // Support both old id and new id
@@ -13,11 +65,12 @@ class SwipeStandalone {
         this.loading = false;
         this.hasMore = true;
         this.query = new URLSearchParams(window.location.search).get('q') || 'développeur';
-        this.currentFilter = '';
+        this.location = '';       // champ ville
+        this.currentFilter = '';   // compat legacy
+        this.activeFilters = new Set(); // multi-select
 
         this.init();
         this.setupKeyboard();
-        this.setupWheel();
     }
 
 
@@ -53,7 +106,12 @@ class SwipeStandalone {
                 keyword: this.query,
                 range: `${(this.page - 1) * 15}-${this.page * 15 - 1}`
             });
-            if (this.currentFilter) params.set('contract', this.currentFilter);
+            if (this.location) params.set('location', this.location);
+            // Multi-filtres : France Travail n'accepte qu'une valeur par appel,
+            // on envoie le 1er filtre actif ; le reste est filtré côté client dans buildCard
+            const af = [...this.activeFilters];
+            if (af.length === 1) params.set('contract', af[0]);
+            else if (af.length === 0 && this.currentFilter) params.set('contract', this.currentFilter);
 
             const res = await apiFetch(`/api/jobs/search?${params}`);
             if (!res.ok) throw new Error('API Error');
@@ -128,8 +186,10 @@ class SwipeStandalone {
 
     async search() {
         const inp = document.getElementById('swipe-search-input');
+        const cityInp = document.getElementById('swipe-city-input');
         if (!inp) return;
-        this.query = inp.value.trim() || 'développeur';
+        this.query    = inp.value.trim() || 'développeur';
+        this.location = cityInp ? cityInp.value.trim() : '';
         window.SwipeAutocomplete?.hide();
         await this.loadMore(true);
     }
@@ -147,9 +207,27 @@ class SwipeStandalone {
     }
 
     async setFilter(btn, filter) {
-        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.currentFilter = filter;
+        if (!filter) {
+            // "Toutes" → réinitialiser
+            this.activeFilters.clear();
+            this.currentFilter = '';
+            document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+        } else {
+            // Toggle
+            if (this.activeFilters.has(filter)) {
+                this.activeFilters.delete(filter);
+                if (btn) btn.classList.remove('active');
+            } else {
+                this.activeFilters.add(filter);
+                if (btn) btn.classList.add('active');
+            }
+            // Désactiver "Toutes" dès qu'un filtre est actif
+            const toutesBtn = document.querySelector('.chip[data-filter-all]');
+            if (toutesBtn) toutesBtn.classList.toggle('active', this.activeFilters.size === 0);
+            // Compat legacy
+            this.currentFilter = this.activeFilters.size > 0 ? [...this.activeFilters][0] : '';
+        }
         await this.loadMore(true);
     }
 
@@ -159,17 +237,123 @@ class SwipeStandalone {
         const section = document.createElement('section');
         section.className = 'reel-unit' + (globalIdx === 0 ? ' active' : '');
 
-        const imgs = [
-            'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80'
-        ];
-        const bgImg = imgs[globalIdx % imgs.length];
+        // ── Détection du secteur pour choisir une image pertinente ────────────
+        const sectorImg = (function(title) {
+            const t = (title || '').toLowerCase();
+
+            // IT / Développement / Numérique
+            if (/développeur|developer|informatique|syst[eè]me|réseau|devops|cloud|data|ia|intelligence artificielle|cyberse|web|front|back|full.?stack|php|java|python|react|angular|node|sql|linux|windows|serveur|infrastructure|télécom/.test(t)) {
+                const itImgs = [
+                    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80', // code sur écran
+                    'https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=1200&q=80', // clavier + code
+                    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80', // laptop code
+                    'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80', // écran code coloré
+                    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80', // laptop dark code
+                ];
+                return itImgs[globalIdx % itImgs.length];
+            }
+
+            // Santé / Médical / Pharmacie
+            if (/santé|médecin|infirmi|aide.?soignant|pharmacien|kisiné|kinesith|chirurgi|médical|paramédical|bloc|urgence|hôpital|clinique|soins|radiol|biolog|laborat/.test(t)) {
+                const santeImgs = [
+                    'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=1200&q=80', // personnel médical
+                    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?auto=format&fit=crop&w=1200&q=80', // docteur bureau
+                    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80', // infirmierère
+                ];
+                return santeImgs[globalIdx % santeImgs.length];
+            }
+
+            // Commerce / Vente / Retail
+            if (/commercial|vendeur|vente|account.?manager|business.?developer|chargé.de.clientele|clientele|boutique|magasin|grande.?surface|retail|caissier|conseiller.?vente/.test(t)) {
+                const commerceImgs = [
+                    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=80', // caisse boutique pro
+                    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80', // équipe bureau dynamique
+                    'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80', // réunion commerciale
+                ];
+                return commerceImgs[globalIdx % commerceImgs.length];
+            }
+
+            // Finance / Comptabilité / Audit
+            if (/comptab|financ|audit|contrôleur|contrôle.de.gestion|tresorier|fiscal|bilan|expert.?comptable|analyste.financ|banque|assurance|credit/.test(t)) {
+                const finImgs = [
+                    'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80', // calculatrice + documents
+                    'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80', // bureau analyse
+                    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80', // graphiques écran (pro)
+                ];
+                return finImgs[globalIdx % finImgs.length];
+            }
+
+            // BTP / Construction / Architecture
+            if (/bâtiment|btp|construction|maçon|électrici|plombier|charpenti|conducteur.de.travaux|métreur|génie.civil|architecte|rénovation/.test(t)) {
+                const btpImgs = [
+                    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80', // chantier construction
+                    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1200&q=80', // casque chantier
+                ];
+                return btpImgs[globalIdx % btpImgs.length];
+            }
+
+            // Transport / Logistique / Magasin
+            if (/transport|logistique|chauffeur|livreur|cariste|magasini|prep.commande|supply.chain|entrepot|gestionnaire.stock/.test(t)) {
+                const logImgs = [
+                    'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80', // camion route
+                    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80', // entrepot logistique
+                ];
+                return logImgs[globalIdx % logImgs.length];
+            }
+
+            // Restauration / Hôtellerie
+            if (/restauration|cuisinier|serveur|chef|pâtissi|boulang|bar|hotel|hôtelier|réceptionniste|plongeur/.test(t)) {
+                const restaImgs = [
+                    'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80', // restaurant élégant
+                    'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1200&q=80', // chef cuisine
+                ];
+                return restaImgs[globalIdx % restaImgs.length];
+            }
+
+            // Militaire / Défense / Sécurité
+            if (/militaire|armée|défense|gendarm|police|pompier|gardien|sécurité|agent.de.surveillance|aps/.test(t)) {
+                const secImgs = [
+                    'https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=1200&q=80', // sécurité pro
+                    'https://images.unsplash.com/photo-1612838320302-4b3b3996e9e4?auto=format&fit=crop&w=1200&q=80', // cyber / défense
+                ];
+                return secImgs[globalIdx % secImgs.length];
+            }
+
+            // RH / Recrutement
+            if (/ressources.humaines|rh|recrutement|recruteur|drh|chargé.de.rh|gestionnaire.de.paie|paie/.test(t)) {
+                const rhImgs = [
+                    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=1200&q=80', // entretien RH
+                    'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80', // réunion RH
+                ];
+                return rhImgs[globalIdx % rhImgs.length];
+            }
+
+            // Communication / Marketing / Design
+            if (/marketing|communication|rédacteur|content|seo|graphiste|designer|webdesign|chargé.de.comm|digital/.test(t)) {
+                const mkImgs = [
+                    'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80', // réunion marketing
+                    'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80', // pitch présentation
+                ];
+                return mkImgs[globalIdx % mkImgs.length];
+            }
+
+            // Enseignement / Formation
+            if (/enseignant|professeur|formateur|éducateur|animateur|moniteur|précept|pédagog|institu/.test(t)) {
+                return 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80';
+            }
+
+            // Fallback : pool professionnel générique (bureau / meeting / laptop)
+            const fallback = [
+                'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1200&q=80', // laptop open space
+                'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80', // bureau moderne
+                'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80', // coworking
+                'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80', // réunion pro
+                'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80', // pitch
+            ];
+            return fallback[globalIdx % fallback.length];
+        })(job.intitule);
+
+        const bgImg = sectorImg;
 
         const companyName = job.entreprise?.nom || '';
         const color       = getCompanyColor(companyName);
@@ -181,8 +365,27 @@ class SwipeStandalone {
         const linkedInQ   = encodeURIComponent((companyName + ' ' + (job.intitule || '')).trim());
         const safeTitle   = esc(job.intitule || '').replace(/'/g, '&#39;');
 
+        const sectorKey = getSectorKey(job.intitule);
+        const videoUrl  = VideoQueue.get(sectorKey);
+        // Start aléatoire (entre 0 et 20s) pour varier les plans même avec la même vidéo
+        const videoStart = Math.floor(Math.random() * 20);
+
         section.innerHTML = `
-            <div class="reel-bg"><img src="${bgImg}" alt="" loading="lazy"></div>
+            <div class="reel-bg">
+                ${videoUrl ? `
+                <video
+                    autoplay muted loop playsinline
+                    preload="none"
+                    poster="${bgImg}"
+                    style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"
+                    oncanplay="this.currentTime=${videoStart}"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+                >
+                    <source src="${videoUrl}" type="video/mp4">
+                </video>
+                <img src="${bgImg}" alt="" loading="lazy" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0">
+                ` : `<img src="${bgImg}" alt="" loading="lazy">`}
+            </div>
             <div class="reel-overlay"></div>
 
             <div class="reel-body">

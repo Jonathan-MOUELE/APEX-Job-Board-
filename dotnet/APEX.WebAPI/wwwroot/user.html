@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Mon Profil & Dashboard — APEX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap"
+        rel="stylesheet">
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <meta name="theme-color" content="#f97316">
+    <script>
+        (function () {
+            const theme = localStorage.getItem('apex_theme') || localStorage.getItem('apex-theme') || 'light';
+            if (theme === 'dark') document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index.css">
+
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 2rem;
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 20px;
+            min-height: calc(100vh - 160px);
+        }
+
+        .dash-sidebar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .dash-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .dash-nav-link:hover {
+            background: rgba(249, 115, 22, 0.05);
+            color: var(--orange);
+        }
+
+        .dash-nav-link.active {
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--orange);
+            position: relative;
+        }
+
+        .dash-nav-link.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--orange);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .dash-main {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .dash-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .apex-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .apex-table th {
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .apex-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .apex-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .score-high { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .score-mid { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .score-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+        @media (max-width: 768px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header role="banner">
+        <a href="index.html" class="logo-wrap" aria-label="APEX ï¿½ Accueil">
+            <span class="logo-apex">APE<span>X</span></span>
+            <span class="logo-by">by AVERS</span>
+        </a>
+        <nav aria-label="Navigation principale">
+            <a href="index.html#offres" class="nav-link">Offres</a>
+            <a href="entreprises.html" class="nav-link">Entreprises</a>
+            <a href="swipe-n-job.html" class="nav-link">Swipe n' Job</a>
+        </nav>
+
+        <button class="btn-icon-sm" onclick="toggleTheme()" id="theme-btn" title="Changer de thÃ¨me"
+            aria-label="Basculer mode sombre">
+            <i data-lucide="moon"></i>
+        </button>
+        <div class="vr" aria-hidden="true"></div>
+        <div class="auth-group" style="display:flex;gap:6px;align-items:center">
+            <!-- Handled by UI.js -->
+        </div>
+        <a href="user.html" class="btn-solid" id="auth-profile-btn" style="display:none">
+            <i data-lucide="user"></i> Profil
+        </a>
+        <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu de navigation"
+            aria-expanded="false">
+            <i data-lucide="menu"></i>
+        </button>
+    </header>
+
+    <div class="dashboard-layout">
+        <!-- SIDEBAR -->
+        <aside class="dash-sidebar">
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px;">
+                <div id="dash-avatar" style="width:50px;height:50px;border-radius:12px;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;">U</div>
+                <div>
+                    <div id="dash-name" style="font-weight:700; font-size:1.1rem;">Utilisateur</div>
+                    <div id="dash-email" style="font-size:0.85rem; color:var(--muted);">email@test.com</div>
+                </div>
+            </div>
+
+            <nav>
+                <a href="#" class="dash-nav-link active" onclick="switchDashTab('analytics'); return false;" id="tab-btn-analytics">
+                    <i data-lucide="activity"></i> Analytics IA
+                </a>
+                <a href="#" class="dash-nav-link" onclick="switchDashTab('applications'); return false;" id="tab-btn-applications">
+                    <i data-lucide="briefcase"></i> Mes Candidatures
+                </a>
+                <a href="#" class="dash-nav-link" onclick="handleLogout(); return false;" style="color:var(--red); margin-top:20px;">
+                    <i data-lucide="log-out"></i> Déconnexion
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dash-main">
+
+            <!-- TAB: ANALYTICS -->
+            <div id="tab-analytics" class="dash-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 800; display:flex; align-items:center; gap:10px;">
+                            <i data-lucide="bot" style="color:var(--orange)"></i> APEX Monitoring
+                        </h2>
+                        <p style="color:var(--muted); font-size:0.9rem;">Toutes les actions et scores générés par l'Intelligence Artificielle.</p>
+                    </div>
+                </div>
+
+                <!-- KPIs -->
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                    <div class="kpi-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="color:var(--muted); font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="cpu" style="width:16px;height:16px;color:var(--orange)"></i> Actions IA
+                        </div>
+                        <div id="dash-total-actions" style="font-size:2.5rem; font-weight:800;">0</div>
+                    </div>
+                    <div class="kpi-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display:flex; flex-direction:column; gap:8px;">
+                        <div style="color:var(--muted); font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="crosshair" style="width:16px;height:16px;color:#10b981"></i> Offres Évaluées
+                        </div>
+                        <div id="dash-total-jobs" style="font-size:2.5rem; font-weight:800;">0</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Historique des analyses (Score IA)</h3>
+                <div class="table-responsive">
+                    <table class="apex-table">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Détails</th>
+                                <th>Score IA</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-analytics-tbody">
+                            <!-- Injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: APPLICATIONS -->
+            <div id="tab-applications" class="dash-panel" style="display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 800;">Mes Candidatures</h2>
+                        <p style="color:var(--muted); font-size:0.9rem;">Suivez l'état de vos postulations.</p>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="apex-table">
+                        <thead>
+                            <tr>
+                                <th>Entreprise</th>
+                                <th>Poste</th>
+                                <th>Ville</th>
+                                <th>Contrat</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-applications-tbody">
+                            <!-- Placeholder -->
+                            <tr><td colspan="5" style="text-align:center; color:var(--muted); padding: 30px;">Aucune candidature pour le moment.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav" aria-label="Navigation mobile principale">
+        <a href="index.html">
+            <i data-lucide="home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="swipe-n-job.html">
+            <i data-lucide="zap"></i>
+            <span>Swipe</span>
+        </a>
+        <a href="javascript:void(0)" onclick="toggleDrawer()" class="nav-bot-btn" aria-label="Assistant IA APEX">
+            <div class="bot-icon-wrapper">
+                <i data-lucide="message-circle"></i>
+            </div>
+        </a>
+        <a href="entreprises.html">
+            <i data-lucide="building-2"></i>
+            <span>Entreprises</span>
+        </a>
+        <a href="user.html" class="active" id="mobile-nav-profile">
+            <i data-lucide="user"></i>
+            <span>Profil</span>
+        </a>
+    </nav>
+
+    <script src="js/core.js?v=10"></script>
+    <script src="js/auth.js?v=10"></script>
+    <script src="js/ui.js?v=10"></script>
+    <script>
+        // Init Lucide
+        (function initLucide(n) {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            } else if (n < 50) {
+                setTimeout(function () { initLucide(n + 1); }, 100);
+            }
+        })(0);
+
+        function switchDashTab(tabId) {
+            document.querySelectorAll('.dash-nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-btn-' + tabId).classList.add('active');
+            
+            document.getElementById('tab-analytics').style.display = 'none';
+            document.getElementById('tab-applications').style.display = 'none';
+            
+            document.getElementById('tab-' + tabId).style.display = 'block';
+        }
+
+        async function initDashboard() {
+            if (!isLoggedIn()) {
+                window.location.href = "index.html"; // Redirect if not logged in
+                return;
+            }
+
+            const user = JSON.parse(localStorage.getItem('apex_user') || '{}');
+            document.getElementById('dash-name').innerText = user.name || 'Utilisateur';
+            document.getElementById('dash-email').innerText = user.email || '';
+            document.getElementById('dash-avatar').innerText = (user.name ? user.name[0] : 'U').toUpperCase();
+
+            try {
+                const res = await window.apiFetch('/api/profile/analytics');
+                if (!res.ok) throw new Error('Erreur API');
+                const data = await res.json();
+                
+                document.getElementById('dash-total-actions').innerText = data.stats.totalActions || 0;
+                document.getElementById('dash-total-jobs').innerText = data.stats.jobsScored || 0;
+
+                const tbody = document.getElementById('dash-analytics-tbody');
+                tbody.innerHTML = '';
+                
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach(item => {
+                        let actionText = item.actionType;
+                        let detailsText = '';
+                        let scoreHtml = '<span class="score-badge" style="color:var(--muted)">N/A</span>';
+                        
+                        if (item.actionType === 'JOB_SWIPE_MATCH') {
+                            actionText = 'Évaluation Offre (Swipe)';
+                            try {
+                                const d = JSON.parse(item.detailsJson);
+                                detailsText = d.jobTitle || 'Offre inconnue';
+                                if (d.score) {
+                                    let cls = 'score-low';
+                                    if(d.score >= 70) cls = 'score-high';
+                                    else if(d.score >= 50) cls = 'score-mid';
+                                    scoreHtml = `<span class="score-badge ${cls}"><i data-lucide="target" style="width:14px"></i> ${d.score}/100</span>`;
+                                }
+                            } catch(e){}
+                        } else if (item.actionType === 'CV_PARSED' || item.actionType === 'CV_ANALYSIS') {
+                            actionText = 'Analyse CV';
+                            detailsText = 'Extraction des compétences et bio';
+                        } else if (item.actionType === 'CHAT_MESSAGE') {
+                            actionText = 'Chat Bot';
+                            detailsText = 'Interaction conversationnelle';
+                        }
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:600;">${actionText}</td>
+                                <td>${detailsText}</td>
+                                <td>${scoreHtml}</td>
+                                <td style="color:var(--muted); font-size:0.85rem;">${window.relativeDate(item.createdAt)}</td>
+                            </tr>
+                        `;
+                    });
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px;">Aucune donnée pour le moment.</td></tr>`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

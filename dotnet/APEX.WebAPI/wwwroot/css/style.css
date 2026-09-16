@@ -30,6 +30,16 @@ textarea {
   font-family: inherit;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
 /* ── Design Tokens — Dark (default) ────────────────────────────── */
 :root {
   --bg: #09090b;
@@ -2298,16 +2308,26 @@ html:not(.dark) .bento-mask {
 
 /* ── Mobile Bottom Navigation ────────────────────────────────────── */
 .mobile-bottom-nav {
-  display: none;
+  display: none !important;
+}
+
+.mobile-bottom-nav a {
+  text-decoration: none;
+  color: var(--text-2);
 }
 
 @media (max-width: 768px) {
   body {
     padding-bottom: 80px !important;
   }
+
+  /* S'assurer que le footer n'est pas rogné par la bottom nav */
+  footer {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 8px)) !important;
+  }
   
   .mobile-bottom-nav {
-    display: flex;
+    display: flex !important;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -2337,6 +2357,10 @@ html:not(.dark) .bento-mask {
     flex: 1;
     height: 100%;
     transition: color 0.25s var(--ease);
+  }
+
+  .mobile-bottom-nav a span {
+    display: none;
   }
 
   .mobile-bottom-nav a i {
@@ -2403,4 +2427,306 @@ html:not(.dark) .bento-mask {
   100% {
     box-shadow: 0 0 15px rgba(249, 115, 22, 0.5), 0 0 30px rgba(249, 115, 22, 0.2);
   }
-}
+}
+
+/* ── Kanban Application Tracking ─────────────────────────────────── */
+.kanban-board {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scrollbar-width: thin;
+}
+
+.kanban-col {
+  flex: 1;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.kanban-col-hd {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.kanban-count {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.kanban-col-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 120px;
+  transition: background 0.2s;
+}
+
+.kanban-col-body.drag-over {
+  background: rgba(249, 115, 22, 0.08);
+  border-radius: 0 0 12px 12px;
+}
+
+.kanban-card {
+  background: var(--elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   APEX — OPTIMISATIONS MOBILE v2  (ajouts propres, pas d'override
+   agressif — les règles existantes restent valides)
+══════════════════════════════════════════════════════════════════ */
+
+/* ── Empêcher la sélection de texte accidentelle ─────────────── */
+.job-card,
+.feat-card,
+.tool-card,
+.article-card,
+.sector-chip,
+.city-card-gallery,
+.salary-card,
+.plan-card,
+.bento-card,
+.swipe-card,
+.kanban-card,
+.cchip,
+.qtag,
+.filter-pill,
+.sector-pill,
+.company-logo-item,
+.recruiter-chip,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Sections : padding réduit sur mobile ────────────────────── */
+@media (max-width: 768px) {
+  /* Sections principales */
+  .sec {
+    padding: 40px 16px !important;
+  }
+
+  /* Hero adjustments déjà couverts, mais on fixe les débordements */
+  #hero {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    overflow-x: hidden;
+  }
+
+  /* Companies strip */
+  .companies-strip {
+    padding: 14px 16px !important;
+  }
+
+  /* Features grid → 1 col */
+  .features-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Articles → 1 col */
+  .articles-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Plans → 1 col */
+  .plan-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Footer top → 1 col */
+  .footer-top {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  /* Footer bottom → colonne */
+  .footer-bottom {
+    flex-direction: column !important;
+    gap: 8px !important;
+    text-align: center !important;
+  }
+
+  /* Salary bench → 1 col */
+  .salary-bench-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* CTA Banner */
+  .cta-banner {
+    padding: 36px 20px !important;
+    border-radius: 14px !important;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cta-btn-primary,
+  .cta-btn-ghost {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Jobs list → 1 col */
+  .jobs-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hero collage caché sur mobile (évite le scroll horizontal) */
+  .hero-collage {
+    display: none !important;
+  }
+
+  /* Quick tags centrés */
+  .quick-tags {
+    justify-content: center;
+  }
+
+  /* Tools grid → 2 col sur tablet, 1 col sur phone */
+  .tools-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Tools → 1 col sur très petit */
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Bento sectors → 1 col */
+  .bento-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-auto-rows: 160px !important;
+  }
+
+  .bento-2x2,
+  .bento-2x1 {
+    grid-column: span 2 !important;
+    grid-row: span 1 !important;
+  }
+
+  /* Font h1 réduit */
+  h1 {
+    font-size: clamp(1.75rem, 7vw, 2.5rem) !important;
+  }
+
+  /* Sections encore plus compactes */
+  .sec {
+    padding: 28px 14px !important;
+  }
+
+  /* Drawer full screen */
+  .drawer {
+    max-width: 100vw !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MODE LITE — Économie de données mobiles
+   Activé si : navigator.connection.saveData = true
+            ou prefers-reduced-data
+            ou classe .apex-lite sur <html>
+══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-data: reduce) {
+  html { --lite: 1; }
+}
+
+
+
+
+html.apex-lite body::after,
+html[data-lite="true"] body::after {
+  display: none !important;
+}
+
+/* Couper les animations lourdes */
+html.apex-lite .dc-col-1,
+html.apex-lite .dc-col-2,
+html.apex-lite .dc-col-3,
+html[data-lite="true"] .dc-col-1,
+html[data-lite="true"] .dc-col-2,
+html[data-lite="true"] .dc-col-3 {
+  animation: none !important;
+}
+
+html.apex-lite .gradient-text,
+html[data-lite="true"] .gradient-text {
+  animation: none !important;
+  background: var(--accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: unset !important;
+}
+
+html.apex-lite .marquee-track,
+html[data-lite="true"] .marquee-track {
+  animation: none !important;
+  justify-content: flex-start;
+  overflow-x: auto;
+}
+
+html.apex-lite .botGlowPulse,
+html[data-lite="true"] .mobile-bottom-nav .bot-icon-wrapper {
+  animation: none !important;
+}
+
+html.apex-lite .bento-card:hover,
+html.apex-lite .glass-card:hover,
+html[data-lite="true"] .bento-card:hover,
+html[data-lite="true"] .glass-card:hover {
+  transform: none !important;
+}
+
+html.apex-lite .sk,
+html[data-lite="true"] .sk {
+  animation: none !important;
+  background: var(--elevated);
+}
+
+/* Toutes les transitions réduites */
+html.apex-lite *,
+html[data-lite="true"] * {
+  transition-duration: 0.1s !important;
+  animation-duration: 0.1s !important;
+}
+
+
+

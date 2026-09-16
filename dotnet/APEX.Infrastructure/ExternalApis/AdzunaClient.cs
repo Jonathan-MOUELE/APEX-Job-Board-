@@ -72,7 +72,8 @@ public class AdzunaClient(
                 return [];
             }
 
-            var jsonStr = await response.Content.ReadAsStringAsync(ct);
+            var bytes = await response.Content.ReadAsByteArrayAsync(ct);
+            var jsonStr = System.Text.Encoding.UTF8.GetString(bytes);
             var root = System.Text.Json.JsonSerializer.Deserialize<AdzunaResponse>(jsonStr, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (root?.Results is null) return [];
 
@@ -83,7 +84,7 @@ public class AdzunaClient(
                 CompanyLogoUrl:     null,
                 Location:           j.Location?.DisplayName ?? location ?? "",
                 PostalCode:         null,
-                ContractType:       j.ContractType ?? j.ContractTime ?? "CDI",
+                ContractType:       NormalizeContract(j.ContractType, j.ContractTime),
                 ExperienceRequired: null,
                 Description:        j.Description ?? "",
                 RequiredTechs:      [],
@@ -118,6 +119,21 @@ public class AdzunaClient(
             (null, double mx)      => $"Jusqu'à {mx:N0} €/an",
             _                      => null
         };
+
+    private static string NormalizeContract(string? rawType, string? rawTime)
+    {
+        var raw = (rawType ?? rawTime ?? "CDI").Trim().ToLowerInvariant().Replace('-', '_');
+        return raw switch
+        {
+            "full_time" or "fulltime"   => "Temps plein",
+            "part_time" or "parttime"   => "Temps partiel",
+            "permanent"                 => "CDI",
+            "contract"                  => "CDD",
+            "internship"                => "Stage",
+            "apprenticeship"            => "Alternance",
+            _                           => string.IsNullOrWhiteSpace(rawType) ? (rawTime ?? "CDI") : rawType
+        };
+    }
 
     // ── DTOs ──────────────────────────────────────────────────────
 

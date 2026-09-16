@@ -74,6 +74,45 @@ public class ProfileController(
     }
 
     // ══════════════════════════════════════════════════════════
+    //  GET /api/profile/analytics
+    // ══════════════════════════════════════════════════════════
+
+    [HttpGet("analytics")]
+    public async Task<IActionResult> GetAnalytics()
+    {
+        var userId = GetUserId();
+        if (userId is null) return Unauthorized();
+
+        var history = await db.BotAnalytics
+            .Where(b => b.UserId == userId)
+            .OrderByDescending(b => b.CreatedAt)
+            .Take(50)
+            .Select(b => new
+            {
+                b.Id,
+                b.ActionType,
+                b.DetailsJson,
+                b.TokensUsed,
+                b.CreatedAt
+            })
+            .ToListAsync();
+
+        var stats = new
+        {
+            TotalActions = await db.BotAnalytics.CountAsync(b => b.UserId == userId),
+            TotalTokens = await db.BotAnalytics.Where(b => b.UserId == userId).SumAsync(b => b.TokensUsed),
+            CvAnalyzed = await db.BotAnalytics.CountAsync(b => b.UserId == userId && b.ActionType == "CV_ANALYSIS"),
+            JobsScored = await db.BotAnalytics.CountAsync(b => b.UserId == userId && b.ActionType == "JOB_SWIPE_MATCH")
+        };
+
+        return Ok(new
+        {
+            stats,
+            history
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════
     //  PUT /api/profile/bio
     // ══════════════════════════════════════════════════════════
 
@@ -160,23 +199,25 @@ public class ProfileController(
 
     [HttpPost("upload-cv")]
     [RequestSizeLimit(10 * 1024 * 1024)] // 10MB limit server-side (client : 5MB)
-    public async Task<IActionResult> UploadCv(IFormFile file)
+    public async Task<IActionResult> UploadCv(IFormFile? file, [FromForm(Name = "cv")] IFormFile? cv)
     {
+        var targetFile = file ?? cv;
         var userId = GetUserId();
-        if (userId is null) return Unauthorized();
+        if (userId is null) 
+            return Unauthorized(new { error = "Veuillez vous connecter pour importer votre CV." });
 
-        if (file is null || file.Length == 0)
+        if (targetFile is null || targetFile.Length == 0)
             return BadRequest(new { error = "Aucun fichier envoyé." });
 
-        if (file.Length > 5 * 1024 * 1024)
+        if (targetFile.Length > 5 * 1024 * 1024)
             return BadRequest(new { error = "Fichier trop volumineux. Maximum 5 MB." });
 
-        if (!file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase)
-            && !file.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { error = "Seuls les fichiers PDF sont acceptés." });
+        if (!targetFile.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase)
+            && !targetFile.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { error = "Seuls les fichiers PDF sont acceptés pour l'analyse automatique." });
 
         // Validate PDF magic bytes (%PDF — 0x25 0x50 0x44 0x46)
-        using (var magicStream = file.OpenReadStream())
+        using (var magicStream = targetFile.OpenReadStream())
         {
             var magic = new byte[4];
             var read = await magicStream.ReadAsync(magic.AsMemory(0, 4));
@@ -187,13 +228,13 @@ public class ProfileController(
         var user = await db.Users
             .Include(u => u.Profile)
             .FirstOrDefaultAsync(u => u.Id == userId);
-        if (user is null) return NotFound();
+        if (user is null) return NotFound(new { error = "Utilisateur introuvable." });
 
         try
         {
-            logger.LogInformation("[PROFILE] CV upload: userId={Id} file={File}", userId, file.FileName);
+            logger.LogInformation("[PROFILE] CV upload: userId={Id} file={File}", userId, targetFile.FileName);
 
-            using var stream = file.OpenReadStream();
+            using var stream = targetFile.OpenReadStream();
             var result = await cvParser.ParsePdfAsync(stream);
 
             // Mise à jour de l'entité User (raw text)
@@ -206,7 +247,7 @@ public class ProfileController(
 
             profile.HumanizedBio = result.HumanizedBio;
             profile.ProfileJson = JsonSerializer.Serialize(result.Profile, JsonOpts);
-            profile.CvFileName = file.FileName;
+            profile.CvFileName = targetFile.FileName;
             profile.CvUploadedAt = DateTime.UtcNow;
             profile.UpdatedAt = DateTime.UtcNow;
 
@@ -216,6 +257,15 @@ public class ProfileController(
                 var techList = result.Profile.Technologies.Keys.ToList();
                 profile.TechStackJson = JsonSerializer.Serialize(techList);
             }
+
+            db.BotAnalytics.Add(new BotAnalytic
+            {
+                UserId = userId.Value,
+                ActionType = "CV_PARSED",
+                TokensUsed = 0,
+                DetailsJson = JsonSerializer.Serialize(new { fileName = targetFile.FileName, techsFound = result.Profile?.Technologies?.Count ?? 0 }, JsonOpts),
+                CreatedAt = DateTime.UtcNow
+            });
 
             await db.SaveChangesAsync();
 
@@ -231,7 +281,7 @@ public class ProfileController(
         catch (Exception ex)
         {
             logger.LogError(ex, "[PROFILE] CV upload error: userId={Id}", userId);
-            return StatusCode(500, new { error = "L'analyse IA a échoué. Vérifiez que le PDF est valide et réessayez." });
+            return StatusCode(500, new { error = "L'analyse IA a échoué. Vérifiez que le PDF est lisible et réessayez." });
         }
     }
 

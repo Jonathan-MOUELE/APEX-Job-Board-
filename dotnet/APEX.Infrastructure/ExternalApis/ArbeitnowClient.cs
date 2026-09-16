@@ -46,7 +46,7 @@ public class ArbeitnowClient(IHttpClientFactory httpFactory, ILogger<ArbeitnowCl
                     CompanyLogoUrl: j.CompanyLogoUrl,
                     Location: j.Location ?? "Remote",
                     PostalCode: null,
-                    ContractType: j.JobTypes?.FirstOrDefault() ?? "CDI",
+                    ContractType: NormalizeContract(j.JobTypes?.FirstOrDefault()),
                     ExperienceRequired: null,
                     Description: j.Description ?? "",
                     RequiredTechs: [],
@@ -72,6 +72,22 @@ public class ArbeitnowClient(IHttpClientFactory httpFactory, ILogger<ArbeitnowCl
             logger.LogWarning(ex, "[ARBEITNOW] Failed silently");
             return [];
         }
+    }
+
+    private static string NormalizeContract(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return "CDI";
+        var r = raw.Trim().ToLowerInvariant().Replace('-', '_');
+        return r switch
+        {
+            "full_time" or "fulltime" => "Temps plein",
+            "part_time" or "parttime" => "Temps partiel",
+            "permanent"               => "CDI",
+            "contract"                => "CDD",
+            "internship"              => "Stage",
+            "apprenticeship"          => "Alternance",
+            _                         => raw
+        };
     }
 
     // DTOs

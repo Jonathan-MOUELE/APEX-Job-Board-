@@ -49,16 +49,41 @@ window.isLoggedIn=()=>!!localStorage.getItem('apex_token');
 
 window.updateAuthUI=function(){
   const tok=localStorage.getItem('apex_token');
+  // Desktop header buttons
   document.getElementById('auth-login-btn')  ?.style && (document.getElementById('auth-login-btn').style.display  =tok?'none':'');
   document.getElementById('auth-register-btn')?.style && (document.getElementById('auth-register-btn').style.display=tok?'none':'');
   document.getElementById('auth-profile-btn')?.style && (document.getElementById('auth-profile-btn').style.display =tok?''   :'none');
+  
+  // Mobile menu: toggle login link vs account section
+  const mobileLogin   = document.getElementById('mobile-auth-login-btn');
+  const mobileSection = document.getElementById('mobile-auth-user-section');
+  if(mobileLogin)   mobileLogin.style.display   = tok ? 'none' : '';
+  if(mobileSection) mobileSection.style.display = tok ? ''     : 'none';
+
   if(tok){
     try{
       const p=JSON.parse(atob(tok.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
-      const name=p.name||p.email||p.sub||'?';
-      const init=name.trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('')||'?';
-      const el=document.getElementById('avatar-initials');
-      if(el){el.textContent=init;el.style.background=getCompanyColor(name);}
+      const name =p.name||p.email||p.sub||'Utilisateur';
+      const email=p.email||'';
+      const init =name.trim().split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||'').join('')||'?';
+      const color=typeof getCompanyColor==='function' ? getCompanyColor(name) : '#f97316';
+      // Desktop header avatar
+      const elAvatar=document.getElementById('avatar-initials');
+      if(elAvatar){elAvatar.textContent=init;elAvatar.style.background=color;}
+      // Desktop dropdown avatar + name + email
+      const elAvatarMenu=document.getElementById('avatar-initials-menu');
+      if(elAvatarMenu){elAvatarMenu.textContent=init;elAvatarMenu.style.background=color;}
+      const elNameMenu=document.getElementById('user-name-menu');
+      if(elNameMenu) elNameMenu.textContent=name;
+      const elEmailMenu=document.getElementById('user-email-menu');
+      if(elEmailMenu) elEmailMenu.textContent=email;
+      // Mobile menu avatar + name + email
+      const mAvatar=document.getElementById('mobile-avatar-initials');
+      if(mAvatar){mAvatar.textContent=init;mAvatar.style.background=color;}
+      const mName =document.getElementById('mobile-user-name');
+      if(mName) mName.textContent=name;
+      const mEmail=document.getElementById('mobile-user-email');
+      if(mEmail) mEmail.textContent=email;
       // Restore plan from token
       if(p.plan) window._state.plan=p.plan;
     }catch(_){}
@@ -86,9 +111,14 @@ window.openRegisterModal =()=>openModal('register-modal');
 window.closeRegisterModal=()=>closeModal_id('register-modal');
 window.openForgotModal   =()=>{ closeModal_id('login-modal'); openModal('forgot-modal'); _setForgotStep(1); };
 window.closeForgotModal  =()=>closeModal_id('forgot-modal');
-window.openProfilePanel  =()=>{ if(!isLoggedIn()){openLoginModal();return;} openModal('profile-modal'); _loadProfile(); };
-window.closeProfilePanel =()=>closeModal_id('profile-modal');
-window.openProfileMenu   =()=>document.getElementById('apex-account-panel')?.classList.toggle('open');
+window.openProfilePanel  =()=>{ 
+  if(!isLoggedIn()){openLoginModal();return;} 
+  window.location.href = 'user.html'; 
+};
+window.openProfileMenu   =()=> {
+    if (typeof window.closeDrawer === 'function') window.closeDrawer();
+    document.getElementById('apex-account-panel')?.classList.toggle('open');
+};
 
 // ─────────────────────────────────
 //  D. LOGIN
@@ -204,22 +234,60 @@ window.saveBio=async function(){
   catch(_){showToast('Erreur de sauvegarde.','error');}
 };
 
-window.profUploadCv=async function(file){
-  if(!file) return;
-  if(file.size>5*1024*1024){showToast('Fichier trop grand (max 5 Mo).','error');return;}
-  const ext='.'+file.name.split('.').pop().toLowerCase();
-  if(!['.pdf','.doc','.docx','.odt'].includes(ext)){showToast('Format PDF, Word ou ODT uniquement.','error');return;}
-  showToast('Envoi du CV…','info');
-  try{
-    const fd=new FormData(); fd.append('cv',file);
-    const res=await fetch(window._API+'/api/profile/upload-cv',{
-      method:'POST',credentials:'include',
-      headers:{Authorization:`Bearer ${localStorage.getItem('apex_token')||''}`},
-      body:fd,
+window.profUploadCv = async function(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Fichier trop volumineux (max 5 Mo).', 'error');
+    return;
+  }
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if (!['.pdf', '.doc', '.docx', '.odt'].includes(ext)) {
+    showToast('Format PDF, Word ou ODT uniquement.', 'error');
+    return;
+  }
+
+  const token = localStorage.getItem('apex_token') || sessionStorage.getItem('apex_token');
+  if (!token) {
+    window._pendingCvFile = file;
+    showToast('Connectez-vous ou créez un compte pour analyser et sauvegarder votre CV.', 'warning');
+    if (typeof openLoginModal === 'function') openLoginModal();
+    else if (typeof openModal === 'function') openModal('login-modal');
+    return;
+  }
+
+  showToast('Analyse de votre CV par l\'IA en cours…', 'info');
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('cv', file);
+    const apiBase = window._API || '';
+    const res = await fetch(apiBase + '/api/profile/upload-cv', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: fd
     });
-    if(!res.ok) throw new Error();
-    showToast('CV importé avec succès !','success');
-  }catch(_){showToast("Erreur lors de l'import.",'error');}
+
+    if (res.status === 401) {
+      showToast('Session expirée. Veuillez vous reconnecter.', 'warning');
+      if (typeof openLoginModal === 'function') openLoginModal();
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast(data.error || "Erreur lors de l'import du CV.", 'error');
+      return;
+    }
+
+    showToast(data.message || 'CV importé et analysé avec succès !', 'success');
+    if (typeof loadUserProfile === 'function') loadUserProfile();
+  } catch (err) {
+    console.error('Upload CV error:', err);
+    showToast("Erreur de connexion lors de l'import.", 'error');
+  }
 };
 
 // ─────────────────────────────────
@@ -310,20 +378,156 @@ window.checkout=async function(planId){
 };
 
 // ─────────────────────────────────
-//  K. INIT
+//  K. DASHBOARD AUTH GUARD
 // ─────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  updateAuthUI(); autoRefreshToken();
-  const p=new URLSearchParams(location.search);
-  if(p.get('payment')==='success'){
-    history.replaceState({},document.title,location.pathname);
-    showToast('Abonnement activé avec succès !','success');
+
+/**
+ * requireAuth(action)
+ * Appeler avant toute action réservée aux connectés.
+ * Retourne true si connecté, sinon ouvre le modal de connexion et retourne false.
+ */
+window.requireAuth = function(action) {
+  if (isLoggedIn()) return true;
+  showToast(action
+    ? `Connectez-vous pour ${action}.`
+    : 'Connectez-vous pour accéder à cette fonctionnalité.', 'warn');
+  setTimeout(openLoginModal, 300);
+  return false;
+};
+
+/**
+ * guardDashboard()
+ * Vérifie si l'URL pointe vers un espace reservé (#suivi, #dashboard, #profil)
+ * et redirige vers la connexion si non authentifié.
+ */
+window.guardDashboard = function() {
+  const hash = location.hash.toLowerCase();
+  const protectedHashes = ['#suivi', '#dashboard', '#profil', '#candidatures', '#alertes'];
+  if (protectedHashes.some(h => hash.startsWith(h)) && !isLoggedIn()) {
+    history.replaceState({}, document.title, location.pathname);
+    showToast('Connectez-vous pour accéder à votre espace personnel.', 'warn');
+    setTimeout(openLoginModal, 400);
+  }
+};
+
+/**
+ * Mise à jour du panel compte selon l'état de connexion.
+ * Si déconnecté : affiche un CTA connexion au lieu des données.
+ */
+window.updateAccountPanel = function() {
+  const panel = document.getElementById('apex-account-panel');
+  if (!panel) return;
+
+  const menu = panel.querySelector('.dashboard-menu');
+  const title = panel.querySelector('.account-panel-title');
+  if (!menu) return;
+
+  if (isLoggedIn()) {
+    // Connecté — affichage normal (l'UI est déjà gérée par updateAuthUI)
+    if (title) title.style.display = '';
+    menu.style.display = '';
+    const logoutBtn = panel.querySelector('.account-logout-btn');
+    if (logoutBtn) logoutBtn.style.display = '';
+    // Masquer le CTA connexion s'il existe
+    const guestCta = panel.querySelector('#panel-guest-cta');
+    if (guestCta) guestCta.remove();
+  } else {
+    // Déconnecté — remplacer le menu par un CTA
+    if (title) title.style.display = 'none';
+    menu.style.display = 'none';
+    const logoutBtn = panel.querySelector('.account-logout-btn');
+    if (logoutBtn) logoutBtn.style.display = 'none';
+
+    if (!panel.querySelector('#panel-guest-cta')) {
+      const cta = document.createElement('div');
+      cta.id = 'panel-guest-cta';
+      cta.style.cssText = 'padding:12px 0;display:flex;flex-direction:column;gap:10px;';
+      cta.innerHTML = `
+        <p style="font-size:13px;color:var(--muted);line-height:1.5;text-align:center">
+          Connectez-vous pour accéder à vos candidatures, alertes et profil.
+        </p>
+        <button onclick="openProfileMenu();openLoginModal();" style="
+          width:100%;padding:10px;border-radius:10px;background:var(--orange);
+          color:#fff;font-weight:700;font-size:14px;border:none;cursor:pointer;">
+          Se connecter
+        </button>
+        <a href="register.html" style="
+          width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);
+          color:var(--text);font-weight:600;font-size:13px;text-align:center;
+          display:block;text-decoration:none;">
+          Créer un compte gratuit
+        </a>`;
+      panel.appendChild(cta);
+    }
+  }
+};
+
+// ─────────────────────────────────
+//  L. LITE MODE — Économie données
+// ─────────────────────────────────
+window.initLiteMode = function() {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const saveData = conn?.saveData === true;
+  const reducedData = window.matchMedia('(prefers-reduced-data: reduce)').matches;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const userPref = localStorage.getItem('apex_lite_mode') === 'true';
+
+  if (saveData || reducedData || userPref) {
+    document.documentElement.classList.add('apex-lite');
+    document.documentElement.setAttribute('data-lite', 'true');
+    // Downgrade les images Unsplash encore en mémoire
+    document.querySelectorAll('img[src*="unsplash.com"]').forEach(img => {
+      img.src = img.src.replace(/w=\d+/, 'w=200').replace(/q=\d+/, 'q=40');
+    });
+    // Downgrade les background-image inline
+    document.querySelectorAll('[style*="unsplash.com"]').forEach(el => {
+      el.style.backgroundImage = el.style.backgroundImage
+        .replace(/w=\d+/g, 'w=200').replace(/q=\d+/g, 'q=40');
+    });
+  }
+
+  if (reducedMotion) {
+    document.documentElement.classList.add('apex-lite');
+  }
+};
+
+// ─────────────────────────────────
+//  M. INIT
+// ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateAuthUI();
+  updateAccountPanel();
+  autoRefreshToken();
+  guardDashboard();
+  initLiteMode();
+
+  // Lazy-load images hors viewport
+  if ('IntersectionObserver' in window) {
+    const lazyImgs = document.querySelectorAll('img[data-src]');
+    const obs = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          observer.unobserve(img);
+        }
+      });
+    }, { rootMargin: '200px' });
+    lazyImgs.forEach(img => obs.observe(img));
+  }
+
+  const p = new URLSearchParams(location.search);
+  if (p.get('payment') === 'success') {
+    history.replaceState({}, document.title, location.pathname);
+    showToast('Abonnement activé avec succès !', 'success');
     autoRefreshToken().then(updateAuthUI);
   }
+
   // Kanban CSS injection
-  if(!document.getElementById('_kanbanCSS')){
-    const s=document.createElement('style'); s.id='_kanbanCSS';
-    s.textContent=`
+  if (!document.getElementById('_kanbanCSS')) {
+    const s = document.createElement('style'); s.id = '_kanbanCSS';
+    s.textContent = `
       #suivi-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;min-height:200px}
       #suivi-board::-webkit-scrollbar{height:4px}
       #suivi-board::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
@@ -337,4 +541,12 @@ document.addEventListener('DOMContentLoaded',()=>{
       .kanban-card:active{cursor:grabbing}`;
     document.head.appendChild(s);
   }
+
+  // Sync panel si l'utilisateur se connecte / déconnecte
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'apex_token') {
+      updateAuthUI();
+      updateAccountPanel();
+    }
+  });
 });

@@ -336,23 +336,63 @@ window.swipeRight      = (idx)=>_swipeEngine.likeJob(idx);
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  C. PROFIL UPLOAD CV
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-window.profUploadCv = async function(file){
-  if(!file) return;
-  if(file.size>5*1024*1024){showToast('Fichier trop grand (max 5 Mo).','error');return;}
-  const ext='.'+file.name.split('.').pop().toLowerCase();
-  if(!['.pdf','.doc','.docx','.odt'].includes(ext)){showToast('Format PDF, Word ou ODT uniquement.','error');return;}
-  showToast('Envoi du CVâ€¦','info');
-  try{
-    const fd=new FormData(); fd.append('cv',file);
-    const res=await fetch(window._API+'/api/profile/upload-cv',{
-      method:'POST',credentials:'include',
-      headers:{Authorization:`Bearer ${localStorage.getItem('apex_token')||''}`},
-      body:fd,
+window.profUploadCv = async function(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Fichier trop volumineux (max 5 Mo).', 'error');
+    return;
+  }
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if (!['.pdf', '.doc', '.docx', '.odt'].includes(ext)) {
+    showToast('Format PDF, Word ou ODT uniquement.', 'error');
+    return;
+  }
+
+  const token = localStorage.getItem('apex_token') || sessionStorage.getItem('apex_token');
+  if (!token) {
+    window._pendingCvFile = file;
+    showToast('Connectez-vous ou créez un compte pour analyser et sauvegarder votre CV.', 'warning');
+    if (typeof openLoginModal === 'function') openLoginModal();
+    else if (typeof openModal === 'function') openModal('login-modal');
+    return;
+  }
+
+  showToast('Analyse de votre CV par l\'IA en cours…', 'info');
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('cv', file);
+    const apiBase = window._API || '';
+    const res = await fetch(apiBase + '/api/profile/upload-cv', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: fd
     });
-    if(!res.ok) throw new Error();
-    showToast('CV importé avec succès !','success');
-  }catch(_){showToast("Erreur lors de l'import.",'error');}
+
+    if (res.status === 401) {
+      showToast('Session expirée. Veuillez vous reconnecter.', 'warning');
+      if (typeof openLoginModal === 'function') openLoginModal();
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showToast(data.error || "Erreur lors de l'import du CV.", 'error');
+      return;
+    }
+
+    showToast(data.message || 'CV importé et analysé avec succès !', 'success');
+    if (typeof loadUserProfile === 'function') loadUserProfile();
+  } catch (err) {
+    console.error('Upload CV error:', err);
+    showToast("Erreur de connexion lors de l'import.", 'error');
+  }
 };
+window.app = window.app || {};
+window.app.profUploadCv = window.profUploadCv;
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  D. INIT

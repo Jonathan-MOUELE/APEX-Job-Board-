@@ -11,3 +11,6 @@
 - **Anti-goinfrage** : Limite de 500 caractères par prompt, historique de 8 tours max, rate limiting actif.
 - **Modèles Gemini supportés** : `gemini-2.0-flash` (défaut recommandé), `gemini-1.5-flash`, `gemini-2.0-flash-lite`, `gemini-1.5-pro` (attention au quota gratuit de 2 RPM sur le Pro).
 - **Format Gemini REST** : Alternance stricte `user` -> `model` obligatoire (aucun tour consécutif avec le même rôle).
+
+mail : admin@avers.fr
+Mot de passe : 
