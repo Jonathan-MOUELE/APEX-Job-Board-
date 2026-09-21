@@ -69,7 +69,7 @@
         oninput="filterCompanies()">
       <select id="co-sector" aria-label="Secteur" onchange="filterCompanies()">
         <option value="">Tous les secteurs</option>
-        <option value="tech">Tech & IT</option>
+        <option value="tech">Tech &amp; IT</option>
         <option value="sante">Santé</option>
         <option value="btp">BTP / Construction</option>
         <option value="commerce">Commerce / Retail</option>
@@ -79,6 +79,21 @@
         <option value="restauration">Restauration / Hôtellerie</option>
         <option value="media">Médias / Communication</option>
         <option value="public">Secteur public</option>
+      </select>
+      <select id="co-region" aria-label="Région" onchange="filterCompanies()" style="min-width:160px">
+        <option value="">Toutes les régions</option>
+        <option value="Île-de-France">Île-de-France</option>
+        <option value="Auvergne-Rhône-Alpes">Auvergne-Rhône-Alpes</option>
+        <option value="Provence-Alpes-Côte d'Azur">PACA</option>
+        <option value="Occitanie">Occitanie</option>
+        <option value="Nouvelle-Aquitaine">Nouvelle-Aquitaine</option>
+        <option value="Hauts-de-France">Hauts-de-France</option>
+        <option value="Grand Est">Grand Est</option>
+        <option value="Bretagne">Bretagne</option>
+        <option value="Pays de la Loire">Pays de la Loire</option>
+        <option value="Normandie">Normandie</option>
+        <option value="Bourgogne-Franche-Comté">Bourgogne-Franche-Comté</option>
+        <option value="Centre-Val de Loire">Centre-Val de Loire</option>
       </select>
       <button onclick="loadFromFT()" id="btn-refresh" aria-label="Actualiser les entreprises">
         <i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Actualiser
@@ -256,8 +271,11 @@
       renderCompanies();
     }
 
+    let _activeRegion = '';
+
     function filterCompanies() {
       _activeSector = document.getElementById('co-sector').value;
+      _activeRegion = document.getElementById('co-region')?.value || '';
       document.querySelectorAll('.sfchip').forEach(c => {
         const onclick = c.getAttribute('onclick') || '';
         c.classList.toggle('active',
@@ -284,11 +302,14 @@
     // ── Render ───────────────────────────────────────────────
     function renderCompanies() {
       const q = document.getElementById('co-search').value.toLowerCase().trim();
+      const region = _activeRegion || '';
 
       const filtered = _allCompanies.filter(c => {
         const matchQ = !q || c.name.toLowerCase().includes(q) || (c.desc || '').toLowerCase().includes(q);
         const matchS = !_activeSector || c.sector === _activeSector;
-        return matchQ && matchS;
+        const matchR = !region || (c.desc || '').toLowerCase().includes(region.split('-')[0].toLowerCase()) ||
+                       (c.locations && [...c.locations].some(l => l.toLowerCase().includes(region.split('-')[0].toLowerCase())));
+        return matchQ && matchS && matchR;
       });
 
       document.getElementById('results-count').textContent =

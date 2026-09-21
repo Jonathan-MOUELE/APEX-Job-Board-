@@ -252,19 +252,16 @@ window.openJobPanel = function(idx) {
          onclick="event.stopPropagation()">
         <i data-lucide="linkedin" style="width:12px;height:12px"></i> LinkedIn
       </a>
-      <button onclick="openApplyModal('${esc(title).replace(/'/g,"\\'")}','${esc(city).replace(/'/g,"\\'")}')"
-              style="font-size:12px;background:var(--orange);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:700">
-        ✉ Postuler
-      </button>
       ${job.url?`<a href="${esc(job.url)}" target="_blank" rel="noopener noreferrer"
-        style="font-size:12px;color:var(--orange);text-decoration:none;border:1px solid var(--orange);border-radius:6px;padding:5px 10px">
-        France Travail →
+        style="font-size:12px;color:#fff;background:var(--orange);text-decoration:none;border:none;border-radius:6px;padding:5px 12px;font-weight:700;display:flex;align-items:center;gap:4px">
+        <i data-lucide="external-link" style="width:12px;height:12px"></i> France Travail &#8594;
       </a>`:''}
     </div>`;
 
   // Scroll up dans le chat
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
+
 
   setTimeout(()=>sendQuickMessage(`Analyse cette offre : "${title}" chez "${company}". GO ou NO-GO en 3 points clés.`), 500);
 };
@@ -340,11 +337,15 @@ function _appendTyping() {
 async function _doChat(msg) {
   const typId=_appendTyping();
   const ctrl=new AbortController();
-  const to=setTimeout(()=>ctrl.abort(),30000);
+  const to=setTimeout(()=>ctrl.abort(),45000);
   try{
+    // Filtrer l'historique: exclure les messages fichiers joints et garder alternance user/model
+    const cleanHistory = window._state.chatHistory
+      .filter(m => !String(m.text).startsWith('[Fichier joint'))
+      .slice(-16);
     const res=await apiFetch('/api/bot/chat',{
       method:'POST', signal:ctrl.signal,
-      body:JSON.stringify({message:msg.slice(0,500), history:window._state.chatHistory.slice(-20)}),
+      body:JSON.stringify({message:msg.slice(0,500), history:cleanHistory}),
     });
     clearTimeout(to); document.getElementById(typId)?.remove();
     if(!res.ok) {
@@ -384,21 +385,31 @@ window.handleChatFile = function(input) {
   if (!['.pdf', '.doc', '.docx', '.odt'].includes(ext)) {
     showToast('Format PDF, Word ou ODT uniquement.', 'error'); return;
   }
-  _appendMsg(`[Fichier joint : ${f.name}]`, true);
-  
+  // Afficher le message fichier joint côté user SANS l'ajouter à l'historique chat Gemini
+  const box=document.getElementById('chat-msgs');
+  if(box) {
+    const w=document.createElement('div');
+    w.className='cmsg user';
+    w.innerHTML=`<div class="cmsg-bubble">&#128206; ${esc(f.name)}</div>`;
+    box.appendChild(w); box.scrollTop=box.scrollHeight;
+  }
+
   const token = localStorage.getItem('apex_token') || sessionStorage.getItem('apex_token');
   if (token) {
-    _appendMsg(`Fichier "${f.name}" reçu. Lancement de l'analyse automatique et enregistrement sur votre profil…`, false);
+    _appendMsg(`Analyse de votre CV en cours…`, false);
     if (typeof window.profUploadCv === 'function') {
       window.profUploadCv(f).then(() => {
         setTimeout(() => {
-          _appendMsg("Votre CV a été analysé et lié à votre compte ! Vous pouvez me poser toutes vos questions pour optimiser vos candidatures ou cibler des offres compatibles.", false);
-        }, 1200);
+          // Déclencher un vrai message au bot après l'upload
+          _doChat('Mon CV vient d\'être analysé et lié à mon compte. Donne-moi 3 points clés sur mon profil et les types de postes que tu me recommandes.');
+        }, 1500);
+      }).catch(() => {
+        _appendMsg('Erreur lors de l\'analyse. Réessayez.', false);
       });
     }
   } else {
     setTimeout(() => {
-      _appendMsg(`Fichier "${f.name}" bien reçu. Connectez-vous à votre compte pour que je puisse sauvegarder vos compétences et calculer vos scores de compatibilité !`, false);
+      _appendMsg(`Connectez-vous pour analyser et sauvegarder votre CV !`, false);
       if (typeof openLoginModal === 'function') openLoginModal();
     }, 700);
   }

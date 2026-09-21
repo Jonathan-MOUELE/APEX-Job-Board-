@@ -371,6 +371,9 @@ window.buildJobCard = function(job, idx) {
   const logo     = getCompanyLogoUrl(company);
   const date     = relativeDate(job.dateCreation||'');
   const liUrl    = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(company)}`;
+  const ftUrl    = job.url || job.origineOffre?.urlOrigine || job.applyUrl || '';
+
+
 
   // Logo avec lazy loading natif + fallback initiales
   const logoHtml = logo ? `
@@ -424,21 +427,23 @@ window.buildJobCard = function(job, idx) {
               aria-label="Analyser avec APEX">
         <i data-lucide="zap" style="width:14px;height:14px"></i> Analyser
       </button>
-      <button onclick="event.stopPropagation();window._currentJob=window._state.jobs[${idx}];openApplyModal('${esc(title).replace(/'/g,"\\'")}','${esc(city).replace(/'/g,"\\'")}')"
-              style="height:34px;padding:0 16px;border-radius:8px;background:var(--orange);
+      ${(ftUrl)?`<a href="${esc(ftUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()"
+              style="height:34px;padding:0 14px;border-radius:8px;background:var(--orange);
                      color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;
-                     display:flex;align-items:center;gap:6px;transition:all .2s ease;box-shadow:0 2px 4px rgba(249,115,22,0.2)"
-              onmouseover="this.style.transform='translateY(-1px)';this.style.box-shadow='0 4px 6px rgba(249,115,22,0.3)'" 
-              onmouseout="this.style.transform='translateY(0)';this.style.box-shadow='0 2px 4px rgba(249,115,22,0.2)'"
-              aria-label="Postuler directement">
-        <i data-lucide="send" style="width:14px;height:14px"></i> Postuler
-      </button>
+                     display:flex;align-items:center;gap:6px;transition:all .2s ease;
+                     box-shadow:0 2px 4px rgba(249,115,22,0.2);text-decoration:none;"
+              onmouseover="this.style.transform='translateY(-1px)'"
+              onmouseout="this.style.transform='translateY(0)'"
+              aria-label="Voir sur France Travail">
+        <i data-lucide="external-link" style="width:14px;height:14px"></i> France Travail
+      </a>`:''}
     </div>`;
 
-  // Click sur la carte ouvre le job (pas sur les boutons)
+  // Click sur la carte ouvre le job (pas sur les boutons/liens)
   card.addEventListener('click', e => {
     if (!e.target.closest('button,a')) openJobPanel(idx);
   });
+
 
   return card;
 };
