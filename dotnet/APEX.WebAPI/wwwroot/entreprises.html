@@ -11,9 +11,22 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap"
     rel="stylesheet">
   <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
-  
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/entreprises.css">
+  <script>
+    (function () {
+      const theme = localStorage.getItem('apex_theme') || localStorage.getItem('apex-theme') || 'light';
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/entreprises.css">
+  <style>
+    .view-btn.active {
+      background: var(--surface) !important;
+      color: var(--orange) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      font-weight: 700 !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -25,7 +38,7 @@
     <nav aria-label="Navigation principale">
       <a href="index.html#offres" class="nav-link">Offres</a>
       <a href="entreprises.html" class="nav-link active">Entreprises</a>
-      <a href="swipe-n-job.html" class="nav-link">Swipe n' Job</a>
+      <a href="swipe-n-job.html" class="nav-link" style="color:var(--orange);font-weight:700">Swipe n' Job</a>
       <a href="index.html#outils" class="nav-link">Outils</a>
       <a href="index.html#conseils" class="nav-link">Conseils</a>
     </nav>
@@ -34,8 +47,13 @@
         <i data-lucide="moon"></i>
       </button>
       <div class="vr"></div>
-      <a href="index.html" class="btn-ghost"><i data-lucide="arrow-left"></i> <span>Retour</span></a>
-      <a href="register.html" class="btn-solid"><i data-lucide="user-plus"></i> <span>Créer un compte</span></a>
+      <div class="auth-group" style="display:flex;gap:6px;align-items:center">
+        <a href="index.html" class="btn-ghost" id="auth-login-btn"><i data-lucide="log-in"></i> <span>Se connecter</span></a>
+        <a href="register.html" class="btn-solid" id="auth-register-btn"><i data-lucide="user-plus"></i> <span>Créer un compte</span></a>
+      </div>
+      <a href="user.html" class="btn-solid" id="auth-profile-btn" style="display:none">
+        <i data-lucide="user"></i> <span>Profil</span>
+      </a>
     </div>
   </header>
 
@@ -44,7 +62,7 @@
       style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--orange);margin-bottom:8px">
       Annuaire</div>
     <h1 class="page-title">Entreprises qui recrutent</h1>
-    <p class="page-sub">Toutes les entreprises actives sur France Travail — données chargées en temps réel.</p>
+    <p class="page-sub">Toutes les entreprises actives sur France Travail — données en temps réel.</p>
 
     <div class="search-bar">
       <input type="text" id="co-search" placeholder="Nom d'entreprise, secteur..." aria-label="Rechercher une entreprise"
@@ -79,7 +97,18 @@
       <span class="sfchip" onclick="setSector('restauration')"><i data-lucide="utensils"></i> Restauration</span>
     </div>
 
-    <div class="results-count" id="results-count"></div>
+    <div class="results-header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+      <div class="results-count" id="results-count"></div>
+      <div class="view-switch-container" style="display:flex; align-items:center; background:var(--surface2); padding:3px; border-radius:10px; border:1px solid var(--border);">
+        <button id="view-btn-grid" onclick="setViewMode('grid')" class="view-btn active" style="padding:6px 14px; border-radius:7px; border:none; background:transparent; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+          <i data-lucide="layout-grid" style="width:14px;height:14px"></i> Grille
+        </button>
+        <button id="view-btn-table" onclick="setViewMode('table')" class="view-btn" style="padding:6px 14px; border-radius:7px; border:none; background:transparent; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.2s;">
+          <i data-lucide="table" style="width:14px;height:14px"></i> Tableau
+        </button>
+      </div>
+    </div>
+
     <div class="companies-grid" id="companies-grid">
       <div class="loading-state">
         <i data-lucide="loader-2" class="spin" style="width:32px;height:32px"></i>
@@ -88,15 +117,30 @@
     </div>
   </main>
 
+  <script src="js/core.js?v=10"></script>
+  <script src="js/auth.js?v=10"></script>
+  <script src="js/ui.js?v=10"></script>
   <script>
-    const API = '';
+    // ── View Mode ─────────────────────────────────────────────
+    let _viewMode = localStorage.getItem('apex_company_view') || 'grid';
+
+    function setViewMode(mode) {
+      _viewMode = mode;
+      localStorage.setItem('apex_company_view', mode);
+      const btnGrid = document.getElementById('view-btn-grid');
+      const btnTable = document.getElementById('view-btn-table');
+      if (btnGrid && btnTable) {
+        btnGrid.classList.toggle('active', mode === 'grid');
+        btnTable.classList.toggle('active', mode === 'table');
+      }
+      renderCompanies();
+    }
 
     // ── Utilities ────────────────────────────────────────────
     function safeIcons() {
       if (typeof lucide !== 'undefined') lucide.createIcons();
       else setTimeout(safeIcons, 80);
     }
-    document.addEventListener('DOMContentLoaded', safeIcons);
 
     function decodeUtf8Safe(str) {
       if (!str || typeof str !== 'string') return str || '';
@@ -116,87 +160,75 @@
       return d.innerHTML;
     }
 
-    function showToast(msg, type) {
-      const old = document.getElementById('apex-toast-el');
-      if (old) old.remove();
-      const t = document.createElement('div');
-      t.id = 'apex-toast-el';
-      t.className = 'apex-toast';
-      const colors = { success: '#22c55e', warn: '#f59e0b', info: 'var(--orange)', error: '#ef4444' };
-      t.style.borderColor = colors[type] || colors.info;
-      t.textContent = msg;
-      document.body.appendChild(t);
-      requestAnimationFrame(() => t.classList.add('show'));
-      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3200);
-    }
-
-    // ── Theme ────────────────────────────────────────────────
-    function initTheme() {
-      const dark = localStorage.getItem('apex_theme') === 'dark';
-      document.documentElement.classList.toggle('dark', dark);
-      updateThemeBtn(dark);
-    }
-    function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('apex_theme', isDark ? 'dark' : 'light');
-      updateThemeBtn(isDark);
-      safeIcons();
-    }
-    function updateThemeBtn(isDark) {
-      const btn = document.getElementById('theme-btn');
-      if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
-    }
-    initTheme();
-
-    window.addEventListener('scroll', () => {
-      document.getElementById('site-header').classList.toggle('scrolled', window.scrollY > 8);
-    }, { passive: true });
-
-    // ── Sector Detection (heuristic from search keywords) ───
-    const SECTOR_MAP = {
-      'tech': ['développeur','dev','informatique','digital','numérique','it','web','cloud','cyber','data','logiciel','réseau'],
-      'sante': ['infirmier','médecin','pharmacien','aide-soignant','santé','médical','hospitalier','kiné','dentiste','sage-femme'],
-      'finance': ['comptable','banque','finance','audit','assurance','crédit','trésorier','analyste financier','contrôleur de gestion'],
-      'commerce': ['commercial','vendeur','magasin','retail','vente','chef de rayon','caissier','conseiller de vente','merchandiser'],
-      'btp': ['chantier','maçon','bâtiment','btp','conducteur de travaux','électricien','plombier','peintre','couvreur'],
-      'industrie': ['ingénieur','technicien','production','usine','maintenance','qualité','automobile','aéronautique','mécanique'],
-      'logistique': ['logistique','transport','chauffeur','cariste','manutentionnaire','supply chain','entrepôt','livreur','préparateur'],
-      'restauration': ['cuisinier','serveur','restaurant','hôtel','chef','barman','réceptionniste','boulanger','pâtissier'],
-      'media': ['marketing','communication','rédacteur','journaliste','graphiste','designer','publicité','média','community'],
-      'public': ['administratif','fonctionnaire','territorial','public','agent','secrétaire','mairie','préfecture']
+    // Known domains map
+    const DOMAIN_MAP = {
+      'capgemini': 'capgemini.com',
+      'sopra steria': 'soprasteria.com',
+      'thales': 'thalesgroup.com',
+      'sncf': 'sncf.com',
+      'edf': 'edf.fr',
+      'engie': 'engie.com',
+      'airbus': 'airbus.com',
+      'renault': 'renaultgroup.com',
+      'stellantis': 'stellantis.com',
+      'bnp paribas': 'group.bnpparibas',
+      'societe generale': 'societegenerale.com',
+      'credit agricole': 'credit-agricole.com',
+      'axa': 'axa.com',
+      'sanofi': 'sanofi.fr',
+      'totalenergies': 'totalenergies.com',
+      'total': 'totalenergies.com',
+      'orange': 'orange.com',
+      'carrefour': 'carrefour.com',
+      'auchan': 'auchan-retail.com',
+      'leclerc': 'e.leclerc',
+      'e.leclerc': 'e.leclerc',
+      'decathlon': 'decathlon.fr',
+      'leroy merlin': 'leroymerlin.fr',
+      'veolia': 'veolia.com',
+      'vinci': 'vinci.com',
+      'bouygues': 'bouygues.com',
+      'eiffage': 'eiffage.com',
+      'safran': 'safran-group.com',
+      'atos': 'atos.net',
+      'cgi': 'cgi.com',
+      'wavestone': 'wavestone.com',
+      'sopra': 'soprasteria.com',
+      'alten': 'alten.com',
+      'altran': 'capgemini.com',
+      'manpower': 'manpower.fr',
+      'adecco': 'adecco.fr',
+      'randstad': 'randstad.fr',
+      'synergie': 'synergie.fr',
+      'crit': 'groupe-crit.com',
+      'actual': 'groupeactual.com',
+      'supplay': 'supplay.fr',
+      'kpmg': 'kpmg.fr',
+      'deloitte': 'deloitte.com',
+      'ey': 'ey.com',
+      'pwc': 'pwc.fr',
+      'lidl': 'lidl.fr',
+      'aldi': 'aldi.fr',
+      'o2': 'o2recrute.fr',
+      'kangourou kids': 'kangouroukids.fr'
     };
 
-    function detectSectorFromKeyword(keyword) {
-      if (!keyword) return '';
-      const kw = keyword.toLowerCase();
-      for (const [sector, terms] of Object.entries(SECTOR_MAP)) {
-        if (terms.some(t => kw.includes(t))) return sector;
+    function resolveDomain(name) {
+      const lower = name.toLowerCase().trim();
+      for (const [k, d] of Object.entries(DOMAIN_MAP)) {
+        if (lower.includes(k)) return d;
       }
-      return '';
+      return lower.replace(/[^a-z0-9]/g, '') + '.com';
     }
 
-    // ── Domain resolution (intelligent heuristic) ───────────
-    function resolveDomain(companyName) {
-      if (!companyName) return 'entreprise.fr';
-      const n = companyName.toLowerCase().trim()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const clean = n
-        .replace(/\b(sas|sarl|sa|sasu|eurl|groupe|agence|cabinet|les|la|le|l|des|du|de|et)\b/g, '')
-        .replace(/[^a-z0-9]/g, '')
-        .replace(/^-+|-+$/g, '');
-      return (clean || n.replace(/[^a-z0-9]/g, '')) + '.fr';
-    }
-
-    // ── Brand color from name hash ──────────────────────────
-    const BRAND_COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#a855f7','#ec4899','#06b6d4','#8b5cf6'];
+    const BRAND_COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4', '#f59e0b', '#6366f1'];
     function brandColor(name) {
       let h = 0;
       for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
       return BRAND_COLORS[Math.abs(h) % BRAND_COLORS.length];
     }
 
-    // ── Logo fallback ───────────────────────────────────────
-    const _logoTried = new WeakSet();
+    const _logoTried = new Set();
     function logoErr(img, domain, name) {
       if (_logoTried.has(img)) {
         img.style.display = 'none';
@@ -236,6 +268,19 @@
       renderCompanies();
     }
 
+    function detectSectorFromKeyword(kw) {
+      const k = kw.toLowerCase();
+      if (['développeur', 'it', 'tech', 'data', 'cloud', 'cybersécurité', 'ia'].some(x => k.includes(x))) return 'tech';
+      if (['infirmier', 'santé', 'médical', 'médecin', 'soignant', 'ehpad'].some(x => k.includes(x))) return 'sante';
+      if (['bâtiment', 'btp', 'maçon', 'électricien', 'plombier', 'travaux'].some(x => k.includes(x))) return 'btp';
+      if (['commerce', 'vendeur', 'commercial', 'magasin', 'caisse'].some(x => k.includes(x))) return 'commerce';
+      if (['banque', 'comptable', 'finance', 'audit', 'gestion'].some(x => k.includes(x))) return 'finance';
+      if (['industrie', 'usinage', 'production', 'ouvrier', 'maintenance'].some(x => k.includes(x))) return 'industrie';
+      if (['logistique', 'chauffeur', 'cariste', 'livreur', 'transport'].some(x => k.includes(x))) return 'logistique';
+      if (['restauration', 'serveur', 'cuisinier', 'barman', 'hôtellerie'].some(x => k.includes(x))) return 'restauration';
+      return 'tech';
+    }
+
     // ── Render ───────────────────────────────────────────────
     function renderCompanies() {
       const q = document.getElementById('co-search').value.toLowerCase().trim();
@@ -252,65 +297,90 @@
 
       const grid = document.getElementById('companies-grid');
       if (!filtered.length) {
+        grid.className = 'companies-grid';
         grid.innerHTML = '<div class="loading-state"><i data-lucide="search-x" style="width:32px;height:32px"></i><p style="margin-top:12px">Aucune entreprise trouvée.</p></div>';
         safeIcons();
         return;
       }
 
-      const tableHtml = `
-      <div style="overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border);">
-        <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 600px;">
-          <thead>
-            <tr style="border-bottom: 1px solid var(--border); background: var(--surface2);">
-              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Entreprise</th>
-              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Secteur / Agences</th>
-              <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; text-align: right;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${filtered.map((c, i) => {
-              const initials = c.name.substring(0, 2).toUpperCase();
-              const color = brandColor(c.name);
-              const safeName = escH(c.name).replace(/'/g, "\\'");
-              return `
-                <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
-                  <td style="padding: 16px; display: flex; align-items: center; gap: 12px;">
-                    <div class="company-logo-box" style="width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: ${color}">
-                      <img src="https://logo.clearbit.com/${escH(c.domain)}" alt="${escH(c.name)}" onerror="logoErr(this,'${escH(c.domain)}','${safeName}')" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; background: white;">
-                      <span style="display:none;color:#fff;font-size:14px;font-weight:700;">${initials}</span>
-                    </div>
-                    <div style="font-weight: 700; font-size: 1rem; color: var(--text);">${escH(c.name)}</div>
-                  </td>
-                  <td style="padding: 16px; color: var(--muted); font-size: 0.9rem;">
-                    ${escH(c.desc || '')}
-                  </td>
-                  <td style="padding: 16px; text-align: right;">
-                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                      <button class="btn-offres" onclick="searchCompany('${safeName}')" style="background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='var(--orange)'; this.style.color='white'" onmouseout="this.style.background='var(--surface2)'; this.style.color='var(--text)'">
-                        <i data-lucide="briefcase" style="width:14px;height:14px"></i> Offres
-                      </button>
-                      <button class="btn-linkedin" onclick="openLinkedIn('${safeName}')" style="background: var(--surface2); color: #0a66c2; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='#0a66c2'; this.style.color='white'" onmouseout="this.style.background='var(--surface2)'; this.style.color='#0a66c2'">
-                        <i data-lucide="linkedin" style="width:14px;height:14px"></i> LinkedIn
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`;
-      grid.innerHTML = tableHtml;
-      
-      // Update grid class since it's no longer a grid
-      grid.className = 'companies-table-container';
+      if (_viewMode === 'table') {
+        grid.className = 'companies-table-container';
+        grid.innerHTML = `
+        <div style="overflow-x: auto; width: 100%; border-radius: 12px; border: 1px solid var(--border); background: var(--surface);">
+          <table style="width: 100%; text-align: left; border-collapse: collapse; min-width: 600px;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); background: var(--surface2);">
+                <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Entreprise</th>
+                <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Secteur / Implantation</th>
+                <th style="padding: 16px; font-weight: 600; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(c => {
+                const initials = c.name.substring(0, 2).toUpperCase();
+                const color = brandColor(c.name);
+                const safeName = escH(c.name).replace(/'/g, "\\'");
+                return `
+                  <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 16px; display: flex; align-items: center; gap: 12px;">
+                      <div class="company-logo-box" style="width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: ${color}">
+                        <img src="https://logo.clearbit.com/${escH(c.domain)}" alt="${escH(c.name)}" onerror="logoErr(this,'${escH(c.domain)}','${safeName}')" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; background: white;">
+                        <span style="display:none;color:#fff;font-size:14px;font-weight:700;">${initials}</span>
+                      </div>
+                      <div style="font-weight: 700; font-size: 1rem; color: var(--text);">${escH(c.name)}</div>
+                    </td>
+                    <td style="padding: 16px; color: var(--muted); font-size: 0.9rem;">
+                      ${escH(c.desc || '')}
+                    </td>
+                    <td style="padding: 16px; text-align: right;">
+                      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="btn-offres" onclick="searchCompany('${safeName}')" style="background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                          <i data-lucide="briefcase" style="width:14px;height:14px"></i> Offres
+                        </button>
+                        <button class="btn-linkedin" onclick="openLinkedIn('${safeName}')" style="background: var(--surface2); color: #0a66c2; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                          <i data-lucide="linkedin" style="width:14px;height:14px"></i> LinkedIn
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      } else {
+        grid.className = 'companies-grid';
+        grid.innerHTML = filtered.map(c => {
+          const initials = c.name.substring(0, 2).toUpperCase();
+          const color = brandColor(c.name);
+          const safeName = escH(c.name).replace(/'/g, "\\'");
+          return `
+            <div class="company-card" onclick="searchCompany('${safeName}')">
+              <div class="company-logo-box" style="background: ${color}">
+                <img src="https://logo.clearbit.com/${escH(c.domain)}" alt="${escH(c.name)}" onerror="logoErr(this,'${escH(c.domain)}','${safeName}')" loading="lazy">
+                <span style="display:none">${initials}</span>
+              </div>
+              <div class="company-name">${escH(c.name)}</div>
+              <div class="company-sector">${escH(c.desc || 'Recrute en ce moment')}</div>
+              <div class="company-actions" onclick="event.stopPropagation()">
+                <button class="btn-offres" onclick="searchCompany('${safeName}')">
+                  <i data-lucide="briefcase" style="width:12px;height:12px"></i> Offres
+                </button>
+                <button class="btn-linkedin" onclick="openLinkedIn('${safeName}')">
+                  <i data-lucide="linkedin" style="width:12px;height:12px"></i> LinkedIn
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
       
       safeIcons();
     }
 
     // ── Actions ──────────────────────────────────────────────
     function searchCompany(name) {
-      window.location.href = 'index.html?keyword=' + encodeURIComponent(name) + '#offres';
+      window.location.href = 'index.html?q=' + encodeURIComponent(name) + '#offres';
     }
 
     function openLinkedIn(name) {
@@ -341,7 +411,7 @@
           }
           n = n.replace(/\b(SA|SAS|SARL|SASU|EURL|SNC)\b/g, '').trim();
           n = n.replace(/\s+\d{2,5}$/, '').trim();
-          return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase(); // Title case for non-agencies
+          return n.charAt(0).toUpperCase() + n.slice(1).toLowerCase();
       }
 
       await Promise.allSettled(keywords.map(async kw => {
@@ -383,45 +453,45 @@
       }));
 
       _allCompanies = Array.from(seen.values());
-
-      // Sort alphabetically
       _allCompanies.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 
       renderCompanies();
       _isLoading = false;
 
       if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Actualiser'; safeIcons(); }
-
-      if (!_allCompanies.length) {
-        if (typeof window.isLoggedIn === 'function' && window.isLoggedIn()) {
-            showToast('Aucune entreprise chargée. Vérifiez que le serveur API est actif.', 'warn');
-        } else {
-            showToast('Aucune entreprise trouvée pour le moment.', 'info');
-        }
-      }
     }
 
     // ── Init ─────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
+      setViewMode(_viewMode);
+      if (typeof updateAuthUI === 'function') updateAuthUI();
       loadFromFT();
     });
 
-    // Handle ?keyword= from redirect
-    const urlKw = new URLSearchParams(window.location.search).get('keyword');
+    // Handle ?keyword= or ?q= from redirect
+    const urlKw = new URLSearchParams(window.location.search).get('keyword') || new URLSearchParams(window.location.search).get('q');
     if (urlKw) {
       document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('co-search').value = urlKw;
+        const inp = document.getElementById('co-search');
+        if (inp) {
+          inp.value = urlKw;
+          filterCompanies();
+        }
       });
     }
 
     // ── Expose globally ─────────────────────────────────────
-    window.toggleTheme = toggleTheme;
+    window.toggleTheme = typeof toggleTheme === 'function' ? toggleTheme : () => {
+      document.documentElement.classList.toggle('dark');
+      localStorage.setItem('apex_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    };
     window.setSector = setSector;
     window.filterCompanies = filterCompanies;
     window.loadFromFT = loadFromFT;
     window.searchCompany = searchCompany;
     window.openLinkedIn = openLinkedIn;
     window.logoErr = logoErr;
+    window.setViewMode = setViewMode;
   </script>
 </body>
 

@@ -280,6 +280,12 @@ public sealed class FranceTravailClient(
             return _lastResults;
         }
 
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            logger.LogInformation("[FT] 0 offre trouvée (204 No Content) pour '{Keywords}'.", keywords);
+            return new List<JobOffer>().AsReadOnly();
+        }
+
         if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
         {
             var body = await response.Content.ReadAsStringAsync(ct);
@@ -313,13 +319,16 @@ public sealed class FranceTravailClient(
         {
             var body = await response.Content.ReadAsStringAsync(ct);
             logger.LogError("[FT] ❌ Search {Code} — params: {Url} — body: {Body}", (int)response.StatusCode, url, body);
-            return _lastResults; 
+            return new List<JobOffer>().AsReadOnly(); 
         }
 
         try
         {
             var ftResponse = await response.Content.ReadFromJsonAsync<FtSearchResponse>(JsonOpts, ct);
-            if (ftResponse?.Resultats is null) return _lastResults;
+            if (ftResponse?.Resultats is null || ftResponse.Resultats.Count == 0) 
+            {
+                return new List<JobOffer>().AsReadOnly();
+            }
 
             var results = ftResponse.Resultats.Select(MapToJobOffer).ToList().AsReadOnly();
             logger.LogInformation("[FT] ✅ {Count} offres récupérées.", results.Count);
@@ -329,8 +338,8 @@ public sealed class FranceTravailClient(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[FT] ❌ Failed to parse FT response — returning cache.");
-            return _lastResults;
+            logger.LogError(ex, "[FT] ❌ Failed to parse FT response — returning empty list.");
+            return new List<JobOffer>().AsReadOnly();
         }
     }
 

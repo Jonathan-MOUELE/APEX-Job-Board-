@@ -23,14 +23,23 @@ window.apiFetch = async function(path, opts={}, retry=true){
   try{res=await fetch(window._API+path,opts);}
   catch(e){throw new Error('Serveur inaccessible sur le port 5191 — vérifiez que dotnet run tourne.');}
 
-  if(res.status===401&&retry){
+  if(res.status===401&&retry&&tok){
     try{
-      const rr=await fetch(window._API+'/api/auth/refresh',{method:'POST',credentials:'include'});
+      const rr=await fetch(window._API+'/api/auth/refresh',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({accessToken:tok}),
+        credentials:'include'
+      });
       if(rr.ok){
         const d=await rr.json();
         const t=d.accessToken||d.token;
-        if(t){localStorage.setItem('apex_token',t);opts.headers['Authorization']=`Bearer ${t}`;return apiFetch(path,opts,false);}
-      } else { _clearAuth(); }
+        if(t){
+          localStorage.setItem('apex_token',t);
+          opts.headers['Authorization']=`Bearer ${t}`;
+          return apiFetch(path,opts,false);
+        }
+      }
     }catch(_){}
   }
   return res;

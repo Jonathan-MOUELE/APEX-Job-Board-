@@ -281,7 +281,12 @@ window.performSearch = async function() {
 
     if(sub){
       const n=jobs.length;
-      sub.textContent=`${n.toLocaleString('fr-FR')} offre${n!==1?'s':''} trouvée${n!==1?'s':''}${kw?' pour « '+kw+' »':''}`;
+      sub.textContent=`${n.toLocaleString('fr-FR')} offre${n!==1?'s':''} trouvée${n!==1?'s':''}${loc?' à '+loc:''}`;
+    }
+
+    const titleEl = document.getElementById('results-title');
+    if(titleEl) {
+      titleEl.textContent = kw ? `Offres pour « ${kw} »` : (loc ? `Offres à ${loc}` : 'Les offres du moment');
     }
 
     SEO.setSearch(kw, loc);
@@ -660,7 +665,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // URL params → auto-search only if params present
   try{
     const p=new URLSearchParams(location.search);
-    const q=p.get('q'),l=p.get('l');
+    const q=p.get('q')||p.get('keyword'),l=p.get('l');
     if(q){const el=document.getElementById('sq-job');if(el)el.value=q;}
     if(l){const el=document.getElementById('sq-city');if(el)el.value=l;}
     if(q||l){

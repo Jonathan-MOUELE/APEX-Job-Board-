@@ -71,8 +71,8 @@
                 <i data-lucide="user-plus"></i> Créer un compte
             </a>
         </div>
-        <a href="javascript:void(0)" class="btn-solid" id="auth-profile-btn" style="display:none"
-            onclick="openProfileMenu();return false;">
+        <a href="user.html" class="btn-solid" id="auth-profile-btn" style="display:none"
+            onclick="openProfilePanel();return false;">
             <i data-lucide="user"></i> Profil
         </a>
         <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu de navigation"
@@ -315,7 +315,7 @@
                     <div
                         style="margin-bottom:24px; display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--border); padding-bottom:16px;">
                         <div>
-                            <h2 class="sec-title" style="margin-bottom:4px; font-size:1.8rem">Les dernières offres</h2>
+                            <h2 class="sec-title" id="results-title" style="margin-bottom:4px; font-size:1.8rem">Les offres du moment</h2>
                             <p id="results-subtitle" style="font-size:14px; color:var(--muted)">Recherche en cours…</p>
                         </div>
                     </div>

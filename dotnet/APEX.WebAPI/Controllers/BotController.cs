@@ -59,7 +59,7 @@ public class BotController : ControllerBase
     public async Task<IActionResult> Chat([FromBody] ChatRequest req, CancellationToken ct = default)
     {
         var apiKey = _aiSettings.ApiKey;
-        var model = _aiSettings.FlashModel ?? "gemini-2.5-flash";
+        var model = _aiSettings.FlashModel ?? "gemini-2.0-flash";
         if (string.IsNullOrEmpty(apiKey) || apiKey.StartsWith("REPLACE_ME"))
         {
             _logger.LogError("[CHAT] AI API key not configured!");
@@ -105,7 +105,10 @@ public class BotController : ControllerBase
                 return StatusCode(503, new { reply = "L'assistant est temporairement indisponible. Réessayez dans quelques instants.", fallback = true });
             }
 
-            _ = LogBotAnalyticAsync("CHAT_MESSAGE", 0, new { messageLength = userMsg.Length, promptLen = systemPrompt.Length });
+            await LogBotAnalyticAsync("CHAT_MESSAGE", 0, new { 
+                message = userMsg.Length > 80 ? userMsg[..80] + "..." : userMsg,
+                reply = text.Length > 120 ? text[..120] + "..." : text
+            });
 
             return Ok(new { reply = text, fallback = false });
         }
@@ -127,7 +130,7 @@ public class BotController : ControllerBase
         CancellationToken ct = default)
     {
         var apiKey = _aiSettings.ApiKey;
-        var model = _aiSettings.FlashModel ?? "gemini-2.5-flash";
+        var model = _aiSettings.FlashModel ?? "gemini-2.0-flash";
         if (string.IsNullOrEmpty(apiKey) || apiKey.StartsWith("DEV_ONLY"))
             return Ok(new { suggestions = Array.Empty<string>() });
 
@@ -248,7 +251,7 @@ Réponds UNIQUEMENT en JSON strict:
 
     private static string NormalizeModelName(string? model)
     {
-        if (string.IsNullOrWhiteSpace(model)) return "gemini-2.5-flash";
+        if (string.IsNullOrWhiteSpace(model)) return "gemini-2.0-flash";
         var m = model.Trim();
         if (m.StartsWith("models/", StringComparison.OrdinalIgnoreCase))
             m = m[7..];
@@ -271,7 +274,7 @@ Réponds UNIQUEMENT en JSON strict:
         if (!isCompatible)
         {
             // Modèles Google Gemini v1beta actifs et vérifiés
-            var stableGemini = new[] { "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-3.5-flash", "gemini-2.5-pro" };
+            var stableGemini = new[] { "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro" };
             foreach (var gm in stableGemini)
             {
                 if (!modelsToTry.Contains(gm)) modelsToTry.Add(gm);

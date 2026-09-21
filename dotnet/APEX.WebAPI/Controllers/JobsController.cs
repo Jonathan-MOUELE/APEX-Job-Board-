@@ -119,10 +119,10 @@ public class JobsController : ControllerBase
 
         // 0. Cache Check
         string cacheKey = $"search_{keywords.ToLowerInvariant()}_{location?.ToLowerInvariant()}_{contract}_{country}_{range}";
-        if (_cache.TryGetValue(cacheKey, out List<JobOffer>? cachedResults))
+        if (_cache.TryGetValue(cacheKey, out List<JobOffer>? cachedResults) && cachedResults is not null)
         {
             _logger.LogInformation("[CACHE] Hit for {Key}", cacheKey);
-            return Ok(cachedResults);
+            return Ok(new { count = cachedResults.Count, results = cachedResults });
         }
 
         _logger.LogInformation(
@@ -141,8 +141,9 @@ public class JobsController : ControllerBase
             // 2. Adzuna (Fallback/Supplement)
             var adzTask = _adzuna.SearchAsync(keywords, location, country, ct);
 
-            // 3. Arbeitnow (Fallback/Remote)
-            var arbTask = _arbeitnow.SearchAsync(keywords, location, ct);
+            // 3. Arbeitnow (Uniquement si recherche Remote ou International/EU)
+            bool wantRemote = !isFrance || keywords.Contains("remote", StringComparison.OrdinalIgnoreCase) || (location?.Contains("remote", StringComparison.OrdinalIgnoreCase) ?? false);
+            var arbTask = wantRemote ? _arbeitnow.SearchAsync(keywords, location, ct) : Task.FromResult(new List<JobOffer>());
 
             // Parallel wait with safety
             try { await ftTask; } catch (Exception ex) { _logger.LogError(ex, "[JOBS] FT failed"); }
@@ -153,23 +154,38 @@ public class JobsController : ControllerBase
             var adzJobs = adzTask.IsCompletedSuccessfully ? adzTask.Result : new List<JobOffer>();
             var arbJobs = arbTask.IsCompletedSuccessfully ? arbTask.Result : new List<JobOffer>();
 
-            // Adzuna/Arbeitnow filtering
-            if (isFrance)
+            // Ensure relevance: filter Adzuna/Arbeitnow to contain search terms
+            if (!string.IsNullOrWhiteSpace(keywords) && !keywords.Equals("emploi", StringComparison.OrdinalIgnoreCase))
             {
-                // For France, we trust the country-level filter of the API.
-                // We only filter if a specific city was requested to ensure relevance.
-                if (!string.IsNullOrWhiteSpace(location))
+                var kwTerms = keywords.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (kwTerms.Length > 0)
                 {
-                    adzJobs = adzJobs.Where(j => 
-                        j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
-                        j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
-                    ).ToList();
+                    adzJobs = adzJobs.Where(j => kwTerms.Any(k => 
+                        (j.Title?.Contains(k, StringComparison.OrdinalIgnoreCase) == true) ||
+                        (j.Company?.Contains(k, StringComparison.OrdinalIgnoreCase) == true) ||
+                        (j.Description?.Contains(k, StringComparison.OrdinalIgnoreCase) == true)
+                    )).ToList();
 
-                    arbJobs = arbJobs.Where(j => 
-                        j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
-                        j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
-                    ).ToList();
+                    arbJobs = arbJobs.Where(j => kwTerms.Any(k => 
+                        (j.Title?.Contains(k, StringComparison.OrdinalIgnoreCase) == true) ||
+                        (j.Company?.Contains(k, StringComparison.OrdinalIgnoreCase) == true) ||
+                        (j.Description?.Contains(k, StringComparison.OrdinalIgnoreCase) == true)
+                    )).ToList();
                 }
+            }
+
+            // Adzuna/Arbeitnow filtering by location
+            if (isFrance && !string.IsNullOrWhiteSpace(location))
+            {
+                adzJobs = adzJobs.Where(j => 
+                    j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
+                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
+                ).ToList();
+
+                arbJobs = arbJobs.Where(j => 
+                    j.Location?.Contains(location, StringComparison.OrdinalIgnoreCase) == true ||
+                    j.Location?.Contains("Remote", StringComparison.OrdinalIgnoreCase) == true
+                ).ToList();
             }
 
             var existingKeys = jobs.Select(j => $"{j.Title?.ToLowerInvariant()}_{j.Company?.ToLowerInvariant()}").ToHashSet();
@@ -242,11 +258,45 @@ public class JobsController : ControllerBase
 
         var profile = await LoadUserProfileAsync(userId.Value);
         if (profile is null)
-            return BadRequest(new { error = "Uploadez votre CV pour accéder à l'analyse IA." });
+        {
+            var user = await _db.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.Id == userId.Value, ct);
+            profile = new CandidateProfile(
+                Name: user?.FullName ?? "Candidat",
+                Title: "Profil Général",
+                Technologies: new Dictionary<string, TechDetail>(),
+                SoftSkills: new List<string> { "Communication", "Motivation", "Autonomie" },
+                Formation: "Parcours Professionnel",
+                Objectifs: new List<string> { "Évolution de carrière", "Recherche de poste" }
+            );
+        }
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
         var result = await _analyst.AnalyzeAsync(req.Job, profile, ct);
         sw.Stop();
+
+        try
+        {
+            _db.BotAnalytics.Add(new BotAnalytic
+            {
+                UserId = userId.Value,
+                ActionType = "JOB_ANALYSIS",
+                TokensUsed = 0,
+                DetailsJson = JsonSerializer.Serialize(new
+                {
+                    jobTitle = req.Job.Title,
+                    company = req.Job.Company,
+                    location = req.Job.Location,
+                    score = result.OverallScore,
+                    verdict = result.Verdict.ToString()
+                }, JsonOpts),
+                CreatedAt = DateTime.UtcNow
+            });
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[JOBS] Error saving job analysis analytic");
+        }
 
         _logger.LogInformation(
             "[JOBS] Analyze: jobId={Id} user={U} score={S} tier={T} in {Ms}ms",

@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Mon Profil & Dashboard — APEX</title>
+    <title>Mon Espace Candidat & Profil — APEX</title>
+    <meta name="description" content="Votre espace personnel APEX : suivez vos candidatures, consultez vos scores d'affinité IA et gérez votre profil professionnel.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap"
         rel="stylesheet">
     <!-- Lucide icons -->
     <script src="https://unpkg.com/lucide@0.383.0/dist/umd/lucide.min.js"></script>
@@ -22,22 +23,92 @@
     <link rel="stylesheet" href="css/index.css">
 
     <style>
+        .dash-page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 84px 24px 60px;
+        }
+
+        .profile-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            flex-wrap: wrap;
+        }
+
+        .profile-hero-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-avatar-lg {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            background: var(--orange);
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+            flex-shrink: 0;
+        }
+
+        .profile-hero-info h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-hero-sub {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(34, 197, 94, 0.12);
+            color: #16a34a;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .dashboard-layout {
             display: grid;
             grid-template-columns: 260px 1fr;
-            gap: 2rem;
-            max-width: 1280px;
-            margin: 2rem auto;
-            padding: 0 20px;
-            min-height: calc(100vh - 160px);
+            gap: 24px;
+            align-items: start;
         }
 
         .dash-sidebar {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 20px;
-            height: fit-content;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .dash-nav-link {
@@ -47,32 +118,26 @@
             padding: 12px 16px;
             color: var(--muted);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
-            transition: all 0.2s;
-            margin-bottom: 8px;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
 
         .dash-nav-link:hover {
-            background: rgba(249, 115, 22, 0.05);
-            color: var(--orange);
+            background: var(--surface2);
+            color: var(--text);
         }
 
         .dash-nav-link.active {
             background: rgba(249, 115, 22, 0.1);
             color: var(--orange);
-            position: relative;
+            font-weight: 700;
         }
 
-        .dash-nav-link.active::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 20%;
-            bottom: 20%;
-            width: 3px;
-            background: var(--orange);
-            border-radius: 0 4px 4px 0;
+        .dash-nav-link.active i {
+            color: var(--orange);
         }
 
         .dash-main {
@@ -84,13 +149,77 @@
         .dash-panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .kpi-box {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kpi-title {
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+
+        .skills-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .skill-pill {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text);
+        }
+
+        .skill-pill.orange {
+            background: rgba(249, 115, 22, 0.08);
+            border-color: rgba(249, 115, 22, 0.25);
+            color: var(--orange);
         }
 
         .table-responsive {
             width: 100%;
             overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
         .apex-table {
@@ -100,23 +229,24 @@
         }
 
         .apex-table th {
-            padding: 12px 16px;
-            font-size: 0.85rem;
+            padding: 14px 16px;
+            font-size: 0.8rem;
             color: var(--muted);
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--border);
+            letter-spacing: 0.05em;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
         }
 
         .apex-table td {
             padding: 16px;
             border-bottom: 1px solid var(--border);
-            font-size: 0.95rem;
+            font-size: 0.92rem;
         }
 
         .apex-table tr:hover td {
-            background: rgba(255,255,255,0.02);
+            background: rgba(249, 115, 22, 0.02);
         }
 
         .score-badge {
@@ -129,148 +259,265 @@
             font-weight: 700;
         }
 
-        .score-high { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .score-mid { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-        .score-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .score-high { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+        .score-mid { background: rgba(245, 158, 11, 0.15); color: #d97706; }
+        .score-low { background: rgba(239, 68, 68, 0.15); color: #dc2626; }
 
-        @media (max-width: 768px) {
+        .cv-drop-box {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            background: var(--surface2);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .cv-drop-box:hover {
+            border-color: var(--orange);
+            background: rgba(249, 115, 22, 0.03);
+        }
+
+        @media (max-width: 860px) {
             .dashboard-layout {
                 grid-template-columns: 1fr;
+            }
+            .profile-hero {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- HEADER -->
-    <header role="banner">
-        <a href="index.html" class="logo-wrap" aria-label="APEX ï¿½ Accueil">
+    <!-- HEADER APEX OFFICIEL COMPLET -->
+    <header role="banner" id="site-header">
+        <a href="index.html" class="logo-wrap" aria-label="APEX — Accueil">
             <span class="logo-apex">APE<span>X</span></span>
             <span class="logo-by">by AVERS</span>
         </a>
         <nav aria-label="Navigation principale">
             <a href="index.html#offres" class="nav-link">Offres</a>
             <a href="entreprises.html" class="nav-link">Entreprises</a>
-            <a href="swipe-n-job.html" class="nav-link">Swipe n' Job</a>
+            <a href="swipe-n-job.html" class="nav-link" style="color:var(--orange);font-weight:700">Swipe n' Job</a>
+            <a href="index.html#villes-premium" class="nav-link">Villes</a>
+            <a href="index.html#outils" class="nav-link">Outils</a>
+            <a href="index.html#conseils" class="nav-link">Conseils</a>
         </nav>
 
-        <button class="btn-icon-sm" onclick="toggleTheme()" id="theme-btn" title="Changer de thÃ¨me"
-            aria-label="Basculer mode sombre">
-            <i data-lucide="moon"></i>
-        </button>
-        <div class="vr" aria-hidden="true"></div>
-        <div class="auth-group" style="display:flex;gap:6px;align-items:center">
-            <!-- Handled by UI.js -->
+        <div class="header-right" style="display:flex;align-items:center;gap:8px;margin-left:auto">
+            <button class="btn-icon-sm" onclick="toggleTheme()" id="theme-btn" title="Changer de thème"
+                aria-label="Basculer mode sombre">
+                <i data-lucide="moon"></i>
+            </button>
+            <div class="vr" aria-hidden="true"></div>
+            <a href="user.html" class="btn-solid" id="auth-profile-btn" style="background:var(--orange)">
+                <i data-lucide="user"></i> <span>Mon Profil</span>
+            </a>
+            <button class="btn-ghost" onclick="handleLogout()" title="Se déconnecter" style="color:var(--muted)">
+                <i data-lucide="log-out"></i> <span style="font-size:12px">Déconnexion</span>
+            </button>
+            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu de navigation"
+                aria-expanded="false">
+                <i data-lucide="menu"></i>
+            </button>
         </div>
-        <a href="user.html" class="btn-solid" id="auth-profile-btn" style="display:none">
-            <i data-lucide="user"></i> Profil
-        </a>
-        <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu de navigation"
-            aria-expanded="false">
-            <i data-lucide="menu"></i>
-        </button>
     </header>
 
-    <div class="dashboard-layout">
-        <!-- SIDEBAR -->
-        <aside class="dash-sidebar">
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom: 24px;">
-                <div id="dash-avatar" style="width:50px;height:50px;border-radius:12px;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;">U</div>
-                <div>
-                    <div id="dash-name" style="font-weight:700; font-size:1.1rem;">Utilisateur</div>
-                    <div id="dash-email" style="font-size:0.85rem; color:var(--muted);">email@test.com</div>
+    <div class="dash-page">
+        <!-- HERO PROFIL -->
+        <div class="profile-hero">
+            <div class="profile-hero-left">
+                <div class="profile-avatar-lg" id="dash-avatar">U</div>
+                <div class="profile-hero-info">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                        <h1 id="dash-name">Chargement du profil...</h1>
+                        <span class="badge-status"><i data-lucide="check-circle" style="width:12px;height:12px"></i> Compte Actif</span>
+                    </div>
+                    <div class="profile-hero-sub">
+                        <span id="dash-email" style="display:flex; align-items:center; gap:5px;"><i data-lucide="mail" style="width:14px;height:14px"></i> -</span>
+                        <span>•</span>
+                        <span id="dash-role-badge" style="display:flex; align-items:center; gap:5px;"><i data-lucide="shield" style="width:14px;height:14px"></i> Candidat APEX</span>
+                    </div>
                 </div>
             </div>
-
-            <nav>
-                <a href="#" class="dash-nav-link active" onclick="switchDashTab('analytics'); return false;" id="tab-btn-analytics">
-                    <i data-lucide="activity"></i> Analytics IA
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="swipe-n-job.html" class="btn-solid" style="background:var(--orange); text-decoration:none; padding:10px 18px; border-radius:10px; font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="zap" style="width:16px;height:16px"></i> Swipe n' Job
                 </a>
-                <a href="#" class="dash-nav-link" onclick="switchDashTab('applications'); return false;" id="tab-btn-applications">
+                <a href="index.html#offres" class="btn-ghost" style="text-decoration:none; padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <i data-lucide="search" style="width:14px;height:14px"></i> Chercher un poste
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-layout">
+            <!-- MENU LATÉRAL -->
+            <aside class="dash-sidebar">
+                <div class="dash-nav-link active" onclick="switchDashTab('overview')" id="tab-btn-overview">
+                    <i data-lucide="user"></i> Mon Profil & Compétences
+                </div>
+                <div class="dash-nav-link" onclick="switchDashTab('applications')" id="tab-btn-applications">
                     <i data-lucide="briefcase"></i> Mes Candidatures
+                </div>
+                <div class="dash-nav-link" onclick="switchDashTab('history')" id="tab-btn-history">
+                    <i data-lucide="sparkles"></i> Évaluations & Conseils IA
+                </div>
+                <hr style="border:none; border-top:1px solid var(--border); margin:8px 0;">
+                <a href="index.html#villes-premium" class="dash-nav-link">
+                    <i data-lucide="map-pin"></i> Villes & Régions
                 </a>
-                <a href="#" class="dash-nav-link" onclick="handleLogout(); return false;" style="color:var(--red); margin-top:20px;">
-                    <i data-lucide="log-out"></i> Déconnexion
+                <a href="index.html#conseils" class="dash-nav-link">
+                    <i data-lucide="book-open"></i> Conseils Carrière
                 </a>
-            </nav>
-        </aside>
-
-        <!-- MAIN CONTENT -->
-        <main class="dash-main">
-
-            <!-- TAB: ANALYTICS -->
-            <div id="tab-analytics" class="dash-panel">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-                    <div>
-                        <h2 style="font-size: 1.5rem; font-weight: 800; display:flex; align-items:center; gap:10px;">
-                            <i data-lucide="bot" style="color:var(--orange)"></i> APEX Monitoring
-                        </h2>
-                        <p style="color:var(--muted); font-size:0.9rem;">Toutes les actions et scores générés par l'Intelligence Artificielle.</p>
-                    </div>
+                <a href="index.html#outils" class="dash-nav-link">
+                    <i data-lucide="calculator"></i> Simulateur Salaire
+                </a>
+                <hr style="border:none; border-top:1px solid var(--border); margin:8px 0;">
+                <div class="dash-nav-link" onclick="handleLogout()" style="color:var(--red);">
+                    <i data-lucide="log-out"></i> Se déconnecter
                 </div>
+            </aside>
 
-                <!-- KPIs -->
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
-                    <div class="kpi-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display:flex; flex-direction:column; gap:8px;">
-                        <div style="color:var(--muted); font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-                            <i data-lucide="cpu" style="width:16px;height:16px;color:var(--orange)"></i> Actions IA
+            <!-- CONTENU PRINCIPAL -->
+            <main class="dash-main">
+
+                <!-- TAB 1 : VUE D'ENSEMBLE & MON PROFIL -->
+                <div id="tab-overview" class="dash-panel">
+                    <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="trending-up" style="color:var(--orange)"></i> Votre Activité & Progression
+                    </h2>
+                    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:24px;">Vos statistiques en temps réel et la synthèse de votre profil.</p>
+
+                    <!-- KPIS -->
+                    <div class="kpi-grid">
+                        <div class="kpi-box">
+                            <div class="kpi-title"><i data-lucide="target" style="color:var(--orange)"></i> Score Affinité Moyen</div>
+                            <div class="kpi-value" id="dash-avg-score">--</div>
+                            <span style="font-size:0.8rem; color:var(--muted);">Basé sur vos évaluations</span>
                         </div>
-                        <div id="dash-total-actions" style="font-size:2.5rem; font-weight:800;">0</div>
-                    </div>
-                    <div class="kpi-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display:flex; flex-direction:column; gap:8px;">
-                        <div style="color:var(--muted); font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px;">
-                            <i data-lucide="crosshair" style="width:16px;height:16px;color:#10b981"></i> Offres Évaluées
+                        <div class="kpi-box">
+                            <div class="kpi-title"><i data-lucide="briefcase" style="color:#3b82f6"></i> Candidatures</div>
+                            <div class="kpi-value" id="dash-total-apps">0</div>
+                            <span style="font-size:0.8rem; color:var(--muted);">Postes suivis</span>
                         </div>
-                        <div id="dash-total-jobs" style="font-size:2.5rem; font-weight:800;">0</div>
+                        <div class="kpi-box">
+                            <div class="kpi-title"><i data-lucide="zap" style="color:#10b981"></i> Évaluations IA</div>
+                            <div class="kpi-value" id="dash-total-jobs">0</div>
+                            <span style="font-size:0.8rem; color:var(--muted);">Offres analysées</span>
+                        </div>
+                        <div class="kpi-box">
+                            <div class="kpi-title"><i data-lucide="message-circle" style="color:#8b5cf6"></i> Conseils APEX</div>
+                            <div class="kpi-value" id="dash-total-chat">0</div>
+                            <span style="font-size:0.8rem; color:var(--muted);">Échanges carrière</span>
+                        </div>
                     </div>
-                </div>
 
-                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Historique des analyses (Score IA)</h3>
-                <div class="table-responsive">
-                    <table class="apex-table">
-                        <thead>
-                            <tr>
-                                <th>Action</th>
-                                <th>Détails</th>
-                                <th>Score IA</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dash-analytics-tbody">
-                            <!-- Injected via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    <!-- BIO & RESUME -->
+                    <div style="margin-bottom:28px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h3 style="font-size:1.1rem; font-weight:700;">Résumé professionnel / Présentation</h3>
+                            <button class="btn-ghost" onclick="toggleEditBio()" id="btn-edit-bio" style="font-size:12px; padding:4px 10px;">
+                                <i data-lucide="edit-3" style="width:14px;height:14px"></i> Modifier
+                            </button>
+                        </div>
+                        <div id="bio-display" style="background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:16px; font-size:0.95rem; line-height:1.6; color:var(--text);">
+                            Aucune bio renseignée pour le moment. Renseignez votre parcours ou déposez votre CV pour une synthèse automatique.
+                        </div>
+                        <div id="bio-edit-wrap" style="display:none; margin-top:10px;">
+                            <textarea id="bio-textarea" style="width:100%; min-height:100px; padding:12px; border-radius:10px; border:1px solid var(--orange); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.95rem; outline:none; resize:vertical;"></textarea>
+                            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                                <button class="btn-ghost" onclick="toggleEditBio()">Annuler</button>
+                                <button class="btn-solid" onclick="saveBio()" style="background:var(--orange)">Enregistrer</button>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- TAB: APPLICATIONS -->
-            <div id="tab-applications" class="dash-panel" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+                    <!-- COMPETENCES -->
+                    <div style="margin-bottom:28px;">
+                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:6px;">Compétences clés détectées</h3>
+                        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">Compétences techniques et relationnelles associées à vos recherches et à votre CV.</p>
+                        <div class="skills-chips" id="dash-skills-chips">
+                            <span class="skill-pill orange"><i data-lucide="check"></i> Recherche d'emploi</span>
+                            <span class="skill-pill orange"><i data-lucide="check"></i> Motivation</span>
+                            <span class="skill-pill orange"><i data-lucide="check"></i> Flexibilité</span>
+                        </div>
+                    </div>
+
+                    <!-- CV ZONE -->
                     <div>
-                        <h2 style="font-size: 1.5rem; font-weight: 800;">Mes Candidatures</h2>
-                        <p style="color:var(--muted); font-size:0.9rem;">Suivez l'état de vos postulations.</p>
+                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:12px;">Votre CV</h3>
+                        <div class="cv-drop-box" onclick="document.getElementById('dash-cv-file').click()">
+                            <input type="file" id="dash-cv-file" accept=".pdf" style="display:none" onchange="uploadDashboardCv(this.files[0])">
+                            <i data-lucide="file-text" style="width:36px;height:36px;color:var(--orange);margin:0 auto 8px;display:block"></i>
+                            <div style="font-weight:700; font-size:1rem; margin-bottom:4px;" id="cv-status-title">Déposez votre CV au format PDF</div>
+                            <p style="color:var(--muted); font-size:0.85rem;" id="cv-status-desc">L'assistant APEX analysera vos compétences pour vous proposer les meilleures offres.</p>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="table-responsive">
-                    <table class="apex-table">
-                        <thead>
-                            <tr>
-                                <th>Entreprise</th>
-                                <th>Poste</th>
-                                <th>Ville</th>
-                                <th>Contrat</th>
-                                <th>Statut</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dash-applications-tbody">
-                            <!-- Placeholder -->
-                            <tr><td colspan="5" style="text-align:center; color:var(--muted); padding: 30px;">Aucune candidature pour le moment.</td></tr>
-                        </tbody>
-                    </table>
+
+                <!-- TAB 2 : MES CANDIDATURES -->
+                <div id="tab-applications" class="dash-panel" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:4px;">Suivi de mes Candidatures</h2>
+                            <p style="color:var(--muted); font-size:0.9rem;">Consultez et suivez l'avancée de vos démarches d'embauche.</p>
+                        </div>
+                        <a href="index.html#offres" class="btn-solid" style="background:var(--orange); font-size:13px; text-decoration:none; padding:8px 14px; border-radius:8px;">
+                            <i data-lucide="plus"></i> Postuler à une offre
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="apex-table">
+                            <thead>
+                                <tr>
+                                    <th>Poste & Entreprise</th>
+                                    <th>Lieu</th>
+                                    <th>Contrat</th>
+                                    <th>Statut</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-applications-tbody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; color:var(--muted); padding:36px;">
+                                        Aucune candidature enregistrée pour le moment.<br>
+                                        <a href="index.html#offres" style="color:var(--orange); font-weight:600; text-decoration:none; display:inline-block; margin-top:8px;">Parcourir les offres disponibles</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        </main>
+
+                <!-- TAB 3 : HISTORIQUE & EVALUATIONS -->
+                <div id="tab-history" class="dash-panel" style="display:none;">
+                    <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:4px; display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="sparkles" style="color:var(--orange)"></i> Évaluations & Historique d'Affinité
+                    </h2>
+                    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;">Détails des scores de compatibilité calculés sur les offres et des conseils de l'assistant.</p>
+
+                    <div class="table-responsive">
+                        <table class="apex-table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Détails / Offre</th>
+                                    <th>Score de Matching</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-history-tbody">
+                                <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px;">Chargement de l'historique...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
     </div>
 
     <!-- Mobile Bottom Nav -->
@@ -283,7 +530,7 @@
             <i data-lucide="zap"></i>
             <span>Swipe</span>
         </a>
-        <a href="javascript:void(0)" onclick="toggleDrawer()" class="nav-bot-btn" aria-label="Assistant IA APEX">
+        <a href="javascript:void(0)" onclick="openDrawer()" class="nav-bot-btn" aria-label="Assistant IA APEX">
             <div class="bot-icon-wrapper">
                 <i data-lucide="message-circle"></i>
             </div>
@@ -292,7 +539,7 @@
             <i data-lucide="building-2"></i>
             <span>Entreprises</span>
         </a>
-        <a href="user.html" class="active" id="mobile-nav-profile">
+        <a href="user.html" class="active">
             <i data-lucide="user"></i>
             <span>Profil</span>
         </a>
@@ -302,92 +549,237 @@
     <script src="js/auth.js?v=10"></script>
     <script src="js/ui.js?v=10"></script>
     <script>
-        // Init Lucide
-        (function initLucide(n) {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            } else if (n < 50) {
-                setTimeout(function () { initLucide(n + 1); }, 100);
-            }
-        })(0);
+        function safeIcons() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            else setTimeout(safeIcons, 80);
+        }
 
         function switchDashTab(tabId) {
             document.querySelectorAll('.dash-nav-link').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-btn-' + tabId).classList.add('active');
-            
-            document.getElementById('tab-analytics').style.display = 'none';
-            document.getElementById('tab-applications').style.display = 'none';
-            
-            document.getElementById('tab-' + tabId).style.display = 'block';
+            const btn = document.getElementById('tab-btn-' + tabId);
+            if (btn) btn.classList.add('active');
+
+            ['overview', 'applications', 'history'].forEach(id => {
+                const p = document.getElementById('tab-' + id);
+                if (p) p.style.display = (id === tabId) ? 'block' : 'none';
+            });
+            safeIcons();
         }
 
-        async function initDashboard() {
-            if (!isLoggedIn()) {
-                window.location.href = "index.html"; // Redirect if not logged in
-                return;
+        function toggleEditBio() {
+            const disp = document.getElementById('bio-display');
+            const wrap = document.getElementById('bio-edit-wrap');
+            const ta = document.getElementById('bio-textarea');
+            if (wrap.style.display === 'none') {
+                ta.value = disp.innerText.includes('Aucune bio') ? '' : disp.innerText;
+                wrap.style.display = 'block';
+                disp.style.display = 'none';
+                ta.focus();
+            } else {
+                wrap.style.display = 'none';
+                disp.style.display = 'block';
             }
+        }
 
-            const user = JSON.parse(localStorage.getItem('apex_user') || '{}');
-            document.getElementById('dash-name').innerText = user.name || 'Utilisateur';
-            document.getElementById('dash-email').innerText = user.email || '';
-            document.getElementById('dash-avatar').innerText = (user.name ? user.name[0] : 'U').toUpperCase();
-
+        async function saveBio() {
+            const bio = document.getElementById('bio-textarea').value.trim();
             try {
-                const res = await window.apiFetch('/api/profile/analytics');
-                if (!res.ok) throw new Error('Erreur API');
-                const data = await res.json();
-                
-                document.getElementById('dash-total-actions').innerText = data.stats.totalActions || 0;
-                document.getElementById('dash-total-jobs').innerText = data.stats.jobsScored || 0;
-
-                const tbody = document.getElementById('dash-analytics-tbody');
-                tbody.innerHTML = '';
-                
-                if (data.history && data.history.length > 0) {
-                    data.history.forEach(item => {
-                        let actionText = item.actionType;
-                        let detailsText = '';
-                        let scoreHtml = '<span class="score-badge" style="color:var(--muted)">N/A</span>';
-                        
-                        if (item.actionType === 'JOB_SWIPE_MATCH') {
-                            actionText = 'Évaluation Offre (Swipe)';
-                            try {
-                                const d = JSON.parse(item.detailsJson);
-                                detailsText = d.jobTitle || 'Offre inconnue';
-                                if (d.score) {
-                                    let cls = 'score-low';
-                                    if(d.score >= 70) cls = 'score-high';
-                                    else if(d.score >= 50) cls = 'score-mid';
-                                    scoreHtml = `<span class="score-badge ${cls}"><i data-lucide="target" style="width:14px"></i> ${d.score}/100</span>`;
-                                }
-                            } catch(e){}
-                        } else if (item.actionType === 'CV_PARSED' || item.actionType === 'CV_ANALYSIS') {
-                            actionText = 'Analyse CV';
-                            detailsText = 'Extraction des compétences et bio';
-                        } else if (item.actionType === 'CHAT_MESSAGE') {
-                            actionText = 'Chat Bot';
-                            detailsText = 'Interaction conversationnelle';
-                        }
-
-                        tbody.innerHTML += `
-                            <tr>
-                                <td style="font-weight:600;">${actionText}</td>
-                                <td>${detailsText}</td>
-                                <td>${scoreHtml}</td>
-                                <td style="color:var(--muted); font-size:0.85rem;">${window.relativeDate(item.createdAt)}</td>
-                            </tr>
-                        `;
-                    });
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px;">Aucune donnée pour le moment.</td></tr>`;
+                const res = await window.apiFetch('/api/profile/bio', {
+                    method: 'PUT',
+                    body: JSON.stringify({ bio })
+                });
+                if (res.ok) {
+                    document.getElementById('bio-display').innerText = bio || 'Aucune bio renseignée.';
+                    toggleEditBio();
+                    if (typeof showToast === 'function') showToast('Bio mise à jour avec succès.', 'success');
                 }
             } catch (err) {
                 console.error(err);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', initDashboard);
+        async function uploadDashboardCv(file) {
+            if (!file) return;
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                if (typeof showToast === 'function') showToast('Seuls les fichiers PDF sont acceptés.', 'warn');
+                return;
+            }
+            if (typeof showToast === 'function') showToast('Analyse de votre CV en cours…', 'info');
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('cv', file);
+            try {
+                const res = await fetch(window._API + '/api/profile/upload-cv', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('apex_token')}` },
+                    body: fd
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok) {
+                    if (typeof showToast === 'function') showToast('CV analysé et profil mis à jour !', 'success');
+                    initDashboard();
+                } else {
+                    if (typeof showToast === 'function') showToast(data.error || 'Erreur lors de l\'analyse du CV.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function initDashboard() {
+            if (!isLoggedIn()) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            let user = JSON.parse(localStorage.getItem('apex_user') || '{}');
+            const tok = localStorage.getItem('apex_token');
+            if (!user.name && tok) {
+                try {
+                    const p = JSON.parse(atob(tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    user.name = p.name || p.FullName || p.email || 'Utilisateur';
+                    user.email = p.email || '';
+                    user.role = p.role || 'user';
+                } catch (_) {}
+            }
+
+            const name = user.name || 'Utilisateur';
+            const email = user.email || 'email@avers.fr';
+            const init = name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('') || 'U';
+
+            document.getElementById('dash-name').innerText = name;
+            document.getElementById('dash-email').innerHTML = `<i data-lucide="mail" style="width:14px;height:14px"></i> ${email}`;
+            document.getElementById('dash-avatar').innerText = init;
+
+            if (typeof updateAuthUI === 'function') updateAuthUI();
+
+            // 1. Charger le profil complet
+            try {
+                const pRes = await window.apiFetch('/api/profile');
+                if (pRes.ok) {
+                    const pData = await pRes.json();
+                    if (pData.bio) {
+                        document.getElementById('bio-display').innerText = pData.bio;
+                    }
+                    if (pData.techs && pData.techs.length > 0) {
+                        const chips = document.getElementById('dash-skills-chips');
+                        chips.innerHTML = pData.techs.map(t => `<span class="skill-pill orange"><i data-lucide="check"></i> ${t}</span>`).join('');
+                    }
+                    if (pData.hasCv) {
+                        document.getElementById('cv-status-title').innerText = pData.cvFile || 'CV importé et validé';
+                        document.getElementById('cv-status-desc').innerText = 'Cliquez pour remplacer votre CV par un nouveau fichier PDF.';
+                    }
+                }
+            } catch (_) {}
+
+            // 2. Charger les candidatures
+            try {
+                const apps = JSON.parse(localStorage.getItem('apex_applications') || '[]');
+                document.getElementById('dash-total-apps').innerText = apps.length;
+                const appTbody = document.getElementById('dash-applications-tbody');
+                if (apps.length > 0) {
+                    appTbody.innerHTML = apps.map(a => `
+                        <tr>
+                            <td style="font-weight:700;">${a.title || 'Poste'}<br><span style="color:var(--muted);font-weight:400;font-size:0.85rem">${a.company || 'Entreprise'}</span></td>
+                            <td>${a.location || 'France'}</td>
+                            <td><span style="background:var(--surface2);padding:3px 8px;border-radius:6px;font-size:0.8rem">${a.contract || 'CDI'}</span></td>
+                            <td><span class="badge-status">${a.status || 'Postulé'}</span></td>
+                            <td style="color:var(--muted);font-size:0.85rem">${a.date || 'Récemment'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (_) {}
+
+            // 3. Charger l'historique et les statistiques d'analyses
+            try {
+                const res = await window.apiFetch('/api/profile/analytics');
+                if (!res.ok) throw new Error('Erreur API Analytics');
+                const data = await res.json();
+                
+                const totalActions = data.stats?.totalActions || 0;
+                const jobsScored = data.stats?.jobsScored || 0;
+                document.getElementById('dash-total-jobs').innerText = jobsScored;
+
+                let chatCount = 0;
+                let scoreSum = 0;
+                let scoreCount = 0;
+
+                const tbody = document.getElementById('dash-history-tbody');
+                tbody.innerHTML = '';
+                
+                if (data.history && data.history.length > 0) {
+                    data.history.forEach(item => {
+                        let actionLabel = item.actionType;
+                        let detailsText = '';
+                        let scoreHtml = '<span class="score-badge" style="color:var(--muted)">-</span>';
+                        
+                        if (item.actionType === 'JOB_SWIPE_MATCH' || item.actionType === 'JOB_ANALYSIS') {
+                            actionLabel = 'Évaluation Offre';
+                            try {
+                                const d = JSON.parse(item.detailsJson);
+                                detailsText = `${d.jobTitle || 'Offre'} — ${d.company || ''}`;
+                                if (d.score) {
+                                    scoreSum += d.score;
+                                    scoreCount++;
+                                    let cls = 'score-low';
+                                    if (d.score >= 70) cls = 'score-high';
+                                    else if (d.score >= 50) cls = 'score-mid';
+                                    scoreHtml = `<span class="score-badge ${cls}"><i data-lucide="target" style="width:14px"></i> ${d.score}/100</span>`;
+                                }
+                            } catch (e) {}
+                        } else if (item.actionType === 'CV_PARSED' || item.actionType === 'CV_ANALYSIS') {
+                            actionLabel = 'Analyse de CV';
+                            detailsText = 'Extraction automatique des compétences';
+                            scoreHtml = `<span class="score-badge score-high"><i data-lucide="check" style="width:14px"></i> Validé</span>`;
+                        } else if (item.actionType === 'CHAT_MESSAGE') {
+                            chatCount++;
+                            actionLabel = 'Conseil Assistant APEX';
+                            try {
+                                const d = JSON.parse(item.detailsJson);
+                                detailsText = d.message || 'Échange avec le conseiller';
+                            } catch (_) { detailsText = 'Discussion orientation'; }
+                        }
+
+                        const dateFormatted = typeof window.relativeDate === 'function' ? window.relativeDate(item.createdAt) : new Date(item.createdAt).toLocaleDateString('fr-FR');
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="font-weight:700;">${actionLabel}</td>
+                                <td style="color:var(--text);">${detailsText}</td>
+                                <td>${scoreHtml}</td>
+                                <td style="color:var(--muted); font-size:0.85rem;">${dateFormatted}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px;">Aucune évaluation enregistrée pour le moment.</td></tr>`;
+                }
+
+                document.getElementById('dash-total-chat').innerText = chatCount;
+                if (scoreCount > 0) {
+                    document.getElementById('dash-avg-score').innerText = Math.round(scoreSum / scoreCount) + '%';
+                } else {
+                    document.getElementById('dash-avg-score').innerText = '--';
+                }
+
+                safeIcons();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        if (typeof EventBus !== 'undefined' && typeof EV !== 'undefined') {
+            EventBus.on(EV.AUTH_LOGOUT, () => {
+                window.location.href = "index.html";
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDashboard();
+            safeIcons();
+        });
     </script>
 </body>
+
 </html>

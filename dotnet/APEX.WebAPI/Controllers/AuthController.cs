@@ -263,7 +263,7 @@ public class AuthController : ControllerBase
     // ══════════════════════════════════════════════════════════
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest req)
+    public async Task<IActionResult> Refresh([FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] RefreshRequest? req = null)
     {
         var rawRefreshToken = Request.Cookies["refreshToken"];
         if (string.IsNullOrEmpty(rawRefreshToken))
@@ -299,7 +299,7 @@ public class AuthController : ControllerBase
         }
 
         // Valider que l'access token correspond bien à cet user
-        if (!string.IsNullOrEmpty(req.AccessToken))
+        if (!string.IsNullOrEmpty(req?.AccessToken))
         {
             var principal = _tokens.GetPrincipalFromExpiredToken(req.AccessToken);
             var subClaim = principal?.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
