@@ -254,7 +254,7 @@ window.openJobPanel = function(idx) {
       </a>
       ${job.url?`<a href="${esc(job.url)}" target="_blank" rel="noopener noreferrer"
         style="font-size:12px;color:#fff;background:var(--orange);text-decoration:none;border:none;border-radius:6px;padding:5px 12px;font-weight:700;display:flex;align-items:center;gap:4px">
-        <i data-lucide="external-link" style="width:12px;height:12px"></i> France Travail &#8594;
+        <i data-lucide="external-link" style="width:12px;height:12px"></i> ${job.source==='Adzuna'?'Adzuna':job.source==='EU/Remote'?'Arbeitnow':'France Travail'} &#8594;
       </a>`:''}
     </div>`;
 

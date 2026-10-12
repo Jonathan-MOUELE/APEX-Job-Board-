@@ -9,8 +9,9 @@
 - **Persona** : APEX Agent, expert carrière et emploi en France.
 - **Score de compatibilité** : Doit toujours renvoyer un score clair sur 100 lors des analyses d'offres / de profils.
 - **Anti-goinfrage** : Limite de 500 caractères par prompt, historique de 8 tours max, rate limiting actif.
-- **Modèles Gemini supportés** : `gemini-2.0-flash` (défaut recommandé), `gemini-1.5-flash`, `gemini-2.0-flash-lite`, `gemini-1.5-pro` (attention au quota gratuit de 2 RPM sur le Pro).
+- **Modèles Gemini supportés** : `gemini-2.5-flash` (défaut recommandé), `gemini-2.5-flash-lite`, `gemini-2.5-pro` (attention au quota gratuit de 2 RPM sur le Pro).
 - **Format Gemini REST** : Alternance stricte `user` -> `model` obligatoire (aucun tour consécutif avec le même rôle).
 
-mail : admin@avers.fr
-Mot de passe : 
+## 3. Log des Réussites (`reussite.md`)
+- Toujours consulter [`reussite.md`](file:///c:/xampp/htdocs/APEX/reussite.md) pour se référer aux solutions et modifications réussies précédentes.
+- Après CHAQUE modification de code réussie et validée, demander systématiquement à l'utilisateur s'il souhaite ajouter les détails de la modification dans `reussite.md`.

@@ -207,6 +207,7 @@
             align-items: center;
             gap: 6px;
             color: var(--text);
+            transition: all 0.15s ease;
         }
 
         .skill-pill.orange {
@@ -214,6 +215,63 @@
             border-color: rgba(249, 115, 22, 0.25);
             color: var(--orange);
         }
+
+        .skill-pill .skill-rm {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--orange);
+            cursor: pointer;
+            font-size: 11px;
+            line-height: 1;
+            transition: background 0.15s;
+            margin-left: 2px;
+            flex-shrink: 0;
+        }
+        .skill-pill .skill-rm:hover {
+            background: rgba(249, 115, 22, 0.35);
+        }
+
+        .skill-add-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            align-items: center;
+        }
+        .skill-add-inp {
+            flex: 1;
+            padding: 7px 14px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .skill-add-inp:focus {
+            border-color: var(--orange);
+        }
+        .skill-add-btn {
+            padding: 7px 16px;
+            border-radius: 100px;
+            background: var(--orange);
+            color: #fff;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+        .skill-add-btn:hover { opacity: 0.88; }
 
         .table-responsive {
             width: 100%;
@@ -286,6 +344,15 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes tdot {
+            0%,80%,100% { transform: scale(0); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -436,12 +503,18 @@
 
                     <!-- COMPETENCES -->
                     <div style="margin-bottom:28px;">
-                        <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:6px;">Compétences clés détectées</h3>
-                        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">Compétences techniques et relationnelles associées à vos recherches et à votre CV.</p>
-                        <div class="skills-chips" id="dash-skills-chips">
-                            <span class="skill-pill orange"><i data-lucide="check"></i> Recherche d'emploi</span>
-                            <span class="skill-pill orange"><i data-lucide="check"></i> Motivation</span>
-                            <span class="skill-pill orange"><i data-lucide="check"></i> Flexibilité</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <h3 style="font-size:1.1rem; font-weight:700;">Compétences clés</h3>
+                            <span style="font-size:0.75rem; color:var(--muted); background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:2px 8px;" id="skills-count-badge">0 compétences</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">Techniques et relationnelles issues de votre CV ou ajoutées manuellement.</p>
+                        <div class="skills-chips" id="dash-skills-chips"></div>
+                        <div class="skill-add-row">
+                            <input class="skill-add-inp" id="skill-add-inp" type="text" placeholder="Ex: JavaScript, Gestion de projet, HACCP…" maxlength="40"
+                                onkeydown="if(event.key==='Enter'){addSkillManual();event.preventDefault();}">
+                            <button class="skill-add-btn" onclick="addSkillManual()">
+                                <i data-lucide="plus" style="width:14px;height:14px"></i> Ajouter
+                            </button>
                         </div>
                     </div>
 
@@ -566,6 +639,63 @@
             safeIcons();
         }
 
+        // ── Gestion des compétences ──────────────────────────────
+        let _skillsList = [];
+
+        function renderSkills(skills) {
+            _skillsList = [...new Set(skills.map(s => s.trim()).filter(Boolean))];
+            const chips = document.getElementById('dash-skills-chips');
+            const badge = document.getElementById('skills-count-badge');
+            if (!chips) return;
+            if (_skillsList.length === 0) {
+                chips.innerHTML = '<span style="color:var(--muted);font-size:0.85rem;font-style:italic;">Aucune compétence renseignée — ajoutez la vôtre ci-dessous.</span>';
+                if (badge) badge.textContent = '0 compétence';
+                return;
+            }
+            chips.innerHTML = _skillsList.map((s, i) => `
+                <span class="skill-pill orange" style="animation:fadeIn .2s ease both;animation-delay:${i*30}ms">
+                    <i data-lucide="check" style="width:12px;height:12px"></i>
+                    ${s.replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+                    <span class="skill-rm" onclick="removeSkill(${i})" title="Supprimer" aria-label="Supprimer ${s}">×</span>
+                </span>`).join('');
+            if (badge) badge.textContent = `${_skillsList.length} compétence${_skillsList.length > 1 ? 's' : ''}`;
+            safeIcons();
+        }
+
+        function removeSkill(idx) {
+            _skillsList.splice(idx, 1);
+            const manualSkills = JSON.parse(localStorage.getItem('apex_manual_skills') || '[]');
+            // Re-persister uniquement les manuelles non supprimées
+            const stillExists = s => _skillsList.includes(s);
+            localStorage.setItem('apex_manual_skills', JSON.stringify(manualSkills.filter(stillExists)));
+            renderSkills(_skillsList);
+            if (typeof showToast === 'function') showToast('Compétence supprimée.', 'info');
+        }
+
+        function addSkillManual() {
+            const inp = document.getElementById('skill-add-inp');
+            if (!inp) return;
+            const val = inp.value.trim();
+            if (!val) { inp.focus(); return; }
+            if (_skillsList.map(s => s.toLowerCase()).includes(val.toLowerCase())) {
+                if (typeof showToast === 'function') showToast('Cette compétence existe déjà.', 'warn');
+                inp.select(); return;
+            }
+            if (_skillsList.length >= 30) {
+                if (typeof showToast === 'function') showToast('Limite de 30 compétences atteinte.', 'warn');
+                return;
+            }
+            const manualSkills = JSON.parse(localStorage.getItem('apex_manual_skills') || '[]');
+            manualSkills.push(val);
+            localStorage.setItem('apex_manual_skills', JSON.stringify(manualSkills));
+            _skillsList.push(val);
+            renderSkills(_skillsList);
+            inp.value = '';
+            inp.focus();
+            if (typeof showToast === 'function') showToast(`"${val}" ajouté à vos compétences.`, 'success');
+        }
+
+
         function toggleEditBio() {
             const disp = document.getElementById('bio-display');
             const wrap = document.getElementById('bio-edit-wrap');
@@ -662,16 +792,24 @@
                     if (pData.bio) {
                         document.getElementById('bio-display').innerText = pData.bio;
                     }
-                    if (pData.techs && pData.techs.length > 0) {
-                        const chips = document.getElementById('dash-skills-chips');
-                        chips.innerHTML = pData.techs.map(t => `<span class="skill-pill orange"><i data-lucide="check"></i> ${t}</span>`).join('');
-                    }
+                    // Fusionner les compétences API + compétences manuelles localStorage
+                    const apiTechs = (pData.techs && pData.techs.length > 0) ? pData.techs : [];
+                    const manualSkills = JSON.parse(localStorage.getItem('apex_manual_skills') || '[]');
+                    const merged = [...new Set([...apiTechs, ...manualSkills])];
+                    renderSkills(merged);
                     if (pData.hasCv) {
                         document.getElementById('cv-status-title').innerText = pData.cvFile || 'CV importé et validé';
                         document.getElementById('cv-status-desc').innerText = 'Cliquez pour remplacer votre CV par un nouveau fichier PDF.';
                     }
+                } else {
+                    // Pas de profil API — charger uniquement les compétences manuelles
+                    const manualSkills = JSON.parse(localStorage.getItem('apex_manual_skills') || '[]');
+                    renderSkills(manualSkills);
                 }
-            } catch (_) {}
+            } catch (_) {
+                const manualSkills = JSON.parse(localStorage.getItem('apex_manual_skills') || '[]');
+                renderSkills(manualSkills);
+            }
 
             // 2. Charger les candidatures
             try {

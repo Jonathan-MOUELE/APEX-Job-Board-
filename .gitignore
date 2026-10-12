@@ -36,6 +36,8 @@ ef_migration_output.txt
 __pycache__/
 *.pyc
 
-# Fichiers de contexte volumineux d'IA
+# Fichiers de contexte volumineux d'IA & Documentation avancée
 *.md
 !AGENTS.md
+reussite.md
+design-docs/

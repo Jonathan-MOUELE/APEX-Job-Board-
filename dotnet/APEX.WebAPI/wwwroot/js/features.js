@@ -306,10 +306,10 @@ class SwipeEngine {
           <button onclick="window.swipeRight(${idx})" class="btn-swipe-action like" style="flex:1;height:48px;border-radius:12px;background:var(--green-light);color:var(--green);border:1px solid var(--green);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all 0.2s;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> Sauvegarder
           </button>
-          <a href="${job.url || job.origineOffre?.urlOrigine || 'https://candidat.francetravail.fr/offres/recherche'}" target="_blank" rel="noopener noreferrer"
-             style="flex:2;height:48px;border-radius:12px;background:var(--orange);color:#fff;border:none;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;text-decoration:none;"
+          <a href="${job.url || job.origineOffre?.urlOrigine || ''}" target="_blank" rel="noopener noreferrer"
+             style="flex:2;height:48px;border-radius:12px;background:var(--orange);color:#fff;border:none;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity 0.2s;text-decoration:none;${(job.url || job.origineOffre?.urlOrigine) ? '' : 'pointer-events:none;opacity:0.5;'}"
              onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-            Voir sur France Travail &#8594;
+            Voir sur ${job.source === 'Adzuna' ? 'Adzuna' : job.source === 'EU/Remote' ? 'Arbeitnow' : 'France Travail'} &#8594;
           </a>
         </div>`;
       return card;

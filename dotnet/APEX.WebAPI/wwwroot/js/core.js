@@ -439,6 +439,7 @@ window._processJobsSync = function(raw){
     lieuTravail:{...(j.lieuTravail||{}),libelle:decodeUtf8Safe(j.lieuTravail?.libelle||j.location||'')},
     typeContrat:j.typeContrat||j.contractType||j.natureContrat||'',
     url:j.url||j.originUrl||j.origineOffre?.urlOrigine||j.contact?.urlPostulation||j.applyUrl||(j.id&&!j.id.toString().includes('_')?`https://candidat.francetravail.fr/offres/recherche/detail/${j.id}`:''),
+    source:j.source||'FR',
     dateCreation:j.dateCreation||j.datePublished||'',
     _processed:true,
   }));

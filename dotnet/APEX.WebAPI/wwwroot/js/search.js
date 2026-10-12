@@ -372,6 +372,7 @@ window.buildJobCard = function(job, idx) {
   const date     = relativeDate(job.dateCreation||'');
   const liUrl    = `https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(company)}`;
   const ftUrl    = job.url || job.origineOffre?.urlOrigine || job.applyUrl || '';
+  const srcLabel = (job.source === 'Adzuna') ? 'Adzuna' : (job.source === 'EU/Remote') ? 'Arbeitnow' : 'France Travail';
 
 
 
@@ -411,7 +412,7 @@ window.buildJobCard = function(job, idx) {
           ${contract?`<span class="job-tag contract" style="border-radius:6px;padding:3px 8px;font-weight:600;">${esc(contract)}</span>`:''}
           ${salary  ?`<span class="job-tag" style="color:var(--green);border-radius:6px;padding:3px 8px;font-weight:600;background:var(--green-light,#f0fdf4);border:1px solid #bbf7d0">${esc(salary)}</span>`:''}
           ${date    ?`<span class="job-tag" style="border-radius:6px;padding:3px 8px;font-weight:600;">${esc(date)}</span>`:''}
-          ${job.origineOffre?.partenaires?.length?'<span class="job-tag" style="color:var(--blue);border-radius:6px;padding:3px 8px;font-weight:600;background:#eff6ff;border:1px solid #bfdbfe">France Travail</span>':''}
+          ${job.source === 'Adzuna' ? '<span class="job-tag" style="color:#e65100;border-radius:6px;padding:3px 8px;font-weight:600;background:#fff3e0;border:1px solid #ffcc80">Adzuna</span>' : job.source === 'EU/Remote' ? '<span class="job-tag" style="color:#1565c0;border-radius:6px;padding:3px 8px;font-weight:600;background:#e3f2fd;border:1px solid #90caf9">Arbeitnow</span>' : job.origineOffre?.partenaires?.length ? '<span class="job-tag" style="color:var(--blue);border-radius:6px;padding:3px 8px;font-weight:600;background:#eff6ff;border:1px solid #bfdbfe">France Travail</span>' : ''}
         </div>
         ${desc?`<p style="font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;opacity:0.9;">${esc(desc)}</p>`:''}
       </div>
@@ -434,8 +435,8 @@ window.buildJobCard = function(job, idx) {
                      box-shadow:0 2px 4px rgba(249,115,22,0.2);text-decoration:none;"
               onmouseover="this.style.transform='translateY(-1px)'"
               onmouseout="this.style.transform='translateY(0)'"
-              aria-label="Voir sur France Travail">
-        <i data-lucide="external-link" style="width:14px;height:14px"></i> France Travail
+              aria-label="Voir sur ${srcLabel}">
+        <i data-lucide="external-link" style="width:14px;height:14px"></i> ${srcLabel}
       </a>`:''}
     </div>`;
 
